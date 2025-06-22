@@ -5,6 +5,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Footer from '../components/Footer';
 import ThemeDrawer from '../components/ThemeDrawer';
+import Fireworks from '../components/Fireworks';
 import { themeColors, themeClass as utilThemeClass, applyDarkMode, loadDarkMode } from '../utils/theme';
 
 import emailjs from '@emailjs/browser';
@@ -534,6 +535,9 @@ export default function Home() {
                   } 15%, transparent 70%)`
               }}
             />
+
+            {/* Fireworks Animation */}
+            <Fireworks currentTheme={currentTheme} isDarkMode={isDarkMode} />
 
             {/* Hero content container with backdrop blur */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
