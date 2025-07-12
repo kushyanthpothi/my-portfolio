@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { loadDarkMode, setupSystemThemeListener } from '@/utils/theme';
+import { loadDarkMode, setupSystemThemeListener } from '../utils/theme';
 
 export default function ClientLayout({ children }) {
   useEffect(() => {
