@@ -1,0 +1,273 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+  --ball-size-1: 450px;
+  --ball-size-2: 380px;
+  --ball-speed-1: 12s;  /* Adjusted for smoother rectangle path */
+  --ball-speed-2: 15s;  /* Slightly different speed for second ball */
+  --ball-opacity: 0.35; /* Reduced opacity for light mode */
+  --rect-top: 10%;      /* Top edge of rectangle */
+  --rect-right: 80%;    /* Right edge of rectangle */
+  --rect-bottom: 80%;   /* Bottom edge of rectangle */  
+  --rect-left: 20%;     /* Left edge of rectangle */
+}
+
+/* Remove system theme detection - let JavaScript handle it */
+
+/* Add smooth transitions for theme changes */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  font-family: var(--font-nunito-sans), Arial, sans-serif;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  width: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Moving Ball Gradient Animation - First Ball */
+.hero-gradient-ball-1 {
+  position: absolute;
+  width: var(--ball-size-1);
+  height: var(--ball-size-1);
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: var(--ball-opacity);
+  pointer-events: none;
+  animation: moveAlongRectangle var(--ball-speed-1) linear infinite;
+  will-change: transform, top, left;
+  z-index: 0;
+}
+
+/* Ensure the nav container is positioned relatively to contain the absolute selector */
+nav .relative {
+  position: relative;
+}
+
+/* Style the sliding selector */
+nav .absolute {
+  top: 4px; /* Adjust to align with buttons */
+  height: 32px; /* Match button height */
+  z-index: 5; /* Below buttons but above nav background */
+}
+
+/* Smooth transition for button hover and active states */
+nav button {
+  transition: color 0.3s ease-in-out;
+}
+
+/* Moving Ball Gradient Animation - Second Ball */
+.hero-gradient-ball-2 {
+  position: absolute;
+  width: var(--ball-size-2);
+  height: var(--ball-size-2);
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: var(--ball-opacity);
+  pointer-events: none;
+  animation: moveAlongRectangle var(--ball-speed-2) linear infinite reverse;
+  will-change: transform, top, left;
+  z-index: 0;
+}
+
+/* Rectangular path animation with consistent speed along edges */
+@keyframes moveAlongRectangle {
+  /* Start at top-left corner */
+  0% {
+    top: var(--rect-top);
+    left: var(--rect-left);
+    transform: scale(1);
+  }
+  
+  /* Move right along top edge */
+  25% {
+    top: var(--rect-top);
+    left: var(--rect-right);
+    transform: scale(0.95);
+  }
+  
+  /* Move down along right edge */
+  50% {
+    top: var(--rect-bottom);
+    left: var(--rect-right);
+    transform: scale(1.05);
+  }
+  
+  /* Move left along bottom edge */
+  75% {
+    top: var(--rect-bottom);
+    left: var(--rect-left);
+    transform: scale(0.95);
+  }
+  
+  /* Return to top-left to complete the loop */
+  100% {
+    top: var(--rect-top);
+    left: var(--rect-left);
+    transform: scale(1);
+  }
+}
+
+/* Media query for smaller devices */
+@media (max-width: 768px) {
+  :root {
+    --ball-size-1: 250px;
+    --ball-size-2: 200px;
+    --ball-speed-1: 10s;  /* Faster on mobile */
+    --ball-speed-2: 12s;  /* Faster on mobile */
+    --rect-top: 15%;      /* Adjusted rectangle for mobile */
+    --rect-right: 75%;
+    --rect-bottom: 75%;
+    --rect-left: 25%;
+  }
+  .hero-gradient-ball-1, .hero-gradient-ball-2 {
+    filter: blur(70px);
+  }
+}
+
+/* Add these styles for the navbar animation */
+.text-reveal {
+  transition: width 0.5s ease-in-out, opacity 0.5s ease-in-out;
+  white-space: nowrap;
+}
+
+/* Add these styles for section scrolling */
+section[id] {
+  scroll-margin-top: 80px; /* Adjust this value based on your navbar height */
+}
+
+/* Ensure sections start from the top */
+section {
+  position: relative;
+  width: 100%;
+}
+
+/* Update certificate card styles */
+.certificate-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.certificate-card:hover {
+  transform: translateY(-5px);
+}
+
+.certificate-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 1rem;
+}
+
+.certificate-card:hover .certificate-overlay {
+  opacity: 1;
+}
+
+/* View more/less animation */
+.grid:has(.certificate-card) {
+  display: grid;
+  transition: grid-template-rows 0.5s ease, opacity 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.certificate-card.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.certificate-card.fade-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Adjust section padding for mobile */
+  section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Adjust scroll margin for mobile */
+  section[id] {
+    scroll-margin-top: 60px;
+  }
+
+  /* Optimize certificate cards for mobile */
+  .certificate-overlay {
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+
+  .certificate-card:active .certificate-overlay,
+  .certificate-card.touched .certificate-overlay {
+    opacity: 1;
+  }
+
+  /* Make cards more touch-friendly */
+  .certificate-card {
+    margin-bottom: 1rem;
+    transform: none;
+  }
+
+  .certificate-card:hover {
+    transform: none;
+  }
+
+  /* Adjust padding for mobile */
+  .max-w-7xl {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Better form inputs on mobile */
+@media (max-width: 768px) {
+  input, textarea, button {
+    font-size: 16px !important; /* Prevent zoom on focus in iOS */
+  }
+}

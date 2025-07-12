@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kushyanth Pothineni Portfolio</title>
+    <description>Portfolio of Kushyanth Pothineni, a Software Developer with expertise in Full Stack, Frontend, and Backend development using React.js, Next.js, Django, and more technologies.</description>
+    <link>https://kushyanth-portfolio.web.app</link>
+    <atom:link href="https://kushyanth-portfolio.web.app/feed.xml" rel="self" type="application/rss+xml"/>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 13 Jun 2025 00:00:00 GMT</lastBuildDate>
+    <generator>Kushyanth Pothineni Portfolio</generator>
+    
+    <item>
+      <title>Event Mania - Event Management Platform</title>
+      <description>Event Mania is a comprehensive event management platform that connects students with college events. Built with React and Firebase, it streamlines event discovery, registration, and management.</description>
+      <link>https://kushyanth-portfolio.web.app/projects/event-mania</link>
+      <guid>https://kushyanth-portfolio.web.app/projects/event-mania</guid>
+      <pubDate>Fri, 13 Jun 2025 00:00:00 GMT</pubDate>
+    </item>
+    
+    <item>
+      <title>Pro Reader - Android QR Code and Text Tool</title>
+      <description>Pro Reader is a versatile Android application for QR code scanning, speech-to-text conversion, and text extraction. Features offline support and ML Kit integration.</description>
+      <link>https://kushyanth-portfolio.web.app/projects/pro-reader</link>
+      <guid>https://kushyanth-portfolio.web.app/projects/pro-reader</guid>
+      <pubDate>Fri, 13 Jun 2025 00:00:00 GMT</pubDate>
+    </item>
+    
+    <item>
+      <title>Pin Noter - React Note Taking App</title>
+      <description>Pin Noter is a feature-rich note-taking application with rich text formatting, offline support, and cloud sync. Built with React and Firebase for seamless note management.</description>
+      <link>https://kushyanth-portfolio.web.app/projects/pin-noter</link>
+      <guid>https://kushyanth-portfolio.web.app/projects/pin-noter</guid>
+      <pubDate>Fri, 13 Jun 2025 00:00:00 GMT</pubDate>
+    </item>
+    
+    <item>
+      <title>YouTube Video and Audio Downloader</title>
+      <description>A powerful Django-based YouTube downloader that supports multiple formats and resolutions. Download videos in MP4 or extract audio in MP3 format with quality selection.</description>
+      <link>https://kushyanth-portfolio.web.app/projects/youtube-downloader</link>
+      <guid>https://kushyanth-portfolio.web.app/projects/youtube-downloader</guid>
+      <pubDate>Fri, 13 Jun 2025 00:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

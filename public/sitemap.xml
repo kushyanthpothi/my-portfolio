@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+  <url>
+    <loc>https://kushyanth-portfolio.web.app</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://i.ibb.co/CpW4rW5s/picofme-2.png</image:loc>
+      <image:title>Kushyanth Pothineni - Software Developer</image:title>
+      <image:caption>Portfolio of Kushyanth Pothineni, Software Developer</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://kushyanth-portfolio.web.app/projects</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://kushyanth-portfolio.web.app/projects/event-mania</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://i.ibb.co/gJQKjNK/Event-Mania-Design.png</image:loc>
+      <image:title>Event Mania - Event Management Platform</image:title>
+      <image:caption>Event management platform for colleges and students</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://kushyanth-portfolio.web.app/projects/pro-reader</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://i.ibb.co/sQYYbks/Pro-Reader-Banner-web-1.png</image:loc>
+      <image:title>Pro Reader - Android QR Code and Text Tool</image:title>
+      <image:caption>Android application for QR codes and text processing</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://kushyanth-portfolio.web.app/projects/pin-noter</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://i.ibb.co/zNYpwtk/Untitled-design.png</image:loc>
+      <image:title>Pin Noter - Note Taking Application</image:title>
+      <image:caption>React-based note-taking app with cloud sync</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://kushyanth-portfolio.web.app/projects/youtube-downloader</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://i.ibb.co/FB9hXK8/Laptop-Design-edit.png</image:loc>
+      <image:title>YouTube Downloader - Media Download Tool</image:title>
+      <image:caption>Django-based YouTube video and audio downloader</image:caption>
+    </image:image>
+  </url>
+</urlset>
