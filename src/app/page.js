@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import Footer from '../components/Footer';
 import ThemeDrawer from '../components/ThemeDrawer';
 import Fireworks from '../components/Fireworks';
+import ExperienceSection from '../components/ExperienceSection';
 import { themeColors, themeClass as utilThemeClass, loadDarkMode, loadThemeMode, setThemeMode, getEffectiveDarkMode, setupSystemThemeListener, THEME_MODES } from '../utils/theme';
 
 import emailjs from '@emailjs/browser';
@@ -38,13 +39,13 @@ export default function Home() {
   const [showThemeDrawer, setShowThemeDrawer] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [themeMode, setThemeModeState] = useState(THEME_MODES.SYSTEM);
+  
 
   // Define navItems early to avoid initialization order issues
   const navItems = [
     { name: 'HOME', section: 'home' },
     { name: 'ABOUT', section: 'about' },
     { name: 'EXPERIENCE', section: 'experience' },
-    { name: 'SKILLS', section: 'skills' },
     { name: 'PROJECTS', section: 'projects' },
     { name: 'CERTIFICATIONS', section: 'certifications' },
     { name: 'CONTACT', section: 'contact' },
@@ -97,7 +98,9 @@ export default function Home() {
       setThemeModeState(mode);
     });
 
-    return cleanup;
+    return () => {
+      cleanup();
+    };
   }, []);
 
   const changeTheme = (color) => {
@@ -264,7 +267,7 @@ export default function Home() {
   const userData = {
     name: "Kushyanth Pothineni",
     title: currentTitle, // This will now be dynamic
-    about: "I am a passionate Full Stack Developer with expertise in building modern web applications. I specialize in React.js, Next.js, and Django, creating responsive and user-friendly interfaces.",
+    about: "I am a passionate Full Stack Developer with hands-on experience in building modern, scalable web applications using technologies like React.js, Next.js, Django, and Spring Boot. My expertise spans frontend and backend development, database management, and API optimization. I have a proven track record of delivering impactful solutions, such as AI-powered supply chain optimization at NinjaCart and inventory tracking systems with real-time alerts. With a Bachelor of Technology in Computer Science from KKR & KSR Institute of Technology and Sciences, I am committed to leveraging my technical skills and certifications in MEAN Stack, Java Full Stack, and ServiceNow to create innovative, user-focused solutions.",
     skills: [
       { name: "Django", level: 85 },
       { name: "JavaScript", level: 92 },
@@ -754,157 +757,76 @@ export default function Home() {
 
           {/* About Section */}
           <section id="about" className="pt-20 py-20 bg-white dark:bg-gray-800">
-            <div className="w-full px-4 sm:px-10 lg:px-12">
-              {/* About Me title and content - full width */}
-              <div className="mb-16">
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  className="max-w-5xl"
-                >
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">About <span className={themeClass('text')}>Me</span></h2>
-                  <div className={`h-1 w-20 ${themeClass('bg')} mb-6`}></div>
-                  <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300">
-                    {userData.about}
-                  </p>
-                </MotionDiv>
-              </div>
-
-              {/* Cards below */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-16">
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  className={`${themeClass('bgStatic')} dark:bg-gray-700 rounded-lg p-6 text-center`}
-                >
-                  <div className="flex justify-center mb-4">
-                    <span className={`inline-block p-4 rounded-full bg-opacity-10 ${themeClass('bg')} ${themeClass('text')}`}>
-                      <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                      </svg>
-                    </span>
+            <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12">
+              {/* About Me Section with Photo and Content */}
+              <MotionDiv
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true, amount: 0.2 }}
+                className="mb-16"
+              >
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white text-center md:text-left">About <span className={themeClass('text')}>Me</span></h2>
+                <div className={`h-1 w-20 ${themeClass('bg')} mb-6 mx-auto md:mx-0`}></div>
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+                  {/* Left Side: Photo */}
+                  <div className="w-full md:w-1/3 flex justify-center md:justify-start">
+                    <Image
+                      src="https://i.ibb.co/Q34XQpTb/Snapchat-299913884.jpg"
+                      alt="Profile Photo"
+                      width={400}
+                      height={610}
+                      className="rounded-2xl shadow-lg object-cover w-[400px] h-[610px] max-w-full"
+                    />
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Web Design</h3>
-                  <p className="text-gray-600 dark:text-gray-300">Creating beautiful, responsive user interfaces with modern design principles.</p>
-                </MotionDiv>
-
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  className={`${themeClass('bgStatic')} dark:bg-gray-700 rounded-lg p-6 text-center`}
-                >
-                  <div className="flex justify-center mb-4">
-                    <span className={`inline-block p-4 rounded-full bg-opacity-10 ${themeClass('bg')} ${themeClass('text')}`}>
-                      <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                      </svg>
-                    </span>
+                  {/* Right Side: Content */}
+                  <div className="w-full md:w-2/3">
+                    <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
+                      Hey, I’m <strong>Kushyanth</strong> 👋
+                    </p>
+                    <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
+                      I’m a Software Development Engineer at <strong>Ninjacart</strong>, where I focus on building backend infrastructure for Agentic AI systems and automating internal workflows at scale. My work involves crafting robust REST APIs with <strong>Spring Boot</strong>, designing scalable microservices, and integrating AI models into production environments.
+                    </p>
+                    <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
+                      I’m passionate about <strong>clean architecture</strong>, <strong>test-driven development</strong>, and enhancing developer experience and system performance. At Ninjacart, I’ve built solutions like workflow automation with <strong>n8n</strong> and OCR-driven data processing pipelines integrated with machine learning models.
+                    </p>
+                    <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
+                      Outside of work, I’ve shipped several full-stack projects, including:
+                    </p>
+                    <ul className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4 list-disc list-inside">
+                      <li>
+                        <strong>Event Mania</strong> – An event platform connecting 1000+ students to college organizations, built with <strong>Next.js</strong>, <strong>Firebase</strong>, and <strong>Tailwind</strong>.
+                      </li>
+                      <li>
+                        <strong>Instans</strong> – An AI-powered interview preparation tool with end-to-end testing using <strong>Playwright</strong> and <strong>Google Generative AI APIs</strong>.
+                      </li>
+                      <li>
+                        <strong>Smart Inventory Tracker</strong> – A warehouse management system deployed on <strong>AWS</strong> with real-time alerts and role-based access control (RBAC).
+                      </li>
+                    </ul>
+                    <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
+                      I’m constantly leveling up in cloud platforms (<strong>AWS</strong>, <strong>Docker</strong>), backend systems, and emerging AI tooling. If it’s about automation, performance, or real-time systems—I’m all in.
+                    </p>
+                    <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                      Let’s build something cool.
+                    </p>
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Full Stack Development</h3>
-                  <p className="text-gray-600 dark:text-gray-300">Building robust, scalable applications with modern frameworks like React.js and Django.</p>
-                </MotionDiv>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  className={`${themeClass('bgStatic')} dark:bg-gray-700 rounded-lg p-6 text-center`}
-                >
-                  <div className="flex justify-center mb-4">
-                    <span className={`inline-block p-4 rounded-full bg-opacity-10 ${themeClass('bg')} ${themeClass('text')}`}>
-                      <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Database Management</h3>
-                  <p className="text-gray-600 dark:text-gray-300">Working with SQL and NoSQL databases like MongoDB to ensure efficient data storage and retrieval.</p>
-                </MotionDiv>
+                </div>
+              </MotionDiv>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  className={`${themeClass('bgStatic')} dark:bg-gray-700 rounded-lg p-6 text-center`}
-                >
-                  <div className="flex justify-center mb-4">
-                    <span className={`inline-block p-4 rounded-full bg-opacity-10 ${themeClass('bg')} ${themeClass('text')}`}>
-                      <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">API Optimization</h3>
-                  <p className="text-gray-600 dark:text-gray-300">Designing and optimizing APIs for better performance and user experience.</p>
-                </MotionDiv>
-
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  className={`${themeClass('bgStatic')} dark:bg-gray-700 rounded-lg p-6 text-center`}
-                >
-                  <div className="flex justify-center mb-4">
-                    <span className={`inline-block p-4 rounded-full bg-opacity-10 ${themeClass('bg')} ${themeClass('text')}`}>
-                      <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Role-based Access Control</h3>
-                  <p className="text-gray-600 dark:text-gray-300">Implementing secure authentication and authorization systems for applications.</p>
-                </MotionDiv>
-
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  className={`${themeClass('bgStatic')} dark:bg-gray-700 rounded-lg p-6 text-center`}
-                >
-                  <div className="flex justify-center mb-4">
-                    <span className={`inline-block p-4 rounded-full bg-opacity-10 ${themeClass('bg')} ${themeClass('text')}`}>
-                      <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">User Experience Design</h3>
-                  <p className="text-gray-600 dark:text-gray-300">Creating intuitive and engaging user interfaces focused on delivering excellent user experiences.</p>
-                </MotionDiv>
-              </div>
-
-              {/* Education Section - Moved below cards */}
-              <div className="mb-16">
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  className="mb-8" // Removed text-center class
-                >
-                  <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white">My <span className={themeClass('text')}>Education</span></h3>
-                  <div className={`h-1 w-20 ${themeClass('bg')} mb-6`}></div>
-                </MotionDiv>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <MotionDiv
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full"
-                  >
+              {/* Education Section */}
+              <MotionDiv
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true, amount: 0.2 }}
+                className="mb-16"
+              >
+                <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white text-center md:text-left">My <span className={themeClass('text')}>Education</span></h3>
+                <div className={`h-1 w-20 ${themeClass('bg')} mb-6 mx-auto md:mx-0`}></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
                     <div className="mb-4">
                       <i className={`fas fa-university text-3xl ${themeClass('text')}`}></i>
                     </div>
@@ -919,15 +841,8 @@ export default function Home() {
                       </span>
                       <p className="text-gray-500 dark:text-gray-400 text-sm">2021 - 2025</p>
                     </div>
-                  </MotionDiv>
-
-                  <MotionDiv
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full"
-                  >
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
                     <div className="mb-4">
                       <i className={`fas fa-school text-3xl ${themeClass('text')}`}></i>
                     </div>
@@ -942,15 +857,8 @@ export default function Home() {
                       </span>
                       <p className="text-gray-500 dark:text-gray-400 text-sm">2019 - 2021</p>
                     </div>
-                  </MotionDiv>
-
-                  <MotionDiv
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full"
-                  >
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
                     <div className="mb-4">
                       <i className={`fas fa-graduation-cap text-3xl ${themeClass('text')}`}></i>
                     </div>
@@ -965,439 +873,150 @@ export default function Home() {
                       </span>
                       <p className="text-gray-500 dark:text-gray-400 text-sm">2018 - 2019</p>
                     </div>
-                  </MotionDiv>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Experience Section */}
-          <section id="experience" className="pt-20 py-20 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-            <div className="max-w-6xl mx-auto px-4 sm:px-10 lg:px-12">
-              <MotionDiv
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true, amount: 0.2 }}
-                className="text-center mb-20"
-              >
-                <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full px-6 py-2 mb-6">
-                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">Professional Journey</span>
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
-                  Experience & Growth
-                </h2>
-                <p className="max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-300">
-                  Building impactful solutions and gaining hands-on experience in cutting-edge technologies
-                </p>
               </MotionDiv>
 
-              {/* Timeline Container */}
-              <div className="relative">
-                {/* Progress Line - Hidden on mobile */}
-                <div className="hidden md:block absolute left-1/2 transform -translate-x-0.5 w-1 h-full bg-gradient-to-b from-blue-200 via-purple-200 to-green-200 dark:from-blue-800 dark:via-purple-800 dark:to-green-800 rounded-full z-0"></div>
-
-                {/* Animated Progress Indicator - Hidden on mobile */}
-                <MotionDiv
-                  initial={{ height: 0 }}
-                  whileInView={{ height: "100%" }}
-                  transition={{ duration: 2, ease: "easeInOut", delay: 0.5 }}
-                  viewport={{ once: true, amount: 0.1 }}
-                  className="hidden md:block absolute left-1/2 transform -translate-x-0.5 w-1 bg-gradient-to-b from-blue-500 via-purple-500 to-green-500 rounded-full z-5"
-                />
-
-                <div className="space-y-8 md:space-y-16">
-                  {/* NinjaCart Full-time Role */}
-                  <MotionDiv
-                    initial={{ opacity: 0, x: -100, scale: 0.8 }}
-                    whileInView={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{
-                      duration: 0.8,
-                      delay: 0.2,
-                      type: "spring",
-                      stiffness: 100,
-                      damping: 15
-                    }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="relative flex items-center"
-                  >
-                    {/* Timeline Node - Hidden on mobile */}
-                    <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-green-400 to-teal-500 rounded-full border-4 border-white dark:border-gray-800 shadow-lg z-30 items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                    </div>
-
-                    {/* Content Card - Responsive positioning */}
-                    <div className="w-full md:w-1/2 md:pr-8">
-                      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
-                        {/* Header */}
-                        <div className="flex items-start space-x-4 mb-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl p-2 shadow-lg flex-shrink-0">
-                            <Image
-                              src="https://i.ibb.co/tMBZRQY6/images-2.png"
-                              alt="NinjaCart Logo"
-                              width={56}
-                              height={56}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Software Development Engineer</h3>
-                            <p className="text-green-600 dark:text-green-400 font-semibold">NinjaCart • Bangalore</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">June 2025 - Present</p>
-                          </div>
-                          <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold">
-                            Current
-                          </div>
-                        </div>
-
-                        {/* Key Highlights */}
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Developing AI-powered Agents for supply chain optimization</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Building scalable RESTful APIs with Spring Boot</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Microservices architecture implementation</span>
-                          </div>
-                        </div>
-
-                        {/* Impact Metrics */}
-                        <div className="flex space-x-6 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-green-600 dark:text-green-400">45%</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">API Response ↑</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-teal-600 dark:text-teal-400">3+</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">New Features</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-green-700 dark:text-green-300">20%</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Process Efficiency ↑</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </MotionDiv>
-
-                  {/* NinjaCart Internship */}
-                  <MotionDiv
-                    initial={{ opacity: 0, x: 100, scale: 0.8 }}
-                    whileInView={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{
-                      duration: 0.8,
-                      delay: 0.3,
-                      type: "spring",
-                      stiffness: 100,
-                      damping: 15
-                    }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="relative flex items-center"
-                  >
-                    {/* Timeline Node - Hidden on mobile */}
-                    <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-orange-400 to-red-500 rounded-full border-4 border-white dark:border-gray-800 shadow-lg z-30 items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                    </div>
-
-                    {/* Content Card - Right Side on desktop, full width on mobile */}
-                    <div className="w-full md:w-1/2 md:ml-auto md:pl-8">
-                      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
-                        {/* Header */}
-                        <div className="flex items-start space-x-4 mb-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl p-2 shadow-lg flex-shrink-0">
-                            <Image
-                              src="https://i.ibb.co/tMBZRQY6/images-2.png"
-                              alt="NinjaCart Logo"
-                              width={56}
-                              height={56}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Software Developer Intern</h3>
-                            <p className="text-orange-600 dark:text-orange-400 font-semibold">NinjaCart • Bangalore</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">April 2025 - May 2025</p>
-                          </div>
-                          <div className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-xs font-semibold">
-                            Completed
-                          </div>
-                        </div>
-
-                        {/* Key Highlights */}
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">RESTful API Development with Spring Boot</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Database optimization for MySQL & PostgreSQL</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">AI integration with RAG models</span>
-                          </div>
-                        </div>
-
-                        {/* Impact Metrics */}
-                        <div className="flex space-x-6 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-orange-600 dark:text-orange-400">35%</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Performance ↑</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-red-600 dark:text-red-400">200+</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Requests/sec</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-orange-700 dark:text-orange-300">45%</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Accuracy ↑</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </MotionDiv>
-
-                  {/* Blackbucks Experience */}
-                  <MotionDiv
-                    initial={{ opacity: 0, x: -100, scale: 0.8 }}
-                    whileInView={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{
-                      duration: 0.8,
-                      delay: 0.4,
-                      type: "spring",
-                      stiffness: 100,
-                      damping: 15
-                    }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="relative flex items-center"
-                  >
-                    {/* Timeline Node - Hidden on mobile */}
-                    <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full border-4 border-white dark:border-gray-800 shadow-lg z-30 items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                    </div>
-
-                    {/* Content Card - Left Side on desktop, full width on mobile */}
-                    <div className="w-full md:w-1/2 md:pr-8">
-                      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
-                        {/* Header */}
-                        <div className="flex items-start space-x-4 mb-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl p-2 shadow-lg flex-shrink-0">
-                            <Image
-                              src="https://i.ibb.co/HLsn4PN8/images-3.png"
-                              alt="Blackbucks Engineers Logo"
-                              width={56}
-                              height={56}
-                              className="object-contain w-full h-full"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Full Stack Developer Intern</h3>
-                            <p className="text-blue-600 dark:text-blue-400 font-semibold">Blackbucks Engineers • Hyderabad</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">May 2024 - July 2024</p>
-                          </div>
-                          <div className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-xs font-semibold">
-                            Completed
-                          </div>
-                        </div>
-
-                        {/* Key Highlights */}
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Django web application enhancement</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">RESTful API development with DRF</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-blue-700 rounded-full"></div>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">React.js frontend interface revamp</span>
-                          </div>
-                        </div>
-
-                        {/* Impact Metrics */}
-                        <div className="flex space-x-6 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">40%</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Efficiency ↑</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-purple-600 dark:text-purple-400">30%</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Engagement ↑</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-blue-700 dark:text-blue-300">25%</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Faster APIs</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </MotionDiv>
-
-                  {/* Future Goals */}
-                  <MotionDiv
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    className="relative flex items-center justify-center"
-                  >
-                  </MotionDiv>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Skills Section */}
-          <section id="skills" className="pt-20 py-20 bg-white dark:bg-gray-800">
-            <div className="w-full px-4 sm:px-10 lg:px-12">
+              {/* Skills Section */}
               <MotionDiv
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 viewport={{ once: true, amount: 0.2 }}
-                className="text-center mb-16"
               >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">Technical <span className={themeClass('text')}>Expertise</span></h2>
-                <div className={`h-1 w-20 ${themeClass('bg')} mx-auto mb-6`}></div>
-                <p className="max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-300">
-                  A comprehensive showcase of my technical skills and proficiencies across various domains
+                <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white text-center md:text-left">Technical <span className={themeClass('text')}>Expertise</span></h3>
+                <div className={`h-1 w-20 ${themeClass('bg')} mb-6 mx-auto md:mx-0`}></div>
+                <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-8 text-center md:text-left">
+                  A comprehensive showcase of my technical skills and proficiencies across various domains.
                 </p>
-              </MotionDiv>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[
-                  {
-                    category: "Programming Languages",
-                    icon: (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                      </svg>
-                    ),
-                    skills: [
-                      { name: 'JavaScript', wiki: 'https://en.wikipedia.org/wiki/JavaScript', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg' },
-                      { name: 'Python', wiki: 'https://en.wikipedia.org/wiki/Python_(programming_language)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg' },
-                      { name: 'Java', wiki: 'https://en.wikipedia.org/wiki/Java_(programming_language)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg' },
-                      { name: 'C/C++', wiki: 'https://en.wikipedia.org/wiki/C%2B%2B', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg' }
-                    ]
-                  },
-                  {
-                    category: "Frontend Development",
-                    icon: (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
-                      </svg>
-                    ),
-                    skills: [
-                      { name: 'React.js', wiki: 'https://en.wikipedia.org/wiki/React_(JavaScript_library)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg' },
-                      { name: 'Next.js', wiki: 'https://en.wikipedia.org/wiki/Next.js', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg' },
-                      { name: 'Angular', wiki: 'https://en.wikipedia.org/wiki/Angular_(web_framework)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg' },
-                      { name: 'HTML/CSS', wiki: 'https://en.wikipedia.org/wiki/HTML', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg' }
-                    ]
-                  },
-                  {
-                    category: "Backend Development",
-                    icon: (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" />
-                      </svg>
-                    ),
-                    skills: [
-                      { name: 'Django', wiki: 'https://en.wikipedia.org/wiki/Django_(web_framework)', image: 'https://www.svgrepo.com/show/353657/django-icon.svg' },
-                      { name: 'Node.js', wiki: 'https://en.wikipedia.org/wiki/Node.js', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg' },
-                      { name: 'REST APIs', wiki: 'https://en.wikipedia.org/wiki/Representational_state_transfer', image: 'https://www.svgrepo.com/show/375531/api.svg' },
-                      { name: 'Firebase', wiki: 'https://en.wikipedia.org/wiki/Firebase', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg' }
-                    ]
-                  },
-                  {
-                    category: "Database Systems",
-                    icon: (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-                      </svg>
-                    ),
-                    skills: [
-                      { name: 'MongoDB', wiki: 'https://en.wikipedia.org/wiki/MongoDB', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg' },
-                      { name: 'PostgreSQL', wiki: 'https://en.wikipedia.org/wiki/PostgreSQL', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg' },
-                      { name: 'MySQL', wiki: 'https://en.wikipedia.org/wiki/MySQL', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg' },
-                      { name: 'Firebase', wiki: 'https://en.wikipedia.org/wiki/Firebase', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg' }
-                    ]
-                  },
-                  {
-                    category: "Development Tools",
-                    icon: (
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    ),
-                    skills: [
-                      { name: 'Git', wiki: 'https://en.wikipedia.org/wiki/Git', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
-                      { name: 'MCP', wiki: 'https://www.anthropic.com/news/model-context-protocol', image: 'https://avatars.githubusercontent.com/u/182288589?s=200&v=4' },
-                      { name: 'SDLC', wiki: 'https://en.wikipedia.org/wiki/Software_development_life_cycle', image: 'https://cdn2.iconfinder.com/data/icons/programming-76/512/SDLC-software-development-life_cycle-512.png' },
-                      { name: 'API Integration', wiki: 'https://en.wikipedia.org/wiki/API', image: 'https://www.svgrepo.com/show/375531/api.svg' }
-                    ]
-                  }
-                ].map((category, categoryIndex) => (
-                  <MotionDiv
-                    key={category.category}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
-                  >
-                    <div className="flex items-center mb-6">
-                      <div className={`p-3 rounded-lg ${themeClass('bg')} bg-opacity-10 mr-4 text-gray-900 dark:text-white`}>
-                        {category.icon}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {[
+                    {
+                      category: "Programming Languages",
+                      icon: (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                      ),
+                      skills: [
+                        { name: 'JavaScript', wiki: 'https://en.wikipedia.org/wiki/JavaScript', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg' },
+                        { name: 'Python', wiki: 'https://en.wikipedia.org/wiki/Python_(programming_language)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg' },
+                        { name: 'Java', wiki: 'https://en.wikipedia.org/wiki/Java_(programming_language)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg' },
+                        { name: 'C/C++', wiki: 'https://en.wikipedia.org/wiki/C%2B%2B', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg' }
+                      ]
+                    },
+                    {
+                      category: "Frontend Development",
+                      icon: (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                      ),
+                      skills: [
+                        { name: 'React.js', wiki: 'https://en.wikipedia.org/wiki/React_(JavaScript_library)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg' },
+                        { name: 'Next.js', wiki: 'https://en.wikipedia.org/wiki/Next.js', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg' },
+                        { name: 'Angular', wiki: 'https://en.wikipedia.org/wiki/Angular_(web_framework)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg' },
+                        { name: 'HTML/CSS', wiki: 'https://en.wikipedia.org/wiki/HTML', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg' }
+                      ]
+                    },
+                    {
+                      category: "Backend Development",
+                      icon: (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2" />
+                        </svg>
+                      ),
+                      skills: [
+                        { name: 'Django', wiki: 'https://en.wikipedia.org/wiki/Django_(web_framework)', image: 'https://www.svgrepo.com/show/353657/django-icon.svg' },
+                        { name: 'Node.js', wiki: 'https://en.wikipedia.org/wiki/Node.js', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg' },
+                        { name: 'REST APIs', wiki: 'https://en.wikipedia.org/wiki/Representational_state_transfer', image: 'https://www.svgrepo.com/show/375531/api.svg' },
+                        { name: 'Firebase', wiki: 'https://en.wikipedia.org/wiki/Firebase', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg' }
+                      ]
+                    },
+                    {
+                      category: "Database Systems",
+                      icon: (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                        </svg>
+                      ),
+                      skills: [
+                        { name: 'MongoDB', wiki: 'https://en.wikipedia.org/wiki/MongoDB', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg' },
+                        { name: 'PostgreSQL', wiki: 'https://en.wikipedia.org/wiki/PostgreSQL', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg' },
+                        { name: 'MySQL', wiki: 'https://en.wikipedia.org/wiki/MySQL', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg' },
+                        { name: 'Firebase', wiki: 'https://en.wikipedia.org/wiki/Firebase', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg' }
+                      ]
+                    },
+                    {
+                      category: "Development Tools",
+                      icon: (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      ),
+                      skills: [
+                        { name: 'Git', wiki: 'https://en.wikipedia.org/wiki/Git', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
+                        { name: 'MCP', wiki: 'https://www.anthropic.com/news/model-context-protocol', image: 'https://avatars.githubusercontent.com/u/182288589?s=200&v=4' },
+                        { name: 'SDLC', wiki: 'https://en.wikipedia.org/wiki/Software_development_life_cycle', image: 'https://cdn2.iconfinder.com/data/icons/programming-76/512/SDLC-software-development-life_cycle-512.png' },
+                        { name: 'API Integration', wiki: 'https://en.wikipedia.org/wiki/API', image: 'https://www.svgrepo.com/show/375531/api.svg' }
+                      ]
+                    }
+                  ].map((category, categoryIndex) => (
+                    <MotionDiv
+                      key={category.category}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
+                    >
+                      <div className="flex items-center mb-6">
+                        <div className={`p-3 rounded-lg ${themeClass('bg')} bg-opacity-10 mr-4 text-gray-900 dark:text-white`}>
+                          {category.icon}
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">{category.category}</h3>
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">{category.category}</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {category.skills.map((skill, skillIndex) => (
-                        <MotionDiv
-                          key={skill.name}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: (categoryIndex * 4 + skillIndex) * 0.1 }}
-                          viewport={{ once: true, amount: 0.2 }}
-                          className="relative group"
-                        >
-                          <a
-                            href={skill.wiki}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
+                      <div className="grid grid-cols-2 gap-4">
+                        {category.skills.map((skill, skillIndex) => (
+                          <MotionDiv
+                            key={skill.name}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3, delay: (categoryIndex * 4 + skillIndex) * 0.1 }}
+                            viewport={{ once: true, amount: 0.2 }}
+                            className="relative group"
                           >
-                            <div className="w-8 h-8 transition-transform duration-300 group-hover:scale-110">
-                              <Image
-                                src={skill.image}
-                                alt={skill.name}
-                                width={32}
-                                height={32}
-                                className={`${skill.name === 'Next.js' ? 'dark:invert' : ''}`}
-                              />
-                            </div>
-                            <span className="ml-3 text-sm font-medium text-gray-900 dark:text-white">{skill.name}</span>
-                          </a>
-                        </MotionDiv>
-                      ))}
-                    </div>
-                  </MotionDiv>
-                ))}
-              </div>
+                            <a
+                              href={skill.wiki}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
+                            >
+                              <div className="w-8 h-8 transition-transform duration-300 group-hover:scale-110">
+                                <Image
+                                  src={skill.image}
+                                  alt={skill.name}
+                                  width={32}
+                                  height={32}
+                                  className={`${skill.name === 'Next.js' ? 'dark:invert' : ''}`}
+                                />
+                              </div>
+                              <span className="ml-3 text-sm font-medium text-gray-900 dark:text-white">{skill.name}</span>
+                            </a>
+                          </MotionDiv>
+                        ))}
+                      </div>
+                    </MotionDiv>
+                  ))}
+                </div>
+              </MotionDiv>
             </div>
           </section>
+
+          {/* Experience Section */}
+          <ExperienceSection currentTheme={currentTheme} themeClass={themeClass} />
+
 
           {/* Projects Section */}
           <section id="projects" className="pt-20 py-20 bg-white dark:bg-gray-800">

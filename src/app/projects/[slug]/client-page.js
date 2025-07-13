@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { themeClass, loadDarkMode } from '../../../utils/theme';
+import { useScrollRestore } from '../../../utils/scrollRestore';
 import Footer from '../../../components/Footer';
 
 export default function ProjectClientPage({ project }) {
@@ -21,6 +22,9 @@ export default function ProjectClientPage({ project }) {
     const darkModeEnabled = loadDarkMode();
     setIsDarkMode(darkModeEnabled);
     
+    // Setup scroll position restoration
+    const scrollCleanup = useScrollRestore();
+    
     // Listen for storage changes to sync dark mode across tabs
     const handleStorageChange = (e) => {
       if (e.key === 'darkMode' || e.type === 'storage') {
@@ -33,6 +37,7 @@ export default function ProjectClientPage({ project }) {
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      scrollCleanup();
     };
   }, []);
 
