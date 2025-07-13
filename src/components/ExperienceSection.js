@@ -17,7 +17,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
           viewport={{ once: true, amount: 0.3 }}
           className="text-center mb-12 md:mb-16"
         >
-          <div className="inline-flex items-center space-x-3 bg-red-500 rounded-full px-4 py-2 md:px-5 md:py-2 mb-6 shadow-sm">
+          <div className={`inline-flex items-center space-x-3 bg-${currentTheme}-600 rounded-full px-4 py-2 md:px-5 md:py-2 mb-6 shadow-sm`}>
             <svg
               className="w-5 h-5 md:w-6 md:h-6 text-black"
               fill="none"
@@ -94,7 +94,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                         June 2025 - Present
                       </p>
                     </div>
-                    <span className="bg-red-500 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0">
+                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0`}>
                       Current
                     </span>
                   </div>
@@ -192,7 +192,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                         April 2025 - May 2025
                       </p>
                     </div>
-                    <span className="bg-red-500 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0">
+                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0`}>
                       Completed
                     </span>
                   </div>
@@ -290,7 +290,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                         May 2024 - July 2024
                       </p>
                     </div>
-                    <span className="bg-red-500 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0">
+                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0`}>
                       Completed
                     </span>
                   </div>
