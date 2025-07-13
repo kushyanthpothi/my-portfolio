@@ -39,7 +39,7 @@ export default function Home() {
   const [showThemeDrawer, setShowThemeDrawer] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [themeMode, setThemeModeState] = useState(THEME_MODES.SYSTEM);
-  
+
 
   // Define navItems early to avoid initialization order issues
   const navItems = [
@@ -210,7 +210,8 @@ export default function Home() {
   const titles = [
     "Full Stack Developer",
     "Software Developer",
-    "AI Developer"
+    "Frontend Developer",
+    "SDE @ Ninjacart",
   ];
 
   const [currentTitle, setCurrentTitle] = useState(titles[0]);
@@ -793,15 +794,24 @@ export default function Home() {
                     <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
                       Outside of work, I’ve shipped several full-stack projects, including:
                     </p>
-                    <ul className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4 list-disc list-inside">
-                      <li>
-                        <strong>Event Mania</strong> – An event platform connecting 1000+ students to college organizations, built with <strong>Next.js</strong>, <strong>Firebase</strong>, and <strong>Tailwind</strong>.
+                    <ul className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4 space-y-3">
+                      <li className="flex items-start">
+                        <span className="text-current mr-3 mt-1 flex-shrink-0">•</span>
+                        <div>
+                          <strong>Event Mania</strong> – An event platform connecting 1000+ students to college organizations, built with <strong>Next.js</strong>, <strong>Firebase</strong>, and <strong>Tailwind</strong>.
+                        </div>
                       </li>
-                      <li>
-                        <strong>Instans</strong> – An AI-powered interview preparation tool with end-to-end testing using <strong>Playwright</strong> and <strong>Google Generative AI APIs</strong>.
+                      <li className="flex items-start">
+                        <span className="text-current mr-3 mt-1 flex-shrink-0">•</span>
+                        <div>
+                          <strong>Instans</strong> – An AI-powered interview preparation tool with end-to-end testing using <strong>Playwright</strong> and <strong>Google Generative AI APIs</strong>.
+                        </div>
                       </li>
-                      <li>
-                        <strong>Smart Inventory Tracker</strong> – A warehouse management system deployed on <strong>AWS</strong> with real-time alerts and role-based access control (RBAC).
+                      <li className="flex items-start">
+                        <span className="text-current mr-3 mt-1 flex-shrink-0">•</span>
+                        <div>
+                          <strong>Smart Inventory Tracker</strong> – A warehouse management system deployed on <strong>AWS</strong> with real-time alerts and role-based access control (RBAC).
+                        </div>
                       </li>
                     </ul>
                     <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
