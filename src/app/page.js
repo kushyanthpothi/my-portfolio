@@ -782,7 +782,7 @@ export default function Home() {
                   {/* Right Side: Content */}
                   <div className="w-full md:w-2/3">
                     <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
-                      Hey, I’m <strong>Kushyanth</strong> 👋
+                      Hey, I’m <strong>Kushyanth Pothineni</strong> 👋
                     </p>
                     <p className="text-lg leading-relaxed text-gray-600 dark:text-gray-300 mb-4">
                       I’m a Software Development Engineer at <strong>Ninjacart</strong>, where I focus on building backend infrastructure for Agentic AI systems and automating internal workflows at scale. My work involves crafting robust REST APIs with <strong>Spring Boot</strong>, designing scalable microservices, and integrating AI models into production environments.
