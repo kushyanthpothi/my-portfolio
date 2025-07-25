@@ -578,6 +578,35 @@ export default function RootLayout({ children }) {
                   "workExample": [
                     {
                       "@type": "SoftwareSourceCode",
+                      "@id": "https://kushyanth-portfolio.web.app/#instans",
+                      "name": "Instans",
+                      "codeRepository": "https://github.com/kushyanthpothi/instans",
+                      "description": "Instans is an AI-powered interview preparation assistant that combines real-time screen sharing with intelligent chat capabilities. The platform leverages Google's Generative AI to provide personalized interview coaching, technical problem-solving guidance, and resume analysis.",
+                      "programmingLanguage": ["Next.js 14", "React 19", "TypeScript", "TailwindCSS", "Google Generative AI"],
+                      "image": "https://i.ibb.co/QFQjPLyn/Airbrush-image-extender-1.jpg",
+                      "url": "https://kushyanth-portfolio.web.app/projects/instans",
+                      "author": {"@id": "https://kushyanth-portfolio.web.app/#person"},
+                      "dateCreated": "2024-11-01",
+                      "dateModified": "2024-12-25",
+                      "keywords": ["AI Interview Assistant", "Screen Sharing", "Next.js", "Google Generative AI", "TypeScript", "Interview Preparation"],
+                      "mainEntity": {
+                        "@type": "SoftwareApplication",
+                        "name": "Instans",
+                        "description": "Instans is a comprehensive AI-powered interview preparation platform that combines advanced AI capabilities with practical features like screen sharing for live code review and system design whiteboarding.",
+                        "applicationCategory": "WebApplication",
+                        "operatingSystem": "Web Browser",
+                        "url": "https://instans.netlify.app/",
+                        "softwareVersion": "1.0",
+                        "featureList": ["AI-powered Interview Coaching", "Real-time Screen Sharing", "Voice Input", "Dark/Light Theme", "Technical Problem Solving", "Resume Analysis"],
+                        "offers": {
+                          "@type": "Offer",
+                          "price": "0",
+                          "priceCurrency": "USD"
+                        }
+                      }
+                    },
+                    {
+                      "@type": "SoftwareSourceCode",
                       "@id": "https://kushyanth-portfolio.web.app/#event-mania",
                       "name": "Event Mania",
                       "codeRepository": "https://github.com/kushyanthpothi/EventMania",
@@ -689,6 +718,34 @@ export default function RootLayout({ children }) {
                           "priceCurrency": "USD"
                         }
                       }
+                    },
+                    {
+                      "@type": "SoftwareSourceCode",
+                      "@id": "https://kushyanth-portfolio.web.app/#employee-record-system",
+                      "name": "Employee Record System",
+                      "codeRepository": "https://github.com/kushyanthpothi/employeerecordsystem",
+                      "description": "A comprehensive web-based employee management system built with Django, designed to streamline employee data management for organizations with dual interface system and role-based authentication.",
+                      "programmingLanguage": ["Django", "Python", "MySQL", "Bootstrap", "JavaScript"],
+                      "image": "https://i.ibb.co/ffTn15M/Untitled-design-1.png",
+                      "url": "https://kushyanth-portfolio.web.app/projects/employee-record-system",
+                      "author": {"@id": "https://kushyanth-portfolio.web.app/#person"},
+                      "dateCreated": "2023-12-01",
+                      "dateModified": "2024-02-15",
+                      "keywords": ["Employee Management", "Django", "MySQL", "Bootstrap", "Role-based Authentication"],
+                      "mainEntity": {
+                        "@type": "SoftwareApplication",
+                        "name": "Employee Record System",
+                        "description": "A comprehensive Django-based employee management system with dual interface design, featuring admin and employee panels, profile management, education tracking, and role-based authentication.",
+                        "applicationCategory": "WebApplication",
+                        "operatingSystem": "Web Browser",
+                        "softwareVersion": "1.0",
+                        "featureList": ["Employee Management", "Profile Management", "Education Tracking", "Role-based Access", "Responsive Design"],
+                        "offers": {
+                          "@type": "Offer",
+                          "price": "0",
+                          "priceCurrency": "USD"
+                        }
+                      }
                     }
                   ]
                 },
@@ -697,27 +754,37 @@ export default function RootLayout({ children }) {
                   "@id": "https://kushyanth-portfolio.web.app/#projectlist",
                   "name": "Kushyanth Pothineni's Projects",
                   "description": "A collection of software projects developed by Kushyanth Pothineni",
-                  "numberOfItems": 4,
+                  "numberOfItems": 6,
                   "itemListElement": [
                     {
                       "@type": "ListItem",
                       "position": 1,
-                      "item": {"@id": "https://kushyanth-portfolio.web.app/#event-mania"}
+                      "item": {"@id": "https://kushyanth-portfolio.web.app/#instans"}
                     },
                     {
                       "@type": "ListItem",
                       "position": 2,
-                      "item": {"@id": "https://kushyanth-portfolio.web.app/#pro-reader"}
+                      "item": {"@id": "https://kushyanth-portfolio.web.app/#event-mania"}
                     },
                     {
                       "@type": "ListItem",
                       "position": 3,
-                      "item": {"@id": "https://kushyanth-portfolio.web.app/#pin-noter"}
+                      "item": {"@id": "https://kushyanth-portfolio.web.app/#pro-reader"}
                     },
                     {
                       "@type": "ListItem",
                       "position": 4,
+                      "item": {"@id": "https://kushyanth-portfolio.web.app/#pin-noter"}
+                    },
+                    {
+                      "@type": "ListItem",
+                      "position": 5,
                       "item": {"@id": "https://kushyanth-portfolio.web.app/#youtube-downloader"}
+                    },
+                    {
+                      "@type": "ListItem",
+                      "position": 6,
+                      "item": {"@id": "https://kushyanth-portfolio.web.app/#employee-record-system"}
                     }
                   ]
                 },
@@ -758,36 +825,48 @@ export default function RootLayout({ children }) {
                     {
                       "@type": "ListItem",
                       "position": 6,
+                      "name": "Instans Project",
+                      "item": "https://kushyanth-portfolio.web.app/projects/instans"
+                    },
+                    {
+                      "@type": "ListItem",
+                      "position": 7,
                       "name": "Event Mania Project",
                       "item": "https://kushyanth-portfolio.web.app/projects/event-mania"
                     },
                     {
                       "@type": "ListItem",
-                      "position": 7,
+                      "position": 8,
                       "name": "Pro Reader Project",
                       "item": "https://kushyanth-portfolio.web.app/projects/pro-reader"
                     },
                     {
                       "@type": "ListItem",
-                      "position": 8,
+                      "position": 9,
                       "name": "Pin Noter Project",
                       "item": "https://kushyanth-portfolio.web.app/projects/pin-noter"
                     },
                     {
                       "@type": "ListItem",
-                      "position": 9,
+                      "position": 10,
                       "name": "YouTube Downloader Project",
                       "item": "https://kushyanth-portfolio.web.app/projects/youtube-downloader"
                     },
                     {
                       "@type": "ListItem",
-                      "position": 10,
+                      "position": 11,
+                      "name": "Employee Record System Project",
+                      "item": "https://kushyanth-portfolio.web.app/projects/employee-record-system"
+                    },
+                    {
+                      "@type": "ListItem",
+                      "position": 12,
                       "name": "Certifications",
                       "item": "https://kushyanth-portfolio.web.app#certifications"
                     },
                     {
                       "@type": "ListItem",
-                      "position": 11,
+                      "position": 13,
                       "name": "Contact",
                       "item": "https://kushyanth-portfolio.web.app#contact"
                     }
@@ -818,6 +897,17 @@ export default function RootLayout({ children }) {
                   "about": {"@id": "https://kushyanth-portfolio.web.app/#person"},
                   "breadcrumb": {"@id": "https://kushyanth-portfolio.web.app/#breadcrumb"},
                   "mainEntity": {"@id": "https://kushyanth-portfolio.web.app/#projectlist"}
+                },
+                {
+                  "@type": "WebPage",
+                  "@id": "https://kushyanth-portfolio.web.app/projects/instans/#instanspage",
+                  "url": "https://kushyanth-portfolio.web.app/projects/instans",
+                  "name": "Instans Project | Kushyanth Pothineni - Software Developer",
+                  "description": "Instans - An AI-powered interview preparation assistant that combines real-time screen sharing with intelligent chat capabilities using Google's Generative AI.",
+                  "isPartOf": {"@id": "https://kushyanth-portfolio.web.app/#website"},
+                  "about": {"@id": "https://kushyanth-portfolio.web.app/#person"},
+                  "breadcrumb": {"@id": "https://kushyanth-portfolio.web.app/#breadcrumb"},
+                  "mainEntity": {"@id": "https://kushyanth-portfolio.web.app/#instans"}
                 },
                 {
                   "@type": "WebPage",
@@ -862,6 +952,17 @@ export default function RootLayout({ children }) {
                   "about": {"@id": "https://kushyanth-portfolio.web.app/#person"},
                   "breadcrumb": {"@id": "https://kushyanth-portfolio.web.app/#breadcrumb"},
                   "mainEntity": {"@id": "https://kushyanth-portfolio.web.app/#youtube-downloader"}
+                },
+                {
+                  "@type": "WebPage",
+                  "@id": "https://kushyanth-portfolio.web.app/projects/employee-record-system/#employeerecordsystempage",
+                  "url": "https://kushyanth-portfolio.web.app/projects/employee-record-system",
+                  "name": "Employee Record System Project | Kushyanth Pothineni - Software Developer",
+                  "description": "Employee Record System - A comprehensive Django-based employee management system with dual interface design and role-based authentication.",
+                  "isPartOf": {"@id": "https://kushyanth-portfolio.web.app/#website"},
+                  "about": {"@id": "https://kushyanth-portfolio.web.app/#person"},
+                  "breadcrumb": {"@id": "https://kushyanth-portfolio.web.app/#breadcrumb"},
+                  "mainEntity": {"@id": "https://kushyanth-portfolio.web.app/#employee-record-system"}
                 },
                 {
                   "@type": "FAQPage",
@@ -926,6 +1027,11 @@ export default function RootLayout({ children }) {
                       "hasPart": [
                         {
                           "@type": "SiteNavigationElement",
+                          "name": "Instans",
+                          "url": "https://kushyanth-portfolio.web.app/projects/instans"
+                        },
+                        {
+                          "@type": "SiteNavigationElement",
                           "name": "Event Mania",
                           "url": "https://kushyanth-portfolio.web.app/projects/event-mania"
                         },
@@ -943,6 +1049,11 @@ export default function RootLayout({ children }) {
                           "@type": "SiteNavigationElement",
                           "name": "YouTube Downloader",
                           "url": "https://kushyanth-portfolio.web.app/projects/youtube-downloader"
+                        },
+                        {
+                          "@type": "SiteNavigationElement",
+                          "name": "Employee Record System",
+                          "url": "https://kushyanth-portfolio.web.app/projects/employee-record-system"
                         }
                       ]
                     },

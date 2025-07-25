@@ -50,6 +50,14 @@ export default function Projects() {
   const userData = {
     projects: [
       {
+        title: "instans",
+        description:"Instans is an AI-powered interview preparation assistant that combines real-time screen sharing with intelligent chat capabilities. The platform leverages Google's Generative AI to provide personalized interview coaching, technical problem-solving guidance, and resume analysis.",
+        techStack: ["React", "Firebase", "HTML/CSS", "Open Source", "Gemini"],
+        image: "https://i.ibb.co/JRtFvVD2/Airbrush-image-extender-1.jpg",
+        slug: "instans",
+        viewSiteLink: "https://instans.netlify.app/"
+      },
+      {
         title: "Event Mania",
         description: "Event Mania is a one-stop platform designed to simplify event management for colleges and students. Whether you're a student looking for exciting events to join or a college representative organizing events, Event Mania bridges the gap and creates a seamless experience.",
         techStack: ["React", "Firebase", "HTML/CSS", "Authentication"],
