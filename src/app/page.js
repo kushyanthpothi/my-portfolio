@@ -106,6 +106,11 @@ export default function Home() {
   const changeTheme = (color) => {
     setCurrentTheme(color);
     localStorage.setItem('siteTheme', color);
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('themeChanged', {
+      detail: { theme: color }
+    }));
   };
 
   const changeThemeMode = (mode) => {

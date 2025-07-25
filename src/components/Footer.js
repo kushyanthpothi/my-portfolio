@@ -51,10 +51,22 @@ export default function Footer({ showQuickLinks = true }) {
       }
     };
 
+    // Listen for custom theme change events (for same-tab updates)
+    const handleThemeChange = (event) => {
+      if (event.detail?.theme) {
+        setCurrentTheme(event.detail.theme);
+      }
+      if (event.detail?.darkMode !== undefined) {
+        setIsDarkMode(event.detail.darkMode);
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('themeChanged', handleThemeChange);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('themeChanged', handleThemeChange);
       cleanup();
     };
   }, []);
