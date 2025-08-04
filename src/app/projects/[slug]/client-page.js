@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { themeClass, loadDarkMode } from '../../../utils/theme';
-import { useScrollRestore } from '../../../utils/scrollRestore';
 import Footer from '../../../components/Footer';
 
 export default function ProjectClientPage({ project }) {
@@ -22,24 +21,46 @@ export default function ProjectClientPage({ project }) {
     const darkModeEnabled = loadDarkMode();
     setIsDarkMode(darkModeEnabled);
     
-    // Setup scroll position restoration
-    const scrollCleanup = useScrollRestore();
-    
-    // Listen for storage changes to sync dark mode across tabs
-    const handleStorageChange = (e) => {
-      if (e.key === 'darkMode' || e.type === 'storage') {
-        const darkModeEnabled = loadDarkMode();
-        setIsDarkMode(darkModeEnabled);
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      scrollCleanup();
-    };
+    // Force scroll to top when component mounts (for project pages)
+    // Clear any existing scroll restoration first
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('scrollPosition');
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      
+      // Additional scroll to top after a brief delay to ensure it works
+      const scrollTimer = setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }, 50);
+      
+      // Another backup scroll after DOM is fully settled
+      const backupScrollTimer = setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }, 200);
+      
+      // Listen for storage changes to sync dark mode across tabs
+      const handleStorageChange = (e) => {
+        if (e.key === 'darkMode' || e.type === 'storage') {
+          const darkModeEnabled = loadDarkMode();
+          setIsDarkMode(darkModeEnabled);
+        }
+      };
+      
+      window.addEventListener('storage', handleStorageChange);
+      
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        clearTimeout(scrollTimer);
+        clearTimeout(backupScrollTimer);
+      };
+    }
   }, []);
+
+  // Additional useEffect to ensure scroll to top after project data is loaded
+  useEffect(() => {
+    if (project && typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+  }, [project]);
 
   // Use theme utility function with current theme
   const getThemeClass = (type) => {

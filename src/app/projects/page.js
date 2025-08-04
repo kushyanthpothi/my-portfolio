@@ -32,19 +32,38 @@ export default function Projects() {
     const darkModeEnabled = loadDarkMode();
     setIsDarkMode(darkModeEnabled);
     
-    // Listen for storage changes to sync dark mode across tabs
-    const handleStorageChange = (e) => {
-      if (e.key === 'darkMode' || e.type === 'storage') {
-        const darkModeEnabled = loadDarkMode();
-        setIsDarkMode(darkModeEnabled);
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    // Force scroll to top when component mounts (for projects page)
+    // Clear any existing scroll restoration first
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('scrollPosition');
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      
+      // Additional scroll to top after a brief delay to ensure it works
+      const scrollTimer = setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }, 50);
+      
+      // Another backup scroll after DOM is fully settled
+      const backupScrollTimer = setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }, 200);
+      
+      // Listen for storage changes to sync dark mode across tabs
+      const handleStorageChange = (e) => {
+        if (e.key === 'darkMode' || e.type === 'storage') {
+          const darkModeEnabled = loadDarkMode();
+          setIsDarkMode(darkModeEnabled);
+        }
+      };
+      
+      window.addEventListener('storage', handleStorageChange);
+      
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        clearTimeout(scrollTimer);
+        clearTimeout(backupScrollTimer);
+      };
+    }
   }, []);
 
   const userData = {
