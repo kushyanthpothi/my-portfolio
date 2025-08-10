@@ -7,7 +7,7 @@ import Footer from '../components/Footer';
 import ThemeDrawer from '../components/ThemeDrawer';
 import Fireworks from '../components/Fireworks';
 import ExperienceSection from '../components/ExperienceSection';
-import { themeColors, themeClass as utilThemeClass, loadDarkMode, loadThemeMode, setThemeMode, getEffectiveDarkMode, setupSystemThemeListener, THEME_MODES } from '../utils/theme';
+import { themeColors, themeClass as utilThemeClass, loadDarkMode, loadThemeMode, setThemeMode, getEffectiveDarkMode, setupSystemThemeListener, THEME_MODES, loadBackground, setBackground } from '../utils/theme';
 
 import emailjs from '@emailjs/browser';
 import Head from 'next/head';
@@ -39,6 +39,7 @@ export default function Home() {
   const [showThemeDrawer, setShowThemeDrawer] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [themeMode, setThemeModeState] = useState(THEME_MODES.SYSTEM);
+  const [currentBackground, setCurrentBackground] = useState('beams');
 
 
   // Define navItems early to avoid initialization order issues
@@ -85,6 +86,10 @@ export default function Home() {
       setCurrentTheme(savedTheme);
     }
 
+    // Load background setting
+    const savedBackground = loadBackground();
+    setCurrentBackground(savedBackground);
+
     // Load theme mode and apply dark mode using utility functions
     const savedThemeMode = loadThemeMode();
     setThemeModeState(savedThemeMode);
@@ -98,8 +103,16 @@ export default function Home() {
       setThemeModeState(mode);
     });
 
+    // Listen for background changes
+    const handleBackgroundChange = (event) => {
+      setCurrentBackground(event.detail.background);
+    };
+
+    window.addEventListener('backgroundChanged', handleBackgroundChange);
+
     return () => {
       cleanup();
+      window.removeEventListener('backgroundChanged', handleBackgroundChange);
     };
   }, []);
 
@@ -122,6 +135,11 @@ export default function Home() {
     setTimeout(() => {
       window.dispatchEvent(new Event('storage'));
     }, 0);
+  };
+
+  const changeBackground = (background) => {
+    setBackground(background);
+    setCurrentBackground(background);
   };
 
   // Legacy function for backward compatibility
@@ -554,38 +572,13 @@ export default function Home() {
           </nav>
 
           {/* Hero Section */}
-          <section id="home" className="min-h-screen flex items-center relative overflow-hidden">
-            {/* Theme-colored moving gradient balls */}
-            <div
-              className="hero-gradient-ball-1"
-              style={{
-                background: `radial-gradient(circle, ${currentTheme === 'blue' ? 'rgb(37, 99, 235)' :
-                  currentTheme === 'red' ? 'rgb(220, 38, 38)' :
-                    currentTheme === 'orange' ? 'rgb(234, 88, 12)' :
-                      currentTheme === 'pink' ? 'rgb(219, 39, 119)' :
-                        currentTheme === 'purple' ? 'rgb(147, 51, 234)' :
-                          currentTheme === 'emerald' ? 'rgb(5, 150, 105)' :
-                            'rgb(37, 99, 235)'
-                  } 15%, transparent 70%)`
-              }}
-            />
-
-            <div
-              className="hero-gradient-ball-2"
-              style={{
-                background: `radial-gradient(circle, ${currentTheme === 'blue' ? 'rgba(59, 130, 246, 0.8)' :
-                  currentTheme === 'red' ? 'rgba(239, 68, 68, 0.8)' :
-                    currentTheme === 'orange' ? 'rgba(249, 115, 22, 0.8)' :
-                      currentTheme === 'pink' ? 'rgba(236, 72, 153, 0.8)' :
-                        currentTheme === 'purple' ? 'rgba(168, 85, 247, 0.8)' :
-                          currentTheme === 'emerald' ? 'rgba(16, 185, 129, 0.8)' :
-                            'rgba(59, 130, 246, 0.8)'
-                  } 15%, transparent 70%)`
-              }}
-            />
-
+          <section id="home" className="min-h-screen flex items-center relative overflow-hidden bg-black">
             {/* Fireworks Animation */}
-            <Fireworks currentTheme={currentTheme} isDarkMode={isDarkMode} />
+            <Fireworks 
+              currentTheme={currentTheme} 
+              isDarkMode={isDarkMode} 
+              currentBackground={currentBackground}
+            />
 
             {/* Hero content container with backdrop blur */}
             <div className="w-full px-4 sm:px-10 lg:px-12 relative z-10">
@@ -1420,6 +1413,8 @@ export default function Home() {
             onThemeChange={changeTheme}
             themeMode={themeMode}
             onThemeModeChange={changeThemeMode}
+            currentBackground={currentBackground}
+            onBackgroundChange={changeBackground}
           />
 
           {/* Clean closing tags */}

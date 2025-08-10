@@ -1,10 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Silk from '../Backgrounds/Silk/Silk'; // Import your silk component
+import Silk from '../Backgrounds/Silk/Silk';
 import Beams from '../Backgrounds/Beams/Beams';
+import Dither from '../Backgrounds/Dither/Dither';
 
-export default function Fireworks({ currentTheme = 'blue', isDarkMode = false }) {
+export default function Fireworks({ 
+  currentTheme = 'blue', 
+  isDarkMode = false, 
+  currentBackground = 'beams' 
+}) {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const fireworksRef = useRef([]);
@@ -223,16 +228,32 @@ export default function Fireworks({ currentTheme = 'blue', isDarkMode = false })
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [currentTheme, isDarkMode, isBirthday]);
+  }, [currentTheme, isDarkMode, isBirthday, currentBackground]);
 
   return (
     <div className="fixed inset-0 z-0">
-      {/* Silk background component */}
+      {/* Background components - only render if not birthday */}
       {!isBirthday && (
-        <Beams 
-          currentTheme={currentTheme} 
-          isDarkMode={isDarkMode} 
-        />
+        <>
+          {currentBackground === 'beams' && (
+            <Beams 
+              currentTheme={currentTheme} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+          {currentBackground === 'dither' && (
+            <Dither 
+              currentTheme={currentTheme} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+          {currentBackground === 'silk' && (
+            <Silk 
+              currentTheme={currentTheme} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+        </>
       )}
       
       {/* Canvas for fireworks */}

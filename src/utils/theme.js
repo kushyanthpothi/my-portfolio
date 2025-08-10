@@ -33,6 +33,55 @@ export const THEME_MODES = {
   SYSTEM: 'system'
 };
 
+// Background options
+export const BACKGROUND_OPTIONS = {
+  BEAMS: 'beams',
+  DITHER: 'dither',
+  SILK: 'silk'
+};
+
+// Background utility functions
+export const loadBackground = () => {
+  if (typeof window === 'undefined') return BACKGROUND_OPTIONS.BEAMS;
+  
+  const savedBackground = localStorage.getItem('selectedBackground');
+  
+  // Migration: Replace 'galaxy' with 'dither' for existing users
+  if (savedBackground === 'galaxy') {
+    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.DITHER);
+    return BACKGROUND_OPTIONS.DITHER;
+  }
+  
+  if (savedBackground && Object.values(BACKGROUND_OPTIONS).includes(savedBackground)) {
+    return savedBackground;
+  } else {
+    // Default to beams
+    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.BEAMS);
+    return BACKGROUND_OPTIONS.BEAMS;
+  }
+};
+
+export const setBackground = (background) => {
+  if (typeof window === 'undefined') return;
+  
+  if (!Object.values(BACKGROUND_OPTIONS).includes(background)) {
+    background = BACKGROUND_OPTIONS.BEAMS;
+  }
+  
+  localStorage.setItem('selectedBackground', background);
+  
+  // Dispatch custom event to notify components
+  window.dispatchEvent(new CustomEvent('backgroundChanged', {
+    detail: { background }
+  }));
+};
+
+// Check if background switching should be disabled (June 2nd)
+export const isBackgroundSwitchDisabled = () => {
+  const today = new Date();
+  return today.getMonth() === 5 && today.getDate() === 2; // Month is 0-indexed (5 = June)
+};
+
 // Dark mode utility functions with system theme support
 export const getSystemTheme = () => {
   if (typeof window === 'undefined') return false;

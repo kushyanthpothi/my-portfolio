@@ -136,9 +136,10 @@ const Silk = ({
   // Update color when currentTheme or isDarkMode changes
   useEffect(() => {
     if (meshRef.current) {
-      meshRef.current.material.uniforms.uColor.value = new Color(...hexToNormalizedRGB(colors[0]));
+      const updatedColors = themeColors[currentTheme] || themeColors.blue;
+      meshRef.current.material.uniforms.uColor.value = new Color(...hexToNormalizedRGB(updatedColors[0]));
     }
-  }, [currentTheme, isDarkMode]);
+  }, [currentTheme, isDarkMode, themeColors]);
 
   return (
     <Canvas dpr={[1, 2]} frameloop="always">

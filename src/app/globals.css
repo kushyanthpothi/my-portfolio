@@ -5,15 +5,6 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
-  --ball-size-1: 450px;
-  --ball-size-2: 380px;
-  --ball-speed-1: 12s;  /* Adjusted for smoother rectangle path */
-  --ball-speed-2: 15s;  /* Slightly different speed for second ball */
-  --ball-opacity: 0.35; /* Reduced opacity for light mode */
-  --rect-top: 10%;      /* Top edge of rectangle */
-  --rect-right: 80%;    /* Right edge of rectangle */
-  --rect-bottom: 80%;   /* Bottom edge of rectangle */  
-  --rect-left: 20%;     /* Left edge of rectangle */
 }
 
 /* Remove system theme detection - let JavaScript handle it */
@@ -37,20 +28,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Moving Ball Gradient Animation - First Ball */
-.hero-gradient-ball-1 {
-  position: absolute;
-  width: var(--ball-size-1);
-  height: var(--ball-size-1);
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: var(--ball-opacity);
-  pointer-events: none;
-  animation: moveAlongRectangle var(--ball-speed-1) linear infinite;
-  will-change: transform, top, left;
-  z-index: 0;
-}
-
 /* Ensure the nav container is positioned relatively to contain the absolute selector */
 nav .relative {
   position: relative;
@@ -66,75 +43,6 @@ nav .absolute {
 /* Smooth transition for button hover and active states */
 nav button {
   transition: color 0.3s ease-in-out;
-}
-
-/* Moving Ball Gradient Animation - Second Ball */
-.hero-gradient-ball-2 {
-  position: absolute;
-  width: var(--ball-size-2);
-  height: var(--ball-size-2);
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: var(--ball-opacity);
-  pointer-events: none;
-  animation: moveAlongRectangle var(--ball-speed-2) linear infinite reverse;
-  will-change: transform, top, left;
-  z-index: 0;
-}
-
-/* Rectangular path animation with consistent speed along edges */
-@keyframes moveAlongRectangle {
-  /* Start at top-left corner */
-  0% {
-    top: var(--rect-top);
-    left: var(--rect-left);
-    transform: scale(1);
-  }
-  
-  /* Move right along top edge */
-  25% {
-    top: var(--rect-top);
-    left: var(--rect-right);
-    transform: scale(0.95);
-  }
-  
-  /* Move down along right edge */
-  50% {
-    top: var(--rect-bottom);
-    left: var(--rect-right);
-    transform: scale(1.05);
-  }
-  
-  /* Move left along bottom edge */
-  75% {
-    top: var(--rect-bottom);
-    left: var(--rect-left);
-    transform: scale(0.95);
-  }
-  
-  /* Return to top-left to complete the loop */
-  100% {
-    top: var(--rect-top);
-    left: var(--rect-left);
-    transform: scale(1);
-  }
-}
-
-/* Media query for smaller devices */
-@media (max-width: 768px) {
-  :root {
-    --ball-size-1: 250px;
-    --ball-size-2: 200px;
-    --ball-speed-1: 10s;  /* Faster on mobile */
-    --ball-speed-2: 12s;  /* Faster on mobile */
-    --rect-top: 15%;      /* Adjusted rectangle for mobile */
-    --rect-right: 75%;
-    --rect-bottom: 75%;
-    --rect-left: 25%;
-  }
-  .hero-gradient-ball-1, .hero-gradient-ball-2 {
-    filter: blur(70px);
-  }
 }
 
 /* Add these styles for the navbar animation */
