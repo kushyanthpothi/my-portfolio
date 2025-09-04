@@ -6,7 +6,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
   return (
     <section
       id="experience"
-      className="py-16 md:py-24 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
+      className="py-16 md:py-24 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-black dark:to-black"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -35,7 +35,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
               Professional Journey
             </span>
           </div>
-          <h2 className={`text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-gray-900 to-${currentTheme}-600 dark:from-white dark:to-${currentTheme}-400 bg-clip-text text-transparent`}>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white">
             My Experience
           </h2>
           <p className="mt-4 max-w-3xl mx-auto text-base md:text-lg text-gray-600 dark:text-gray-300 px-4">
@@ -46,26 +46,23 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
         {/* Timeline */}
         <div className="relative">
           {/* Timeline Line - Hidden on mobile */}
-          <div className={`hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-${currentTheme}-300 to-${currentTheme}-500 dark:from-${currentTheme}-600 dark:to-${currentTheme}-800 rounded-full z-0`} />
+          <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-black dark:bg-white rounded-full z-0" />
 
           {/* Timeline Items */}
           <div className="space-y-8 md:space-y-20">
             {/* NinjaCart Full-time Role */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, type: 'spring', stiffness: 80, damping: 15 }}
-              viewport={{ once: true, amount: 0.3 }}
-              className="relative flex items-center"
-            >
+            <div className="relative flex items-center">
               {/* Timeline Dot - Hidden on mobile */}
-              <div className={`hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-7 h-7 bg-gradient-to-br from-${currentTheme}-300 to-${currentTheme}-500 dark:from-${currentTheme}-600 dark:to-${currentTheme}-800 rounded-full border-3 border-white dark:border-gray-900 shadow-md z-10 items-center justify-center`}>
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-7 h-7 bg-black dark:bg-white rounded-full border-3 border-white dark:border-gray-900 shadow-md z-10 items-center justify-center">
+                <div className="w-3.5 h-3.5 bg-white dark:bg-black rounded-full animate-pulse" />
               </div>
+
+              {/* Connecting Line - Hidden on mobile */}
+              <div className="hidden md:block absolute left-1/2 transform -translate-x-20 w-16 h-0.5 bg-black dark:bg-white z-0"></div>
 
               {/* Content Card */}
               <div className="w-full md:w-5/12 md:pr-6">
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/50 dark:border-gray-700/50">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
                       <Image
@@ -146,24 +143,21 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* NinjaCart Internship */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, type: 'spring', stiffness: 80, damping: 15 }}
-              viewport={{ once: true, amount: 0.3 }}
-              className="relative flex items-center md:justify-end"
-            >
+            <div className="relative flex items-center md:justify-end">
               {/* Timeline Dot - Hidden on mobile */}
-              <div className={`hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-7 h-7 bg-gradient-to-br from-${currentTheme}-300 to-${currentTheme}-500 dark:from-${currentTheme}-600 dark:to-${currentTheme}-800 rounded-full border-3 border-white dark:border-gray-900 shadow-md z-10 items-center justify-center`}>
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-7 h-7 bg-black dark:bg-white rounded-full border-3 border-white dark:border-gray-900 shadow-md z-10 items-center justify-center">
+                <div className="w-3.5 h-3.5 bg-white dark:bg-black rounded-full animate-pulse" />
               </div>
+
+              {/* Connecting Line - Hidden on mobile */}
+              <div className="hidden md:block absolute left-1/2 transform translate-x-3.5 w-16 h-0.5 bg-black dark:bg-white z-0"></div>
 
               {/* Content Card */}
               <div className="w-full md:w-5/12 md:pl-6">
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/50 dark:border-gray-700/50">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
                       <Image
@@ -244,24 +238,21 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Blackbucks Experience */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, type: 'spring', stiffness: 80, damping: 15 }}
-              viewport={{ once: true, amount: 0.3 }}
-              className="relative flex items-center"
-            >
+            <div className="relative flex items-center">
               {/* Timeline Dot - Hidden on mobile */}
-              <div className={`hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-7 h-7 bg-gradient-to-br from-${currentTheme}-300 to-${currentTheme}-500 dark:from-${currentTheme}-600 dark:to-${currentTheme}-800 rounded-full border-3 border-white dark:border-gray-900 shadow-md z-10 items-center justify-center`}>
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-7 h-7 bg-black dark:bg-white rounded-full border-3 border-white dark:border-gray-900 shadow-md z-10 items-center justify-center">
+                <div className="w-3.5 h-3.5 bg-white dark:bg-black rounded-full animate-pulse" />
               </div>
+
+              {/* Connecting Line - Hidden on mobile */}
+              <div className="hidden md:block absolute left-1/2 transform -translate-x-20 w-16 h-0.5 bg-black dark:bg-white z-0"></div>
 
               {/* Content Card */}
               <div className="w-full md:w-5/12 md:pr-6">
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/50 dark:border-gray-700/50">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
                       <Image
@@ -342,7 +333,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

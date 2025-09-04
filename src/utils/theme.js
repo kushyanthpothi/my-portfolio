@@ -37,7 +37,8 @@ export const THEME_MODES = {
 export const BACKGROUND_OPTIONS = {
   BEAMS: 'beams',
   DITHER: 'dither',
-  SILK: 'silk'
+  SILK: 'silk',
+  PIXELBLAST: 'pixelblast'
 };
 
 // Background utility functions
@@ -55,9 +56,9 @@ export const loadBackground = () => {
   if (savedBackground && Object.values(BACKGROUND_OPTIONS).includes(savedBackground)) {
     return savedBackground;
   } else {
-    // Default to beams
-    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.BEAMS);
-    return BACKGROUND_OPTIONS.BEAMS;
+    // Default to pixelblast
+    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.PIXELBLAST);
+    return BACKGROUND_OPTIONS.PIXELBLAST;
   }
 };
 
@@ -65,7 +66,7 @@ export const setBackground = (background) => {
   if (typeof window === 'undefined') return;
   
   if (!Object.values(BACKGROUND_OPTIONS).includes(background)) {
-    background = BACKGROUND_OPTIONS.BEAMS;
+    background = BACKGROUND_OPTIONS.PIXELBLAST;
   }
   
   localStorage.setItem('selectedBackground', background);

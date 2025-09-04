@@ -210,13 +210,15 @@ export default function ThemeDrawer({
                   const backgroundNames = {
                     beams: 'Beams',
                     dither: 'Dither',
-                    silk: 'Silk'
+                    silk: 'Silk',
+                    pixelblast: 'PixelBlast'
                   };
                   
                   const backgroundDescriptions = {
                     beams: 'Animated light beams',
                     dither: 'Retro dithered waves',
-                    silk: 'Flowing silk patterns'
+                    silk: 'Flowing silk patterns',
+                    pixelblast: 'Interactive pixel effects'
                   };
 
                   const isDisabled = isBackgroundSwitchDisabled();
@@ -260,6 +262,18 @@ export default function ThemeDrawer({
                             <div className="absolute inset-1 bg-gradient-to-tr from-purple-500/20 via-blue-400/20 to-purple-500/20 rounded-sm"></div>
                             <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-blue-400/40 to-transparent"></div>
                             <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-purple-400/40 to-transparent"></div>
+                          </div>
+                        )}
+                        {value === 'pixelblast' && (
+                          <div className="absolute inset-0 bg-gray-900">
+                            <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900">
+                              {/* Pixelated pattern effect */}
+                              <div className="absolute top-1 left-1 w-2 h-2 bg-blue-400"></div>
+                              <div className="absolute top-1 right-2 w-2 h-2 bg-blue-300"></div>
+                              <div className="absolute top-3 left-2 w-2 h-2 bg-blue-500"></div>
+                              <div className="absolute bottom-2 left-1 w-2 h-2 bg-blue-400"></div>
+                              <div className="absolute bottom-1 right-1 w-2 h-2 bg-blue-300"></div>
+                            </div>
                           </div>
                         )}
                       </div>

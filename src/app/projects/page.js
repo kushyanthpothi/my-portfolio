@@ -14,7 +14,7 @@ const MotionDiv = dynamic(
 );
 
 export default function Projects() {
-  const [currentTheme, setCurrentTheme] = useState('blue');
+  const [currentTheme, setCurrentTheme] = useState('orange');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const getThemeClass = (type) => {

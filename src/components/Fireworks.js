@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Silk from '../Backgrounds/Silk/Silk';
 import Beams from '../Backgrounds/Beams/Beams';
 import Dither from '../Backgrounds/Dither/Dither';
+import PixelBlast from '../Backgrounds/PixelBlast/PixelBlast';
 
 export default function Fireworks({ 
   currentTheme = 'blue', 
@@ -249,6 +250,12 @@ export default function Fireworks({
           )}
           {currentBackground === 'silk' && (
             <Silk 
+              currentTheme={currentTheme} 
+              isDarkMode={isDarkMode} 
+            />
+          )}
+          {currentBackground === 'pixelblast' && (
+            <PixelBlast 
               currentTheme={currentTheme} 
               isDarkMode={isDarkMode} 
             />

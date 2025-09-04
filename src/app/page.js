@@ -34,7 +34,7 @@ export default function Home() {
   const [touchedCertId, setTouchedCertId] = useState(null);
   const [showAllCerts, setShowAllCerts] = useState(false);
 
-  const [currentTheme, setCurrentTheme] = useState('blue');
+  const [currentTheme, setCurrentTheme] = useState('orange');
   const [showThemeOptions, setShowThemeOptions] = useState(false);
   const [showThemeDrawer, setShowThemeDrawer] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -474,7 +474,7 @@ export default function Home() {
       <main className="relative w-full min-h-screen overflow-x-hidden">
         <div key={`theme-${isDarkMode}`} className={`w-full min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-white'} transition-colors duration-300`}>
           {/* Navigation */}
-          <nav className={`fixed w-full z-[100] transition-all duration-300 ${scrolled && activeSection !== 'home' ? 'bg-white/30 dark:bg-gray-800/30 backdrop-blur-md' : 'bg-transparent'}`}>
+          <nav className={`fixed w-full z-[100] transition-all duration-300 ${scrolled && activeSection !== 'home' ? 'bg-white/30 dark:bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
             <div className="w-full px-4 sm:px-10 lg:px-12">
               <div className="flex justify-between items-center h-20">
                 <div className="flex items-center overflow-hidden">
@@ -553,7 +553,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="md:hidden bg-white/30 dark:bg-gray-800/30 backdrop-blur-md shadow-lg"
+                className="md:hidden bg-white/30 dark:bg-black/30 backdrop-blur-md shadow-lg"
               >
                 <div className="px-2 pt-2 pb-3 space-y-1">
                   {navItems.map((item) => (
@@ -763,7 +763,7 @@ export default function Home() {
           </section>
 
           {/* About Section */}
-          <section id="about" className="pt-20 py-20 bg-white dark:bg-gray-800">
+          <section id="about" className="pt-20 py-20 bg-white dark:bg-black">
             <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12">
               {/* About Me Section with Photo and Content */}
               <MotionDiv
@@ -842,7 +842,7 @@ export default function Home() {
                 <h3 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white text-center md:text-left">My <span className={themeClass('text')}>Education</span></h3>
                 <div className={`h-1 w-20 ${themeClass('bg')} mb-6 mx-auto md:mx-0`}></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
                     <div className="mb-4">
                       <i className={`fas fa-university text-3xl ${themeClass('text')}`}></i>
                     </div>
@@ -858,7 +858,7 @@ export default function Home() {
                       <p className="text-gray-500 dark:text-gray-400 text-sm">2021 - 2025</p>
                     </div>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
                     <div className="mb-4">
                       <i className={`fas fa-school text-3xl ${themeClass('text')}`}></i>
                     </div>
@@ -874,7 +874,7 @@ export default function Home() {
                       <p className="text-gray-500 dark:text-gray-400 text-sm">2019 - 2021</p>
                     </div>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-lg transition-shadow duration-300 flex flex-col h-full">
                     <div className="mb-4">
                       <i className={`fas fa-graduation-cap text-3xl ${themeClass('text')}`}></i>
                     </div>
@@ -985,7 +985,7 @@ export default function Home() {
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
                       viewport={{ once: true, amount: 0.2 }}
-                      className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
+                      className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
                     >
                       <div className="flex items-center mb-6">
                         <div className={`p-3 rounded-lg ${themeClass('bg')} bg-opacity-10 mr-4 text-gray-900 dark:text-white`}>
@@ -1007,7 +1007,7 @@ export default function Home() {
                               href={skill.wiki}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
+                              className="flex items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
                             >
                               <div className="w-8 h-8 transition-transform duration-300 group-hover:scale-110">
                                 <Image
@@ -1035,7 +1035,7 @@ export default function Home() {
 
 
           {/* Projects Section */}
-          <section id="projects" className="pt-20 py-20 bg-white dark:bg-gray-800">
+          <section id="projects" className="pt-20 py-20 bg-white dark:bg-black">
             <div className="w-full px-4 sm:px-10 lg:px-12">
               <MotionDiv
                 initial={{ opacity: 0, y: 20 }}
@@ -1059,14 +1059,14 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.2 }}
                     viewport={{ once: true, amount: 0.2 }}
-                    className="bg-gray-50 dark:bg-gray-700 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+                    className="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
                     <div className="relative h-48 md:h-64">
                       <Image
                         src={project.image}
                         alt={project.title}
                         layout="fill"
-                        className="object-contain bg-gray-50 dark:bg-gray-700"
+                        className="object-contain bg-gray-50 dark:bg-gray-900"
                       />
                     </div>
                     <div className="p-4 md:p-6">
@@ -1097,7 +1097,7 @@ export default function Home() {
                             href={project.viewSiteLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-4 py-2 bg-gray-200/50 dark:bg-gray-600/30 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300/50 dark:hover:bg-gray-500/40 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400/50 focus:ring-offset-2"
+                            className="inline-flex items-center px-4 py-2 bg-gray-200/50 dark:bg-gray-800/30 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300/50 dark:hover:bg-gray-700/40 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400/50 focus:ring-offset-2"
                           >
                             <span>Live Demo</span>
                             <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1135,7 +1135,7 @@ export default function Home() {
           </section>
 
           {/* Certifications Section */}
-          <section id="certifications" className="pt-20 py-20 bg-white dark:bg-gray-800">
+          <section id="certifications" className="pt-20 py-20 bg-white dark:bg-black">
             <div className="w-full px-4 sm:px-10 lg:px-12">
               <MotionDiv
                 initial={{ opacity: 0, y: 20 }}
@@ -1226,7 +1226,7 @@ export default function Home() {
           </section>
 
           {/* Contact Section */}
-          <section id="contact" className="pt-20 py-20 bg-white dark:bg-gray-800">
+          <section id="contact" className="pt-20 py-20 bg-white dark:bg-black">
             <div className="w-full px-4 sm:px-10 lg:px-12">
               <MotionDiv
                 initial={{ opacity: 0, y: 20 }}
@@ -1319,7 +1319,7 @@ export default function Home() {
                   transition={{ duration: 0.5 }}
                   viewport={{ once: true, amount: 0.2 }}
                 >
-                  <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+                  <form onSubmit={handleSubmit} className="bg-white dark:bg-black p-4 md:p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
                     <div className="space-y-4 md:space-y-6">
                       <div>
                         <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -1332,7 +1332,7 @@ export default function Home() {
                           value={formData.name}
                           onChange={handleInputChange}
                           required
-                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200`}
+                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200`}
                           placeholder="John Doe"
                         />
                       </div>
@@ -1348,7 +1348,7 @@ export default function Home() {
                           value={formData.email}
                           onChange={handleInputChange}
                           required
-                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200`}
+                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200`}
                           placeholder="you@example.com"
                         />
                       </div>
@@ -1364,7 +1364,7 @@ export default function Home() {
                           onChange={handleInputChange}
                           required
                           rows="4"
-                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200 resize-none`}
+                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200 resize-none`}
                           placeholder="Your message here..."
                         ></textarea>
                       </div>
