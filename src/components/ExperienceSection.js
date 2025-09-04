@@ -6,7 +6,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
   return (
     <section
       id="experience"
-      className="py-16 md:py-24 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-black dark:to-black"
+      className="py-16 md:py-24 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -35,7 +35,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
               Professional Journey
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white">
             My Experience
           </h2>
           <p className="mt-4 max-w-3xl mx-auto text-base md:text-lg text-gray-600 dark:text-gray-300 px-4">
@@ -62,7 +62,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
 
               {/* Content Card */}
               <div className="w-full md:w-5/12 md:pr-6">
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
                       <Image
@@ -157,7 +157,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
 
               {/* Content Card */}
               <div className="w-full md:w-5/12 md:pl-6">
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
                       <Image
@@ -252,7 +252,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
 
               {/* Content Card */}
               <div className="w-full md:w-5/12 md:pr-6">
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
                       <Image

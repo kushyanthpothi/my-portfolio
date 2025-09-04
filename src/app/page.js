@@ -1135,7 +1135,7 @@ export default function Home() {
           </section>
 
           {/* Certifications Section */}
-          <section id="certifications" className="pt-20 py-20 bg-white dark:bg-black">
+          <section id="certifications" className="pt-20 py-20 bg-white dark:bg-gray-900">
             <div className="w-full px-4 sm:px-10 lg:px-12">
               <MotionDiv
                 initial={{ opacity: 0, y: 20 }}

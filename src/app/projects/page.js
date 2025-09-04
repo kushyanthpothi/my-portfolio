@@ -117,9 +117,9 @@ export default function Projects() {
   };
 
   return (
-    <main className="min-h-screen pt-20 bg-white dark:bg-gray-900">
+    <main className="min-h-screen pt-20 bg-white dark:bg-black">
       {/* Navigation */}
-      <nav className="fixed w-full top-0 z-[100] bg-white/90 dark:bg-gray-900/90 shadow-md backdrop-blur-sm">
+      <nav className="fixed w-full top-0 z-[100] bg-white/90 dark:bg-black/90 shadow-md backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 md:h-20">
             <div className="flex items-center space-x-4">
@@ -139,7 +139,7 @@ export default function Projects() {
           </div>
         </div>
       </nav>      {/* Projects Header */}
-      <section className="py-8 md:py-16 bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
+      <section className="py-8 md:py-16 bg-white dark:bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <MotionDiv
             initial={{ opacity: 0, y: 20 }}
@@ -149,13 +149,13 @@ export default function Projects() {
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">All <span className={getThemeClass('text')}>Projects</span></h1>
             <div className={`h-1 w-20 ${getThemeClass('bg')} mx-auto mb-6`}></div>
-            <p className="max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-300">
+            <p className="max-w-2xl mx-auto text-lg text-gray-600 dark:text-white">
               Explore all of my projects. Each one was built to solve real-world problems and showcase different technologies.
             </p>
           </MotionDiv>
         </div>
       </section>      {/* Projects Grid */}
-      <section className="py-12 md:py-20 bg-white dark:bg-gray-800">
+      <section className="py-12 md:py-20 bg-white dark:bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {userData.projects.map((project, index) => (
@@ -165,19 +165,19 @@ export default function Projects() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.2 }}
                 viewport={{ once: true, amount: 0.2 }}
-                className="bg-gray-50 dark:bg-gray-700 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+                className="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
               >
                 <div className="relative h-48 md:h-64">
                   <Image
                     src={project.image}
                     alt={project.title}
                     layout="fill"
-                    className="object-contain bg-gray-50 dark:bg-gray-700"
+                    className="object-contain bg-gray-50 dark:bg-gray-900"
                   />
                 </div>
                 <div className="p-4 md:p-6">
                   <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{project.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 h-[72px]">{project.description}</p>
+                  <p className="text-gray-600 dark:text-white mb-4 line-clamp-3 h-[72px]">{project.description}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {project.techStack.map((tech, i) => (
                       <span
@@ -203,7 +203,7 @@ export default function Projects() {
                         href={project.viewSiteLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-gray-200/50 dark:bg-gray-600/30 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300/50 dark:hover:bg-gray-500/40 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400/50 focus:ring-offset-2"
+                        className="inline-flex items-center px-4 py-2 bg-gray-200/50 dark:bg-gray-800/30 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300/50 dark:hover:bg-gray-700/40 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400/50 focus:ring-offset-2"
                       >
                         <span>Live Demo</span>
                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

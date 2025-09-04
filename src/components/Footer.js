@@ -44,7 +44,7 @@ export default function Footer({ showQuickLinks = true }) {
     const handleStorageChange = () => {
       const darkMode = loadDarkMode();
       setIsDarkMode(darkMode);
-      
+
       const newTheme = localStorage.getItem('siteTheme');
       if (newTheme) {
         setCurrentTheme(newTheme);
@@ -63,7 +63,7 @@ export default function Footer({ showQuickLinks = true }) {
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('themeChanged', handleThemeChange);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('themeChanged', handleThemeChange);
@@ -93,13 +93,13 @@ export default function Footer({ showQuickLinks = true }) {
 
   return (
     <footer className="relative z-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white py-12 transition-colors">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-auto mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pl-[50px]">
           <div>
             <h3 className="text-xl font-bold mb-4">Kushyanth Pothineni</h3>
-            <p className="text-gray-600 dark:text-gray-400">Building digital experiences with code and creativity.</p>
+            <p className="text-gray-600 dark:text-white">Building Connections across the society</p>
           </div>
-          
+
           {showQuickLinks && (
             <div>
               <h3 className="text-xl font-bold mb-4">Quick Links</h3>
@@ -108,7 +108,7 @@ export default function Footer({ showQuickLinks = true }) {
                   <li key={item.name}>
                     <button
                       onClick={() => scrollToSection(item.section)}
-                      className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                      className="text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 transition-colors"
                     >
                       {item.name}
                     </button>
@@ -117,7 +117,7 @@ export default function Footer({ showQuickLinks = true }) {
               </ul>
             </div>
           )}
-          
+
           <div className={showQuickLinks ? '' : 'md:col-start-2'}>
             <h3 className="text-xl font-bold mb-4">Connect</h3>
             <div className="flex space-x-4">
@@ -142,7 +142,7 @@ export default function Footer({ showQuickLinks = true }) {
             </div>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-gray-600 dark:text-gray-400">
+        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-600 text-center text-gray-600 dark:text-white">
           <p>© {new Date().getFullYear()} Kushyanth. All rights reserved.</p>
         </div>
       </div>

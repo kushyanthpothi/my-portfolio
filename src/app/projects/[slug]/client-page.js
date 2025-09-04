@@ -68,9 +68,9 @@ export default function ProjectClientPage({ project }) {
   };
 
   return (
-    <main className="min-h-screen pt-20 bg-white dark:bg-gray-900">
+    <main className="min-h-screen pt-20 bg-white dark:bg-black">
       {/* Navigation Bar */}
-      <nav className="fixed w-full top-0 z-[100] bg-white/90 dark:bg-gray-900/90 shadow-md backdrop-blur-sm">
+      <nav className="fixed w-full top-0 z-[100] bg-white/90 dark:bg-black/90 shadow-md backdrop-blur-sm">
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 md:h-20">
             <div className="flex items-center space-x-4">
@@ -90,12 +90,15 @@ export default function ProjectClientPage({ project }) {
           </div>
         </div>
       </nav>      {/* Project Header Section */}
-      <section className="py-8 md:py-16 bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
+      <section className="py-8 md:py-16 bg-white dark:bg-black">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-full mx-auto">
             <div className="flex flex-col md:flex-row md:items-start md:space-x-8 lg:space-x-12">
-              <div className="flex-1 mb-8 md:mb-0">
-                <h1 className="text-2xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">{project.title}</h1>
+              <div className="flex-1 mt-8 md:mb-0 pr-[40px] -ml-[50px]">
+                <h1 className="text-2xl md:text-4xl font-bold mb-2 text-gray-900 dark:text-white">{project.title}</h1>
+                {project.tagline && (
+                  <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 font-medium mb-4">{project.tagline}</p>
+                )}
                 <div className={`h-1 w-20 mb-6 ${getThemeClass('bg')}`}></div>
                 <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
                   {project.description}
@@ -146,9 +149,10 @@ export default function ProjectClientPage({ project }) {
       </section>
 
       {/* Project Details Section */}
-      <section className="py-8 md:py-10 bg-white dark:bg-gray-800">
+      <section className="py-8 md:py-10 bg-white dark:bg-black">
         <div className="max-w-full mx-auto px-4 sm:px-14 lg:px-16">
-          <div>
+          {/* Project Overview */}
+          <div className="mb-12">
             <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Project Overview</h2>
             <div className="space-y-4 text-gray-600 dark:text-gray-300">
               {project.overview.map((paragraph, index) => (
@@ -159,12 +163,41 @@ export default function ProjectClientPage({ project }) {
             </div>
           </div>
 
-          <div className="mt-8 md:mt-12 mb-10 md:mb-8">
-            <h2 className="text-xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white">Tools & Technologies</h2>
-            <div className="flex flex-wrap gap-2 md:gap-3">
+          {/* Problem Statement */}
+          {project.problemStatement && (
+            <div className="mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Problem Statement</h2>
+              <div className="space-y-4 text-gray-600 dark:text-gray-300">
+                {project.problemStatement.map((paragraph, index) => (
+                  <p key={index} className="text-lg leading-relaxed">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Solution / What You Built */}
+          {project.solution && (
+            <div className="mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Solution / What You Built</h2>
+              <div className="space-y-4 text-gray-600 dark:text-gray-300">
+                {project.solution.map((paragraph, index) => (
+                  <p key={index} className="text-lg leading-relaxed">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tech Stack */}
+          <div className="mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Tech Stack</h2>
+            <div className="flex flex-wrap gap-3">
               {project.tools.map((tool, index) => (
-                <span 
-                  key={index} 
+                <span
+                  key={index}
                   className={`px-4 py-2 ${getThemeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm transition-colors ${getThemeClass('text')} rounded-full text-sm font-medium`}
                 >
                   {tool}
@@ -172,6 +205,155 @@ export default function ProjectClientPage({ project }) {
               ))}
             </div>
           </div>
+
+          {/* Features / Highlights */}
+          {project.features && (
+            <div className="mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Features / Highlights</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {project.features.map((feature, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className={`w-2 h-2 ${getThemeClass('bg')} rounded-full mt-2 flex-shrink-0`}></div>
+                    <p className="text-gray-600 dark:text-gray-300">{feature}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Challenges & Learnings */}
+          {(project.challenges || project.learnings) && (
+            <div className="mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Challenges & Learnings</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {project.challenges && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Challenges Faced</h3>
+                    <ul className="space-y-2">
+                      {project.challenges.map((challenge, index) => (
+                        <li key={index} className="flex items-start space-x-3">
+                          <span className="text-red-500 mt-1">•</span>
+                          <p className="text-gray-600 dark:text-gray-300">{challenge}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {project.learnings && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Key Learnings</h3>
+                    <ul className="space-y-2">
+                      {project.learnings.map((learning, index) => (
+                        <li key={index} className="flex items-start space-x-3">
+                          <span className="text-green-500 mt-1">•</span>
+                          <p className="text-gray-600 dark:text-gray-300">{learning}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Results / Impact */}
+          {(project.results || project.impact) && (
+            <div className="mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Results / Impact</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {project.results && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Results Achieved</h3>
+                    <ul className="space-y-2">
+                      {project.results.map((result, index) => (
+                        <li key={index} className="flex items-start space-x-3">
+                          <span className="text-blue-500 mt-1">✓</span>
+                          <p className="text-gray-600 dark:text-gray-300">{result}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {project.impact && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Project Impact</h3>
+                    <ul className="space-y-2">
+                      {project.impact.map((impactItem, index) => (
+                        <li key={index} className="flex items-start space-x-3">
+                          <span className="text-purple-500 mt-1">★</span>
+                          <p className="text-gray-600 dark:text-gray-300">{impactItem}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Demo Links */}
+          {project.demoLinks && project.demoLinks.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Demo Links</h2>
+              <div className="flex flex-wrap gap-4">
+                {project.demoLinks.map((link, index) => (
+                  <a
+                    key={index}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex items-center px-6 py-3 ${getThemeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm transition-colors ${getThemeClass('text')} rounded-md transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2`}
+                  >
+                    <span>{link.name}</span>
+                    <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Screenshots / GIFs */}
+          {project.screenshots && project.screenshots.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900 dark:text-white">Screenshots</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {project.screenshots.map((screenshot, index) => (
+                  <div key={index} className="relative group">
+                    <Image
+                      src={screenshot}
+                      alt={`Screenshot ${index + 1}`}
+                      width={600}
+                      height={400}
+                      className="rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Call to Action */}
+          {project.cta && (
+            <div className="text-center bg-gray-50 dark:bg-gray-800 rounded-xl p-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white">{project.cta.text}</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
+                Interested in exploring this project further? Check out the live demo or view the source code.
+              </p>
+              <a
+                href={project.cta.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center px-8 py-4 ${getThemeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm transition-colors ${getThemeClass('text')} rounded-md transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-lg font-semibold`}
+              >
+                <span>{project.cta.buttonText}</span>
+                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+            </div>
+          )}
         </div>
       </section>
 
