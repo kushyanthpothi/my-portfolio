@@ -254,6 +254,7 @@ export default function Home() {
   const [currentRole, setCurrentRole] = useState(roles[0]);
   const [isScrambling, setIsScrambling] = useState(false);
   const roleRef = useRef(0);
+  const roleIntervalRef = useRef(null);
 
   // Typing animation effect
   useEffect(() => {
@@ -298,15 +299,6 @@ export default function Home() {
       } else {
         setIsTypingRole(false);
         setShowSocialIcons(true);
-        // Start role scrambling after role is typed
-        setTimeout(() => {
-          const roleInterval = setInterval(() => {
-            if (!isScrambling) {
-              scrambleRole();
-            }
-          }, 3000);
-          return () => clearInterval(roleInterval);
-        }, 1000);
         // Show buttons after social icons
         setTimeout(() => {
           setShowButtons(true);
@@ -333,12 +325,36 @@ export default function Home() {
     return () => clearInterval(cursorInterval);
   }, []);
 
+  // Start role scrambling after typing is complete
+  useEffect(() => {
+    if (showRole && !isTypingRole) {
+      const timeoutId = setTimeout(() => {
+        roleIntervalRef.current = setInterval(() => {
+          if (!isScrambling) {
+            scrambleRole();
+          }
+        }, 3000);
+      }, 1000);
+
+      return () => {
+        clearTimeout(timeoutId);
+        if (roleIntervalRef.current) {
+          clearInterval(roleIntervalRef.current);
+        }
+      };
+    }
+  }, [showRole, isTypingRole, isScrambling]);
+
   // Function to skip all animations and show everything immediately
   const skipAnimations = () => {
     // Clear all existing timeouts and intervals
     const highestTimeoutId = setTimeout(() => {}, 0);
     for (let i = 0; i <= highestTimeoutId; i++) {
       clearTimeout(i);
+    }
+    // Clear role scrambling interval
+    if (roleIntervalRef.current) {
+      clearInterval(roleIntervalRef.current);
     }
 
     // Set all animation states to true immediately
