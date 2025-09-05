@@ -48,18 +48,36 @@ export default function Projects() {
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       }, 200);
       
-      // Listen for storage changes to sync dark mode across tabs
+      // Listen for storage changes to sync dark mode and theme across tabs
       const handleStorageChange = (e) => {
         if (e.key === 'darkMode' || e.type === 'storage') {
           const darkModeEnabled = loadDarkMode();
           setIsDarkMode(darkModeEnabled);
         }
+        if (e.key === 'siteTheme' || e.type === 'storage') {
+          const savedTheme = localStorage.getItem('siteTheme');
+          if (savedTheme) {
+            setCurrentTheme(savedTheme);
+          }
+        }
+      };
+      
+      // Listen for custom theme change events (for same-tab updates)
+      const handleThemeChange = (event) => {
+        if (event.detail?.theme) {
+          setCurrentTheme(event.detail.theme);
+        }
+        if (event.detail?.darkMode !== undefined) {
+          setIsDarkMode(event.detail.darkMode);
+        }
       };
       
       window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('themeChanged', handleThemeChange);
       
       return () => {
         window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('themeChanged', handleThemeChange);
         clearTimeout(scrollTimer);
         clearTimeout(backupScrollTimer);
       };
@@ -218,7 +236,7 @@ export default function Projects() {
           </div>
         </div>
       </section>
-      <Footer/>
+      <Footer currentTheme={currentTheme}/>
     </main>
   );
 }

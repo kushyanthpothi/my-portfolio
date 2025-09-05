@@ -230,48 +230,176 @@ export default function Home() {
     }, 2000); // Match this with the animation duration in CSS
   };
 
-  const titles = [
-    "Full Stack Developer",
-    "Software Developer",
-    "Frontend Developer",
-    "SDE @ Ninjacart",
-  ];
-
-  const [currentTitle, setCurrentTitle] = useState(titles[0]);
-  const [isShuffling, setIsShuffling] = useState(false);
-  const titleRef = useRef(0);
-
   useEffect(() => {
     // Initial animation when component mounts
     triggerAnimation();
+  }, []);
 
-    const titleInterval = setInterval(() => {
-      if (!isShuffling) {
-        shuffleTitle();
+  // Typing animation states
+  const [helloText, setHelloText] = useState('');
+  const [nameText, setNameText] = useState('');
+  const [roleText, setRoleText] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
+  const [isTypingHello, setIsTypingHello] = useState(true);
+  const [isTypingName, setIsTypingName] = useState(false);
+  const [isTypingRole, setIsTypingRole] = useState(false);
+  const [showRole, setShowRole] = useState(false);
+  const [showSocialIcons, setShowSocialIcons] = useState(false);
+  const [showButtons, setShowButtons] = useState(false);
+  const [showProfilePhoto, setShowProfilePhoto] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(false);
+
+  // Text scramble states for role
+  const roles = ["Full Stack Developer", "Software Developer", "SDE @ Ninjacart"];
+  const [currentRole, setCurrentRole] = useState(roles[0]);
+  const [isScrambling, setIsScrambling] = useState(false);
+  const roleRef = useRef(0);
+
+  // Typing animation effect
+  useEffect(() => {
+    const hello = "Hello, I'm";
+    const name = "Kushyanth Pothineni";
+    const initialRole = "Full Stack Developer";
+    
+    let helloIndex = 0;
+    let nameIndex = 0;
+    let roleIndex = 0;
+    
+    const typeHello = () => {
+      if (helloIndex < hello.length) {
+        setHelloText(hello.slice(0, helloIndex + 1));
+        helloIndex++;
+        setTimeout(typeHello, 100);
+      } else {
+        setIsTypingHello(false);
+        setIsTypingName(true);
+        setTimeout(typeName, 500);
       }
-    }, 3000); // Changed from 5000 to 3000 for 3-second interval
+    };
+    
+    const typeName = () => {
+      if (nameIndex < name.length) {
+        setNameText(name.slice(0, nameIndex + 1));
+        nameIndex++;
+        setTimeout(typeName, 100);
+      } else {
+        setIsTypingName(false);
+        setShowRole(true);
+        setIsTypingRole(true);
+        setTimeout(typeRole, 500);
+      }
+    };
+    
+    const typeRole = () => {
+      if (roleIndex < initialRole.length) {
+        setRoleText(initialRole.slice(0, roleIndex + 1));
+        roleIndex++;
+        setTimeout(typeRole, 100);
+      } else {
+        setIsTypingRole(false);
+        setShowSocialIcons(true);
+        // Start role scrambling after role is typed
+        setTimeout(() => {
+          const roleInterval = setInterval(() => {
+            if (!isScrambling) {
+              scrambleRole();
+            }
+          }, 3000);
+          return () => clearInterval(roleInterval);
+        }, 1000);
+        // Show buttons after social icons
+        setTimeout(() => {
+          setShowButtons(true);
+        }, 1000);
+        // Show profile photo after buttons
+        setTimeout(() => {
+          setShowProfilePhoto(true);
+        }, 2000);
+        // Show navbar much earlier - right after greeting starts
+        setTimeout(() => {
+          setShowNavbar(true);
+        }, 500);
+      }
+    };
+    
+    // Start typing animation after a delay
+    setTimeout(typeHello, 1000);
+    
+    // Cursor blinking
+    const cursorInterval = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 500);
+    
+    return () => clearInterval(cursorInterval);
+  }, []);
 
-    return () => clearInterval(titleInterval);
-  }, [isShuffling]);
+  // Function to skip all animations and show everything immediately
+  const skipAnimations = () => {
+    // Clear all existing timeouts and intervals
+    const highestTimeoutId = setTimeout(() => {}, 0);
+    for (let i = 0; i <= highestTimeoutId; i++) {
+      clearTimeout(i);
+    }
 
-  const shuffleTitle = () => {
-    setIsShuffling(true);
-    const currentIdx = titleRef.current;
-    const nextIdx = (currentIdx + 1) % titles.length;
-    const nextTitle = titles[nextIdx];
+    // Set all animation states to true immediately
+    setHelloText("Hello, I'm");
+    setNameText("Kushyanth Pothineni");
+    setRoleText("Full Stack Developer");
+    setShowRole(true);
+    setShowSocialIcons(true);
+    setShowButtons(true);
+    setShowProfilePhoto(true);
+    setShowNavbar(true);
+    setIsTypingHello(false);
+    setIsTypingName(false);
+    setIsTypingRole(false);
+    setCurrentRole("Full Stack Developer");
+    setIsScrambling(false);
+    setShowCursor(false);
+  };
+
+  // Add event listeners for skipping animations
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'Escape') {
+        skipAnimations();
+      }
+    };
+
+    const handleClick = () => {
+      skipAnimations();
+    };
+
+    // Add event listeners
+    window.addEventListener('keydown', handleKeyPress);
+    document.addEventListener('click', handleClick);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      document.removeEventListener('click', handleClick);
+    };
+  }, []);
+
+  // Role scramble function
+  const scrambleRole = () => {
+    setIsScrambling(true);
+    const currentIdx = roleRef.current;
+    const nextIdx = (currentIdx + 1) % roles.length;
+    const nextRole = roles[nextIdx];
 
     let iterations = 0;
     const maxIterations = 10;
     const interval = setInterval(() => {
-      setCurrentTitle(prevTitle => {
-        return prevTitle
+      setCurrentRole(prevRole => {
+        return prevRole
           .split('')
           .map((letter, idx) => {
             if (letter === ' ' || (Math.random() > 0.5 && iterations > maxIterations / 2)) {
               return letter;
             }
-            return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'[
-              Math.floor(Math.random() * 52)
+            return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@'[
+              Math.floor(Math.random() * 53)
             ];
           })
           .join('');
@@ -281,16 +409,16 @@ export default function Home() {
 
       if (iterations >= maxIterations) {
         clearInterval(interval);
-        setCurrentTitle(nextTitle);
-        titleRef.current = nextIdx;
-        setIsShuffling(false);
+        setCurrentRole(nextRole);
+        roleRef.current = nextIdx;
+        setIsScrambling(false);
       }
     }, 50);
   };
 
   const userData = {
     name: "Kushyanth Pothineni",
-    title: currentTitle, // This will now be dynamic
+    title: "Full Stack Developer",
     about: "I am a passionate Full Stack Developer with hands-on experience in building modern, scalable web applications using technologies like React.js, Next.js, Django, and Spring Boot. My expertise spans frontend and backend development, database management, and API optimization. I have a proven track record of delivering impactful solutions, such as AI-powered supply chain optimization at NinjaCart and inventory tracking systems with real-time alerts. With a Bachelor of Technology in Computer Science from KKR & KSR Institute of Technology and Sciences, I am committed to leveraging my technical skills and certifications in MEAN Stack, Java Full Stack, and ServiceNow to create innovative, user-focused solutions.",
     skills: [
       { name: "Django", level: 85 },
@@ -474,7 +602,18 @@ export default function Home() {
       <main className="relative w-full min-h-screen overflow-x-hidden">
         <div key={`theme-${isDarkMode}`} className={`w-full min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-white'} transition-colors duration-300`}>
           {/* Navigation */}
-          <nav className={`fixed w-full z-[100] transition-all duration-300 ${scrolled && activeSection !== 'home' ? 'bg-white/30 dark:bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
+          <MotionDiv
+            initial={{ y: -120, opacity: 0 }}
+            animate={showNavbar ? { y: 0, opacity: 1 } : { y: -120, opacity: 0 }}
+            transition={{
+              duration: 1.5,
+              ease: [0.16, 1, 0.3, 1],
+              type: "spring",
+              stiffness: 100,
+              damping: 15
+            }}
+          >
+            <nav className={`fixed w-full z-[100] transition-all duration-300 ${scrolled && activeSection !== 'home' ? 'bg-white/30 dark:bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
             <div className="w-full px-4 sm:px-10 lg:px-12">
               <div className="flex justify-between items-center h-20">
                 <div className="flex items-center overflow-hidden">
@@ -570,6 +709,7 @@ export default function Home() {
               </MotionDiv>
             )}
           </nav>
+          </MotionDiv>
 
           {/* Hero Section */}
           <section id="home" className="min-h-screen flex items-center relative overflow-hidden bg-black">
@@ -589,50 +729,63 @@ export default function Home() {
                   transition={{ duration: 0.5 }}
                   className="text-center md:text-left order-2 md:order-1"
                 >
-                  <h2 className={`text-lg font-medium ${themeClass('text')} mb-2`}>Hello, I'm</h2>
+                  <h2 className={`text-lg font-medium ${themeClass('text')} mb-2`}>
+                    {helloText}
+                    {(isTypingHello || isTypingName) && showCursor && <span className="animate-pulse">|</span>}
+                  </h2>
                   <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 text-white">
-                    {userData.name}
+                    {nameText}
+                    {isTypingName && showCursor && <span className="animate-pulse">|</span>}
                   </h1>
-                  <p className="text-xl md:text-2xl font-light text-white mb-8">
-                    {userData.title}
-                  </p>
-                  <div className="flex justify-center md:justify-start space-x-4 mb-8">
-                    {Object.entries(userData.socialLinks).map(([platform, link]) => (
-                      <a
-                        key={platform}
-                        href={link}
-                        className={`transition-colors ${themeClass('text')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={platform}
-                      >
-                        {platform === 'twitter' ? (
-                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                          </svg>
-                        ) : (
-                          <i className={`fab fa-${platform} text-2xl`}></i>
-                        )}
-                      </a>
-                    ))}
-
-                    {/* ServiceNow Badge */}
-                    <div className="group relative inline-block">
-                      <a
-                        href="https://drive.google.com/file/d/1QdWYq6ditLGmzjzqcEITSwpAC9x-ZXUN/view?usp=sharing"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`inline-block ${themeClass('text')}`}
-                      >
-                        <svg
-                          viewBox="0 0 1570 1403"
-                          width="34"
-                          height="54"
-                          className="w-7 h-6"
-                          fill="currentColor"
+                  {showRole && (
+                    <p className="text-xl md:text-2xl font-light text-white mb-8">
+                      {isTypingRole ? roleText : currentRole}
+                      {isTypingRole && showCursor && <span className="animate-pulse">|</span>}
+                    </p>
+                  )}
+                  {showSocialIcons && (
+                    <MotionDiv
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="flex justify-center md:justify-start space-x-4 mb-8"
+                    >
+                      {Object.entries(userData.socialLinks).map(([platform, link]) => (
+                        <a
+                          key={platform}
+                          href={link}
+                          className={`transition-colors ${themeClass('text')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={platform}
                         >
-                          <path
-                            d="M0.999998,835.000000 C1.000000,803.645752 1.000000,772.291565 1.431128,740.438232 C2.241194,738.812256 2.875731,737.703857 2.959070,736.555420 C3.699081,726.358643 3.854409,716.093994 5.119089,705.966370 C7.408650,687.631409 9.954945,669.309387 13.121598,651.108582 C16.025726,634.416687 19.056086,617.663696 23.520016,601.345032 C30.730247,574.986938 38.141685,548.596741 47.362968,522.900085 C56.706970,496.861450 67.966728,471.478821 79.142624,446.141968 
+                          {platform === 'twitter' ? (
+                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                            </svg>
+                          ) : (
+                            <i className={`fab fa-${platform} text-2xl`}></i>
+                          )}
+                        </a>
+                      ))}
+
+                      {/* ServiceNow Badge */}
+                      <div className="group relative inline-block">
+                        <a
+                          href="https://drive.google.com/file/d/1QdWYq6ditLGmzjzqcEITSwpAC9x-ZXUN/view?usp=sharing"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`inline-block ${themeClass('text')}`}
+                        >
+                          <svg
+                            viewBox="0 0 1570 1403"
+                            width="34"
+                            height="54"
+                            className="w-7 h-6"
+                            fill="currentColor"
+                          >
+                            <path
+                              d="M0.999998,835.000000 C1.000000,803.645752 1.000000,772.291565 1.431128,740.438232 C2.241194,738.812256 2.875731,737.703857 2.959070,736.555420 C3.699081,726.358643 3.854409,716.093994 5.119089,705.966370 C7.408650,687.631409 9.954945,669.309387 13.121598,651.108582 C16.025726,634.416687 19.056086,617.663696 23.520016,601.345032 C30.730247,574.986938 38.141685,548.596741 47.362968,522.900085 C56.706970,496.861450 67.966728,471.478821 79.142624,446.141968 
 	C85.004089,432.853485 92.081314,420.047455 99.328697,407.436890 
 	C109.653969,389.470825 119.797340,371.302673 131.550919,354.278931 
 	C147.333649,331.419312 164.185196,309.260620 181.337723,287.397125 
@@ -710,38 +863,47 @@ export default function Home() {
 	C6.836420,877.792358 5.014823,858.174866 2.929849,838.585876 
 	C2.796843,837.336304 1.666419,836.192810 0.999998,835.000000 M858.624939,404.984100 C854.434448,404.299500 850.265625,403.409363 846.049744,402.966522 C829.556824,401.234314 813.079041,399.105988 796.536621,398.185455 
 	C785.155273,397.552063 773.651123,398.299927 762.248108,399.093842 C748.488586,400.051758 734.576233,400.680481 721.095093,403.317780 C702.601135,406.935852 684.303772,411.801605 666.185486,417.042755 C637.057861,425.468506 609.887146,438.593506 583.943176,454.111633 C561.253052,467.683502 540.007385,483.328491 520.865662,501.670807 C515.401855,506.906464 509.957001,512.184387 504.829468,517.743652 C495.482178,527.877869 485.721710,537.730347 477.326019,548.619812 C464.475708,565.287048 452.969330,582.897583 442.699341,601.374390 C430.743042,622.885132 421.053467,645.336182 413.378601,668.582703 C405.965637,691.036072 400.251434,714.025024 397.978333,737.684509 C396.515717,752.908020 394.882629,768.136108 394.153717,783.401672 C393.673218,793.464966 394.355316,803.620300 395.069672,813.695251 C396.115753,828.448425 396.681702,843.337646 399.230743,857.856750 C402.518951,876.586243 406.654907,895.275757 412.042450,913.504761 C422.752319,949.742310 439.717896,983.149780 460.916687,1014.405334 C473.693909,1033.244263 487.997650,1050.831421 504.288727,1066.755493 C509.618469,1071.965210 514.888306,1077.283936 520.626587,1082.018188 C533.392090,1092.549927 546.071594,1103.246582 559.453308,1112.956543 C578.814819,1127.005493 599.817566,1138.350342 621.743774,1147.964722 C644.476318,1157.932861 667.971191,1165.416138 692.122131,1171.207275 C720.272095,1177.957275 748.876953,1179.894409 777.607971,1180.905762 C785.688416,1181.190186 793.818420,1179.905396 801.909302,1180.083618 C825.246948,1180.597412 848.164856,1177.518921 870.980164,1173.037231 C893.096252,1168.692871 914.857727,1162.858398 935.474548,1153.890381 C954.745911,1145.507690 973.570740,1135.945679 992.010864,1125.841919 C1017.159302,1112.062256 1039.762085,1094.497925 1059.957642,1074.229492 C1074.326050,1059.809082 1087.858154,1044.435547 1100.628174,1028.573120 C1115.815063,1009.708435 1128.262329,988.860962 1138.816162,967.073975 C1150.768311,942.400574 1160.020752,916.669861 1166.576660,889.974182 C1171.819336,868.626465 1175.277466,846.996216 1176.829346,825.133179 C1177.750244,812.160706 1176.880859,799.068298 1177.030029,786.032227 C1177.260742,765.864990 1175.901245,745.782043 1171.862061,726.063477 C1167.750244,705.991211 1163.469727,685.843323 1157.389404,666.311890 C1149.380371,640.584656 1138.023804,616.131775 1124.399048,592.780518 C1110.821777,569.510498 1095.197632,547.706909 1077.087524,527.824524 C1067.103149,516.863098 1056.425537,506.376343 1045.065674,496.863281 C1029.898804,484.162048 1014.507690,471.444244 997.849609,460.884033 C979.283142,449.113953 959.661072,438.714569 939.638428,429.609924 C914.107361,418.000549 887.190125,410.014862 858.624939,404.984100z"
-                          />
-                        </svg>
+                            />
+                          </svg>
+                        </a>
+                        <span className="absolute left-1/2 -translate-x-1/2 -bottom-12 bg-gray-900 text-white text-xs px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap transform scale-0 group-hover:scale-100 z-10 pointer-events-none">
+                          ServiceNow Certified Administrator
+                        </span>
+                      </div>
+                    </MotionDiv>
+                  )}
+                  {showButtons && (
+                    <MotionDiv
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="flex justify-center md:justify-start space-y-4 md:space-y-0 md:space-x-4 flex-col md:flex-row"
+                    >
+                      <a
+                        onClick={scrollToContact}
+                        className={`inline-block px-8 py-3 ${themeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm ${themeClass('text')} font-medium rounded-md transition-all duration-300 transform hover:scale-105 cursor-pointer`}
+                      >
+                        Get In Touch
                       </a>
-                      <span className="absolute left-1/2 -translate-x-1/2 -bottom-12 bg-gray-900 text-white text-xs px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap transform scale-0 group-hover:scale-100 z-10 pointer-events-none">
-                        ServiceNow Certified Administrator
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-center md:justify-start space-y-4 md:space-y-0 md:space-x-4 flex-col md:flex-row">
-                    <a
-                      onClick={scrollToContact}
-                      className={`inline-block px-8 py-3 ${themeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm ${themeClass('text')} font-medium rounded-md transition-all duration-300 transform hover:scale-105 cursor-pointer`}
-                    >
-                      Get In Touch
-                    </a>
-                    <a
-                      href="https://tinyurl.com/kushyanthresume"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`inline-block px-8 py-3 ${themeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm ${themeClass('text')} font-medium rounded-md transition-all duration-300 transform hover:scale-105 cursor-pointer`}
-                    >
-                      View My Resume
-                    </a>
-                  </div>
+                      <a
+                        href="https://tinyurl.com/kushyanthresume"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-block px-8 py-3 ${themeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm ${themeClass('text')} font-medium rounded-md transition-all duration-300 transform hover:scale-105 cursor-pointer`}
+                      >
+                        View My Resume
+                      </a>
+                    </MotionDiv>
+                  )}
                 </MotionDiv>
 
-                <MotionDiv
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="flex justify-center order-1 md:order-2"
-                >
+                {showProfilePhoto && (
+                  <MotionDiv
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex justify-center order-1 md:order-2"
+                  >
                   <div
                     className="relative w-48 h-48 md:w-80 md:h-80 cursor-pointer md:cursor-pointer"
                     onClick={triggerClickAnimation}
@@ -758,6 +920,7 @@ export default function Home() {
                     </div>
                   </div>
                 </MotionDiv>
+                )}
               </div>
             </div>
           </section>
@@ -1403,7 +1566,7 @@ export default function Home() {
           </section>
 
           {/* Footer */}
-          <Footer />
+          <Footer currentTheme={currentTheme} />
 
           {/* Theme Drawer */}
           <ThemeDrawer

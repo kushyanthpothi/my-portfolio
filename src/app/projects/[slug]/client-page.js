@@ -3,23 +3,25 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { themeClass, loadDarkMode } from '../../../utils/theme';
+import { themeClass, loadDarkMode, loadTheme } from '../../../utils/theme';
 import Footer from '../../../components/Footer';
 
 export default function ProjectClientPage({ project }) {
-  const [currentTheme, setCurrentTheme] = useState('blue');
+  const [currentTheme, setCurrentTheme] = useState('orange'); // Default theme for SSR
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     // Load theme and dark mode from localStorage on component mount
-    const savedTheme = localStorage.getItem('siteTheme');
-    if (savedTheme) {
-      setCurrentTheme(savedTheme);
-    }
+    const savedTheme = loadTheme();
+    setCurrentTheme(savedTheme);
     
     // Load and apply dark mode
     const darkModeEnabled = loadDarkMode();
     setIsDarkMode(darkModeEnabled);
+    
+    // Mark as hydrated
+    setIsHydrated(true);
     
     // Force scroll to top when component mounts (for project pages)
     // Clear any existing scroll restoration first
@@ -37,18 +39,34 @@ export default function ProjectClientPage({ project }) {
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       }, 200);
       
-      // Listen for storage changes to sync dark mode across tabs
+      // Listen for storage changes to sync dark mode and theme across tabs
       const handleStorageChange = (e) => {
         if (e.key === 'darkMode' || e.type === 'storage') {
           const darkModeEnabled = loadDarkMode();
           setIsDarkMode(darkModeEnabled);
         }
+        if (e.key === 'siteTheme' || e.type === 'storage') {
+          const savedTheme = loadTheme();
+          setCurrentTheme(savedTheme);
+        }
+      };
+      
+      // Listen for custom theme change events (for same-tab updates)
+      const handleThemeChange = (event) => {
+        if (event.detail?.theme) {
+          setCurrentTheme(event.detail.theme);
+        }
+        if (event.detail?.darkMode !== undefined) {
+          setIsDarkMode(event.detail.darkMode);
+        }
       };
       
       window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('themeChanged', handleThemeChange);
       
       return () => {
         window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('themeChanged', handleThemeChange);
         clearTimeout(scrollTimer);
         clearTimeout(backupScrollTimer);
       };
@@ -64,8 +82,21 @@ export default function ProjectClientPage({ project }) {
 
   // Use theme utility function with current theme
   const getThemeClass = (type) => {
-    return themeClass(type, currentTheme);
+    // Safety check to ensure currentTheme is defined
+    const theme = currentTheme || 'orange';
+    return themeClass(type, theme);
   };
+
+  // Prevent hydration mismatch by not rendering until hydrated
+  if (!isHydrated) {
+    return (
+      <main className="min-h-screen pt-20 bg-white dark:bg-black">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen pt-20 bg-white dark:bg-black">
@@ -229,7 +260,7 @@ export default function ProjectClientPage({ project }) {
                     <ul className="space-y-2">
                       {project.challenges.map((challenge, index) => (
                         <li key={index} className="flex items-start space-x-2 md:space-x-3">
-                          <span className="text-red-500 mt-1 text-sm">•</span>
+                          <span className={`${getThemeClass('text')} mt-1 text-sm`}>•</span>
                           <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">{challenge}</p>
                         </li>
                       ))}
@@ -242,7 +273,7 @@ export default function ProjectClientPage({ project }) {
                     <ul className="space-y-2">
                       {project.learnings.map((learning, index) => (
                         <li key={index} className="flex items-start space-x-2 md:space-x-3">
-                          <span className="text-green-500 mt-1 text-sm">•</span>
+                          <span className={`${getThemeClass('text')} mt-1 text-sm`}>•</span>
                           <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">{learning}</p>
                         </li>
                       ))}
@@ -264,7 +295,7 @@ export default function ProjectClientPage({ project }) {
                     <ul className="space-y-2">
                       {project.results.map((result, index) => (
                         <li key={index} className="flex items-start space-x-2 md:space-x-3">
-                          <span className="text-blue-500 mt-1 text-sm">✓</span>
+                          <span className={`${getThemeClass('text')} mt-1 text-sm`}>✓</span>
                           <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">{result}</p>
                         </li>
                       ))}
@@ -277,7 +308,7 @@ export default function ProjectClientPage({ project }) {
                     <ul className="space-y-2">
                       {project.impact.map((impactItem, index) => (
                         <li key={index} className="flex items-start space-x-2 md:space-x-3">
-                          <span className="text-purple-500 mt-1 text-sm">★</span>
+                          <span className={`${getThemeClass('text')} mt-1 text-sm`}>★</span>
                           <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">{impactItem}</p>
                         </li>
                       ))}
@@ -354,7 +385,7 @@ export default function ProjectClientPage({ project }) {
         </div>
       </section>
 
-      <Footer showQuickLinks={true} />
+      <Footer showQuickLinks={true} currentTheme={currentTheme} />
     </main>
   );
 }

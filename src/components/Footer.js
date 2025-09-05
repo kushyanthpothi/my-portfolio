@@ -20,18 +20,11 @@ const navItems = [
   { name: 'CONTACT', section: 'contact' },
 ];
 
-export default function Footer({ showQuickLinks = true }) {
-  const [currentTheme, setCurrentTheme] = useState('blue');
+export default function Footer({ showQuickLinks = true, currentTheme = 'orange' }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Load theme from localStorage on component mount
-    const savedTheme = localStorage.getItem('siteTheme');
-    if (savedTheme) {
-      setCurrentTheme(savedTheme);
-    }
-
-    // Load theme mode and dark mode state
+    // Load dark mode state
     const darkMode = loadDarkMode();
     setIsDarkMode(darkMode);
 
@@ -40,22 +33,14 @@ export default function Footer({ showQuickLinks = true }) {
       setIsDarkMode(isDark);
     });
 
-    // Listen for theme changes from other components
+    // Listen for dark mode changes
     const handleStorageChange = () => {
       const darkMode = loadDarkMode();
       setIsDarkMode(darkMode);
-
-      const newTheme = localStorage.getItem('siteTheme');
-      if (newTheme) {
-        setCurrentTheme(newTheme);
-      }
     };
 
     // Listen for custom theme change events (for same-tab updates)
     const handleThemeChange = (event) => {
-      if (event.detail?.theme) {
-        setCurrentTheme(event.detail.theme);
-      }
       if (event.detail?.darkMode !== undefined) {
         setIsDarkMode(event.detail.darkMode);
       }

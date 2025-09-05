@@ -7,7 +7,7 @@ export const themeColors = {
   pink: 'text-pink-600 dark:text-pink-400 bg-pink-600 hover:text-pink-600 dark:hover:text-pink-400 bg-pink-100 hover:bg-pink-200 dark:bg-pink-800'
 };
 
-export const themeClass = (type, currentTheme = 'blue') => {
+export const themeClass = (type, currentTheme = 'orange') => {
   switch (type) {
     case 'text':
       return `text-${currentTheme}-600 dark:text-${currentTheme}-400`;
@@ -31,6 +31,25 @@ export const THEME_MODES = {
   LIGHT: 'light',
   DARK: 'dark',
   SYSTEM: 'system'
+};
+
+// Theme utility functions
+export const loadTheme = () => {
+  if (typeof window === 'undefined') return 'orange'; // Default theme
+  
+  const savedTheme = localStorage.getItem('siteTheme');
+  return savedTheme || 'orange'; // Default to orange theme
+};
+
+export const setTheme = (theme) => {
+  if (typeof window === 'undefined') return;
+  
+  localStorage.setItem('siteTheme', theme);
+  
+  // Dispatch custom event to notify components
+  window.dispatchEvent(new CustomEvent('themeChanged', {
+    detail: { theme }
+  }));
 };
 
 // Background options
