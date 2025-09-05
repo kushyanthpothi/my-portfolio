@@ -92,23 +92,23 @@ export default function Footer({ showQuickLinks = true }) {
   };
 
   return (
-    <footer className="relative z-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white py-12 transition-colors">
+    <footer className="relative z-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white py-6 transition-colors">
       <div className="max-w-auto mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pl-[50px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <h3 className="text-xl font-bold mb-4">Kushyanth Pothineni</h3>
-            <p className="text-gray-600 dark:text-white">Building Connections across the society</p>
+            <h3 className="text-lg font-bold mb-2">Kushyanth Pothineni</h3>
+            <p className="text-gray-600 dark:text-white text-sm">Building Connections across the society</p>
           </div>
 
           {showQuickLinks && (
             <div>
-              <h3 className="text-xl font-bold mb-4">Quick Links</h3>
-              <ul className="space-y-2">
+              <h3 className="text-lg font-bold mb-2">Quick Links</h3>
+              <ul className="space-y-1">
                 {navItems.map((item) => (
                   <li key={item.name}>
                     <button
                       onClick={() => scrollToSection(item.section)}
-                      className="text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 transition-colors"
+                      className="text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-gray-300 transition-colors text-sm"
                     >
                       {item.name}
                     </button>
@@ -119,8 +119,8 @@ export default function Footer({ showQuickLinks = true }) {
           )}
 
           <div className={showQuickLinks ? '' : 'md:col-start-2'}>
-            <h3 className="text-xl font-bold mb-4">Connect</h3>
-            <div className="flex space-x-4">
+            <h3 className="text-lg font-bold mb-2">Connect</h3>
+            <div className="flex space-x-3">
               {Object.entries(userData.socialLinks).map(([platform, link]) => (
                 <a
                   key={platform}
@@ -131,18 +131,18 @@ export default function Footer({ showQuickLinks = true }) {
                   aria-label={platform}
                 >
                   {platform === 'twitter' ? (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                   ) : (
-                    <i className={`fab fa-${platform} text-2xl`}></i>
+                    <i className={`fab fa-${platform} text-xl`}></i>
                   )}
                 </a>
               ))}
             </div>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-600 text-center text-gray-600 dark:text-white">
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600 text-center text-gray-600 dark:text-white text-sm">
           <p>© {new Date().getFullYear()} Kushyanth. All rights reserved.</p>
         </div>
       </div>
