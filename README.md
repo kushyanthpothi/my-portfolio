@@ -123,7 +123,7 @@ Organized into categories:
 1. **[Event Mania](https://ap-event-mania.web.app/)** - Event management platform for colleges
 2. **YouTube Downloader** - Django-based media download tool
 3. **Pro Reader** - Android QR code and text processing app
-4. **[Pin Noter](https://pin-noter.web.app/)** - React note-taking app with offline sync
+4. **[Pin Noter](https://pin-noter.netlify.app/)** - React note-taking app with offline sync
 5. **Employee Record System** - Django-based HR management system
 6. **[Instans](https://instans.netlify.app/)** - An AI powered Interview Assistance 
 

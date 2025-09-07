@@ -122,7 +122,7 @@ export default function Projects() {
         techStack: ["React.js", "Firebase", "CSS3", "React-dom"],
         image: "https://i.ibb.co/Fk2jTJWP/screely-1752326497618.png",
         slug: "pin-noter",
-        viewSiteLink: "https://pin-noter.web.app/"
+        viewSiteLink: "https://pin-noter.netlify.app/"
       },
       {
         title: "Employee Record System",

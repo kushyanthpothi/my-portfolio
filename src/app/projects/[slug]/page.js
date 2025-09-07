@@ -357,17 +357,17 @@ const projectsData = {
     ],
     projectLink: "https://github.com/kushyanthpothi/pin-noter",
     image: "https://i.ibb.co/Fk2jTJWP/screely-1752326497618.png",
-    viewSiteLink: "https://pin-noter.web.app/",
+    viewSiteLink: "https://pin-noter.netlify.app/",
     screenshots: [
       "https://i.ibb.co/Fk2jTJWP/screely-1752326497618.png"
     ],
     demoLinks: [
-      { name: "Live Demo", url: "https://pin-noter.web.app/" },
+      { name: "Live Demo", url: "https://pin-noter.netlify.app/" },
       { name: "GitHub Repository", url: "https://github.com/kushyanthpothi/pin-noter" }
     ],
     cta: {
       text: "Start Taking Notes",
-      link: "https://pin-noter.web.app/",
+      link: "https://pin-noter.netlify.app/",
       buttonText: "Try Pin Noter"
     }
   },
