@@ -116,7 +116,8 @@ const Silk = ({
     purple: isDarkMode ? ['#A855F7', '#C084FC', '#DDD6FE', '#EDE9FE'] : ['#7C3AED', '#A855F7', '#C084FC', '#DDD6FE'],
     emerald: isDarkMode ? ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0'] : ['#059669', '#10B981', '#34D399', '#6EE7B7'],
     orange: isDarkMode ? ['#F97316', '#FB923C', '#FDBA74', '#FED7AA'] : ['#EA580C', '#F97316', '#FB923C', '#FDBA74'],
-    pink: isDarkMode ? ['#EC4899', '#F472B6', '#F9A8D4', '#FBCFE8'] : ['#DB2777', '#EC4899', '#F472B6', '#F9A8D4']
+    pink: isDarkMode ? ['#EC4899', '#F472B6', '#F9A8D4', '#FBCFE8'] : ['#DB2777', '#EC4899', '#F472B6', '#F9A8D4'],
+    lightgray: isDarkMode ? ['#dee1e0', '#c3c7c6', '#b8bbba', '#929594'] : ['#b8bbba', '#929594', '#6c6f6e', '#464948']
   };
   const colors = themeColors[currentTheme] || themeColors.blue;
   const color = colors[0]; // Use the first color from the theme array

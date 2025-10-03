@@ -597,7 +597,7 @@ export default function Home() {
               "@type": "Person",
               "name": "Kushyanth Pothineni",
               "url": "https://kushyanthpothineni.vercel.app",
-              "image": "https://i.ibb.co/CpW4rW5s/picofme-2.png",
+              "image": "https://i.ibb.co/LXLWTXFb/picofme-2.png",
               "jobTitle": "Full Stack Developer",
               "description": "Full Stack Developer specializing in React.js, Next.js, and Django",
               "knowsAbout": ["React.js", "Next.js", "Django", "JavaScript", "Python", "Web Development"],
@@ -736,6 +736,22 @@ export default function Home() {
               currentBackground={currentBackground}
             />
 
+            {/* Skip Animation Hint */}
+            {(isTypingHello || isTypingName || isTypingRole) && (
+              <MotionDiv
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute top-4 right-4 md:top-8 md:right-8 z-20 flex items-center gap-2 text-white/70 text-xs md:text-sm"
+              >
+                <span>Press</span>
+                <kbd className="px-2 py-1 bg-white/10 border border-white/30 rounded shadow-lg font-mono text-white backdrop-blur-sm">
+                  ESC
+                </kbd>
+                <span>to skip animation</span>
+              </MotionDiv>
+            )}
+
             {/* Hero content container with backdrop blur */}
             <div className="w-full px-4 sm:px-10 lg:px-12 relative z-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -747,7 +763,7 @@ export default function Home() {
                 >
                   <h2 className={`text-lg font-medium ${themeClass('text')} mb-2`}>
                     {helloText}
-                    {(isTypingHello || isTypingName) && showCursor && <span className="animate-pulse">|</span>}
+                    {isTypingHello && showCursor && <span className="animate-pulse">|</span>}
                   </h2>
                   <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 text-white">
                     {nameText}
@@ -925,9 +941,9 @@ export default function Home() {
                     onClick={triggerClickAnimation}
                   >
                     {/* Profile image */}
-                    <div className="relative w-full h-full rounded-full overflow-hidden border-8 border-white dark:border-gray-800 shadow-2xl z-10">
+                    <div className={`relative w-full h-full rounded-full overflow-hidden border-8 border-white dark:border-gray-800 shadow-2xl z-10 ${themeClass('bg')}`}>
                       <Image
-                        src="https://i.ibb.co/CpW4rW5s/picofme-2.png"
+                        src="https://i.ibb.co/LXLWTXFb/picofme-2.png"
                         alt="Kushyanth Pothineni"
                         layout="fill"
                         objectFit="cover"

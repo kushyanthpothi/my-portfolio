@@ -329,7 +329,8 @@ const PixelBlast = ({
     purple: isDarkMode ? '#A855F7' : '#7C3AED',
     emerald: isDarkMode ? '#10B981' : '#059669',
     orange: isDarkMode ? '#F97316' : '#EA580C',
-    pink: isDarkMode ? '#EC4899' : '#DB2777'
+    pink: isDarkMode ? '#EC4899' : '#DB2777',
+    lightgray: isDarkMode ? '#dee1e0' : '#929594'
   };
   const themeColor = themeColors[currentTheme] || themeColors.blue;
   const finalColor = color !== '#B19EEF' ? color : themeColor; // Allow override but default to theme color

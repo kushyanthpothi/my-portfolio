@@ -4,7 +4,8 @@ export const themeColors = {
   purple: 'text-purple-600 dark:text-purple-400 bg-purple-600 hover:text-purple-600 dark:hover:text-purple-400 bg-purple-100 hover:bg-purple-200 dark:bg-purple-800',
   emerald: 'text-emerald-600 dark:text-emerald-400 bg-emerald-600 hover:text-emerald-600 dark:hover:text-emerald-400 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-800',
   orange: 'text-orange-600 dark:text-orange-400 bg-orange-600 hover:text-orange-600 dark:hover:text-orange-400 bg-orange-100 hover:bg-orange-200 dark:bg-orange-800',
-  pink: 'text-pink-600 dark:text-pink-400 bg-pink-600 hover:text-pink-600 dark:hover:text-pink-400 bg-pink-100 hover:bg-pink-200 dark:bg-pink-800'
+  pink: 'text-pink-600 dark:text-pink-400 bg-pink-600 hover:text-pink-600 dark:hover:text-pink-400 bg-pink-100 hover:bg-pink-200 dark:bg-pink-800',
+  lightgray: 'text-lightgray-600 dark:text-lightgray-400 bg-lightgray-600 hover:text-lightgray-600 dark:hover:text-lightgray-400 bg-lightgray-100 hover:bg-lightgray-200 dark:bg-lightgray-800'
 };
 
 export const themeClass = (type, currentTheme = 'orange') => {
