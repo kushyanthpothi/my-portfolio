@@ -58,12 +58,14 @@ export const BACKGROUND_OPTIONS = {
   BEAMS: 'beams',
   DITHER: 'dither',
   SILK: 'silk',
-  PIXELBLAST: 'pixelblast'
+  PIXELBLAST: 'pixelblast',
+  GRIDSCAN: 'gridscan',
+  COLORBENDS: 'colorbends'
 };
 
 // Background utility functions
 export const loadBackground = () => {
-  if (typeof window === 'undefined') return BACKGROUND_OPTIONS.BEAMS;
+  if (typeof window === 'undefined') return BACKGROUND_OPTIONS.COLORBENDS;
   
   const savedBackground = localStorage.getItem('selectedBackground');
   
@@ -76,9 +78,9 @@ export const loadBackground = () => {
   if (savedBackground && Object.values(BACKGROUND_OPTIONS).includes(savedBackground)) {
     return savedBackground;
   } else {
-    // Default to pixelblast
-    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.PIXELBLAST);
-    return BACKGROUND_OPTIONS.PIXELBLAST;
+    // Default to colorbends
+    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.COLORBENDS);
+    return BACKGROUND_OPTIONS.COLORBENDS;
   }
 };
 

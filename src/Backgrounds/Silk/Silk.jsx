@@ -105,7 +105,8 @@ const Silk = ({
   noiseIntensity = 0.2,
   rotation = 0,
   currentTheme = 'blue',
-  isDarkMode = false
+  isDarkMode = false,
+  disableAnimation = false,
 }) => {
   const meshRef = useRef();
 
@@ -143,7 +144,7 @@ const Silk = ({
   }, [currentTheme, isDarkMode, themeColors]);
 
   return (
-    <Canvas dpr={[1, 2]} frameloop="always">
+    <Canvas dpr={[1, 2]} frameloop={disableAnimation ? "never" : "always"}>
       <SilkPlane ref={meshRef} uniforms={uniforms} />
     </Canvas>
   );

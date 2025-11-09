@@ -308,6 +308,7 @@ const PixelBlast = ({
   liquidRadius = 1,
   pixelSizeJitter = 0,
   enableRipples = true,
+  disableAnimation = false,
   rippleIntensityScale = 1,
   rippleThickness = 0.1,
   rippleSpeed = 0.3,
@@ -501,6 +502,25 @@ const PixelBlast = ({
       renderer.domElement.addEventListener('pointermove', onPointerMove, {
         passive: true
       });
+
+      // Also attach to document to capture events even when content is on top
+      const handleDocumentPointerDown = (e) => {
+        const { fx, fy } = mapToPixels(e);
+        const ix = threeRef.current?.clickIx ?? 0;
+        uniforms.uClickPos.value[ix].set(fx, fy);
+        uniforms.uClickTimes.value[ix] = uniforms.uTime.value;
+        if (threeRef.current) threeRef.current.clickIx = (ix + 1) % MAX_CLICKS;
+      };
+
+      const handleDocumentPointerMove = (e) => {
+        if (!touch) return;
+        const { fx, fy, w, h } = mapToPixels(e);
+        touch.addTouch({ x: fx / w, y: fy / h });
+      };
+
+      document.addEventListener('pointerdown', handleDocumentPointerDown, { passive: true });
+      document.addEventListener('pointermove', handleDocumentPointerMove, { passive: true });
+
       let raf = 0;
       const animate = () => {
         if (autoPauseOffscreen && !visibilityRef.current.visible) {
@@ -521,9 +541,13 @@ const PixelBlast = ({
           });
           composer.render();
         } else renderer.render(scene, camera);
-        raf = requestAnimationFrame(animate);
+        if (!disableAnimation) {
+          raf = requestAnimationFrame(animate);
+        }
       };
-      raf = requestAnimationFrame(animate);
+      if (!disableAnimation) {
+        raf = requestAnimationFrame(animate);
+      }
       threeRef.current = {
         renderer,
         scene,
@@ -538,7 +562,9 @@ const PixelBlast = ({
         timeOffset,
         composer,
         touch,
-        liquidEffect
+        liquidEffect,
+        documentPointerDown: handleDocumentPointerDown,
+        documentPointerMove: handleDocumentPointerMove
       };
     } else {
       const t = threeRef.current;
@@ -575,6 +601,15 @@ const PixelBlast = ({
       t.composer?.dispose();
       t.renderer.dispose();
       if (t.renderer.domElement.parentElement === container) container.removeChild(t.renderer.domElement);
+      
+      // Clean up document event listeners
+      if (t.documentPointerDown) {
+        document.removeEventListener('pointerdown', t.documentPointerDown);
+      }
+      if (t.documentPointerMove) {
+        document.removeEventListener('pointermove', t.documentPointerMove);
+      }
+      
       threeRef.current = null;
     };
   }, [

@@ -5,6 +5,8 @@ import Silk from '../Backgrounds/Silk/Silk';
 import Beams from '../Backgrounds/Beams/Beams';
 import Dither from '../Backgrounds/Dither/Dither';
 import PixelBlast from '../Backgrounds/PixelBlast/PixelBlast';
+import { GridScan } from '../Backgrounds/GridScan/GridScan';
+import ColorBends from '../Backgrounds/ColorBends/ColorBends';
 
 export default function Fireworks({ 
   currentTheme = 'blue', 
@@ -240,25 +242,70 @@ export default function Fireworks({
           {currentBackground === 'beams' && (
             <Beams 
               currentTheme={currentTheme} 
-              isDarkMode={isDarkMode} 
+              isDarkMode={isDarkMode}
+              speed={1}
+              beamNumber={8}
+              noiseIntensity={1}
             />
           )}
           {currentBackground === 'dither' && (
             <Dither 
               currentTheme={currentTheme} 
-              isDarkMode={isDarkMode} 
+              isDarkMode={isDarkMode}
+              waveSpeed={0.02}
+              waveAmplitude={0.2}
             />
           )}
           {currentBackground === 'silk' && (
             <Silk 
               currentTheme={currentTheme} 
-              isDarkMode={isDarkMode} 
+              isDarkMode={isDarkMode}
+              speed={2}
             />
           )}
           {currentBackground === 'pixelblast' && (
             <PixelBlast 
               currentTheme={currentTheme} 
-              isDarkMode={isDarkMode} 
+              isDarkMode={isDarkMode}
+              speed={0.2}
+            />
+          )}
+          {currentBackground === 'gridscan' && (
+            <GridScan 
+              linesColor={colors[0]}
+              scanColor={colors[1]}
+              enableWebcam={false}
+              showPreview={false}
+              lineThickness={1}
+              scanOpacity={0.4}
+              gridScale={0.1}
+              lineStyle="solid"
+              lineJitter={0.1}
+              scanDirection="pingpong"
+              enablePost={true}
+              bloomIntensity={0}
+              bloomThreshold={0}
+              bloomSmoothing={0}
+              chromaticAberration={0.002}
+              noiseIntensity={0.01}
+              scanGlow={0.5}
+              scanSoftness={2}
+              scanPhaseTaper={0.9}
+              scanDuration={2.0}
+              scanDelay={2.0}
+            />
+          )}
+          {currentBackground === 'colorbends' && (
+            <ColorBends 
+              colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
+              speed={0.3}
+              scale={1.2}
+              frequency={1.5}
+              warpStrength={1.2}
+              mouseInfluence={0.8}
+              parallax={0.3}
+              noise={0.05}
+              transparent={true}
             />
           )}
         </>

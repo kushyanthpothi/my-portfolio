@@ -286,6 +286,44 @@ function DitheredWaves({
     prevMouseRef.current.set(x, y);
   };
 
+  // Attach event listeners to document to capture events even when content is on top
+  useEffect(() => {
+    if (!enableMouseInteraction) return;
+
+    const handleDocumentPointerMove = (e) => {
+      updateMousePosition(e.clientX, e.clientY);
+    };
+
+    const handleDocumentTouchMove = (e) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        updateMousePosition(touch.clientX, touch.clientY);
+      }
+    };
+
+    const handleDocumentPointerEnter = (e) => {
+      // Initialize mouse position immediately on enter to avoid jumps
+      const rect = gl.domElement.getBoundingClientRect();
+      const dpr = gl.getPixelRatio();
+      const x = (e.clientX - rect.left) * dpr;
+      const y = (e.clientY - rect.top) * dpr;
+      
+      targetMouseRef.current.set(x, y);
+      mouseRef.current.set(x, y); // Set current position to avoid initial lerp
+      prevMouseRef.current.set(x, y);
+    };
+
+    document.addEventListener('pointermove', handleDocumentPointerMove, { passive: true });
+    document.addEventListener('touchmove', handleDocumentTouchMove, { passive: true });
+    document.addEventListener('pointerenter', handleDocumentPointerEnter, { passive: true });
+
+    return () => {
+      document.removeEventListener('pointermove', handleDocumentPointerMove);
+      document.removeEventListener('touchmove', handleDocumentTouchMove);
+      document.removeEventListener('pointerenter', handleDocumentPointerEnter);
+    };
+  }, [enableMouseInteraction, gl]);
+
   return (
     <>
       <mesh ref={mesh} scale={[viewport.width, viewport.height, 1]}>
@@ -300,19 +338,6 @@ function DitheredWaves({
       <EffectComposer>
         <RetroEffect colorNum={colorNum} pixelSize={pixelSize} />
       </EffectComposer>
-
-      <mesh
-        onPointerMove={handlePointerMove}
-        onPointerEnter={handlePointerEnter}
-        onTouchMove={handleTouchMove}
-        position={[0, 0, 0.01]}
-        scale={[viewport.width, viewport.height, 1]}
-        visible={false}
-        style={{ touchAction: 'none' }} // Prevent scrolling on touch devices
-      >
-        <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
     </>
   );
 }

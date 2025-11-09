@@ -66,8 +66,8 @@ function extendMaterial(BaseMaterial, cfg) {
   return mat;
 }
 
-const CanvasWrapper = ({ children }) => (
-  <Canvas dpr={[1, 2]} frameloop="always" className="w-full h-full relative">
+const CanvasWrapper = ({ children, disableAnimation = false }) => (
+  <Canvas dpr={[1, 2]} frameloop={disableAnimation ? "never" : "always"} className="w-full h-full relative">
     {children}
   </Canvas>
 );
@@ -167,6 +167,7 @@ const Beams = ({
   noiseIntensity = 1.75,
   scale = 0.2,
   rotation = 30,
+  disableAnimation = false,
 }) => {
   const meshRef = useRef(null);
 
@@ -244,7 +245,7 @@ const Beams = ({
   );
 
   return (
-    <CanvasWrapper>
+    <CanvasWrapper disableAnimation={disableAnimation}>
       <group rotation={[0, 0, degToRad(rotation)]}>
         <PlaneNoise
           ref={meshRef}
