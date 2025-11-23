@@ -7,15 +7,15 @@ import Footer from '../components/Footer';
 import ThemeDrawer from '../components/ThemeDrawer';
 import Fireworks from '../components/Fireworks';
 import ExperienceSection from '../components/ExperienceSection';
+import CalendarScheduler from '../components/CalendarScheduler';
+
 import { themeColors, themeClass as utilThemeClass, loadDarkMode, loadThemeMode, setThemeMode, getEffectiveDarkMode, setupSystemThemeListener, THEME_MODES, loadBackground, setBackground, setTheme } from '../utils/theme';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import emailjs from '@emailjs/browser';
 import Head from 'next/head';
 
-const MotionDiv = dynamic(
-  () => import('framer-motion').then((mod) => mod.motion.div),
-  { ssr: false }
-);
+const MotionDiv = motion.div;
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,6 +33,8 @@ export default function Home() {
   const [submitStatus, setSubmitStatus] = useState(null);
   const [touchedCertId, setTouchedCertId] = useState(null);
   const [showAllCerts, setShowAllCerts] = useState(false);
+  const [showScheduler, setShowScheduler] = useState(false);
+
 
   const [currentTheme, setCurrentTheme] = useState('orange');
   const [showThemeOptions, setShowThemeOptions] = useState(false);
@@ -89,7 +91,7 @@ export default function Home() {
     // Load background setting
     const savedBackground = loadBackground();
     setCurrentBackground(savedBackground);
-    
+
     // Special handling for ColorBends - automatically switch to lightgrey theme
     if (savedBackground === 'colorbends') {
       setTheme('lightgray');
@@ -113,20 +115,20 @@ export default function Home() {
     // Listen for background changes
     const handleBackgroundChange = (event) => {
       const newBackground = event.detail.background;
-      
+
       // Store previous theme when switching to ColorBends
       if (newBackground === 'colorbends' && currentBackground !== 'colorbends') {
         setPreviousTheme(currentTheme);
       }
-      
+
       // Restore previous theme when switching away from ColorBends
       if (currentBackground === 'colorbends' && newBackground !== 'colorbends') {
         setTheme(previousTheme);
         setCurrentTheme(previousTheme);
       }
-      
+
       setCurrentBackground(newBackground);
-      
+
       // Special handling for ColorBends - automatically switch to lightgrey theme
       if (newBackground === 'colorbends') {
         setTheme('lightgray');
@@ -145,7 +147,7 @@ export default function Home() {
   const changeTheme = (color) => {
     setCurrentTheme(color);
     localStorage.setItem('siteTheme', color);
-    
+
     // Dispatch custom event to notify other components
     window.dispatchEvent(new CustomEvent('themeChanged', {
       detail: { theme: color }
@@ -168,19 +170,19 @@ export default function Home() {
     if (background === 'colorbends' && currentBackground !== 'colorbends') {
       setPreviousTheme(currentTheme);
     }
-    
+
     // Restore previous theme when switching away from ColorBends
     if (currentBackground === 'colorbends' && background !== 'colorbends') {
       setTheme(previousTheme);
       setCurrentTheme(previousTheme);
     }
-    
+
     // Special handling for ColorBends - automatically switch to lightgrey theme
     if (background === 'colorbends') {
       setTheme('lightgray');
       setCurrentTheme('lightgray');
     }
-    
+
     setBackground(background);
     setCurrentBackground(background);
   };
@@ -198,14 +200,14 @@ export default function Home() {
 
     try {
       await emailjs.send(
-        'service_ab1oioq',
-        'template_xwyd7xc',
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
         {
           from_name: formData.name,
           from_email: formData.email,
           message: formData.message,
         },
-        'oYcBPdEZe66HUibML'
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
       );
 
       setSubmitStatus('success');
@@ -304,11 +306,11 @@ export default function Home() {
     const hello = "Hello, I'm";
     const name = "Kushyanth Pothineni";
     const initialRole = "Full Stack Developer";
-    
+
     let helloIndex = 0;
     let nameIndex = 0;
     let roleIndex = 0;
-    
+
     const typeHello = () => {
       if (helloIndex < hello.length) {
         setHelloText(hello.slice(0, helloIndex + 1));
@@ -320,7 +322,7 @@ export default function Home() {
         setTimeout(typeName, 500);
       }
     };
-    
+
     const typeName = () => {
       if (nameIndex < name.length) {
         setNameText(name.slice(0, nameIndex + 1));
@@ -333,7 +335,7 @@ export default function Home() {
         setTimeout(typeRole, 500);
       }
     };
-    
+
     const typeRole = () => {
       if (roleIndex < initialRole.length) {
         setRoleText(initialRole.slice(0, roleIndex + 1));
@@ -356,15 +358,15 @@ export default function Home() {
         }, 500);
       }
     };
-    
+
     // Start typing animation after a delay
     setTimeout(typeHello, 1000);
-    
+
     // Cursor blinking
     const cursorInterval = setInterval(() => {
       setShowCursor(prev => !prev);
     }, 500);
-    
+
     return () => clearInterval(cursorInterval);
   }, []);
 
@@ -391,7 +393,7 @@ export default function Home() {
   // Function to skip all animations and show everything immediately
   const skipAnimations = () => {
     // Clear all existing timeouts and intervals
-    const highestTimeoutId = setTimeout(() => {}, 0);
+    const highestTimeoutId = setTimeout(() => { }, 0);
     for (let i = 0; i <= highestTimeoutId; i++) {
       clearTimeout(i);
     }
@@ -492,7 +494,7 @@ export default function Home() {
     projects: [
       {
         title: "instans",
-        description:"Instans is an AI-powered interview preparation assistant that combines real-time screen sharing with intelligent chat capabilities. The platform leverages Google's Generative AI to provide personalized interview coaching, technical problem-solving guidance, and resume analysis.",
+        description: "Instans is an AI-powered interview preparation assistant that combines real-time screen sharing with intelligent chat capabilities. The platform leverages Google's Generative AI to provide personalized interview coaching, technical problem-solving guidance, and resume analysis.",
         techStack: ["React", "Firebase", "HTML/CSS", "Open Source", "Gemini"],
         image: "https://i.ibb.co/JRtFvVD2/Airbrush-image-extender-1.jpg",
         slug: "instans",
@@ -673,109 +675,109 @@ export default function Home() {
             }}
           >
             <nav className={`fixed w-full z-[100] transition-all duration-300 ${scrolled && activeSection !== 'home' ? 'bg-white/30 dark:bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
-            <div className="w-full px-4 sm:px-10 lg:px-12">
-              <div className="flex justify-between items-center h-20">
-                <div className="flex items-center overflow-hidden">
-                  <MotionDiv
-                    className="overflow-hidden flex items-center"
-                    initial={false}
-                    animate={{ width: 'auto' }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                  >
-                    <div className="flex items-center whitespace-nowrap">
-                      <span className={`text-xl font-bold tracking-tight ${themeClass('text')}`}>K</span>
-                      <MotionDiv
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: scrolled ? 'auto' : 0, opacity: scrolled ? 1 : 0 }}
-                        transition={{ duration: 0.5, ease: "easeInOut" }}
-                        className="overflow-hidden"
-                      >
-                        <span className={`text-xl font-bold tracking-tight ${themeClass('text')}`}>ushyanth</span>
-                      </MotionDiv>
-                      <span className={`text-xl font-bold tracking-tight ${themeClass('text')} ml-1`}>P</span>
-                      <MotionDiv
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: scrolled ? 'auto' : 0, opacity: scrolled ? 1 : 0 }}
-                        transition={{ duration: 0.5, ease: "easeInOut" }}
-                        className="overflow-hidden"
-                      >
-                        <span className={`text-xl font-bold tracking-tight ${themeClass('text')}`}>othineni</span>
-                      </MotionDiv>
+              <div className="w-full px-4 sm:px-10 lg:px-12">
+                <div className="flex justify-between items-center h-20">
+                  <div className="flex items-center overflow-hidden">
+                    <MotionDiv
+                      className="overflow-hidden flex items-center"
+                      initial={false}
+                      animate={{ width: 'auto' }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                    >
+                      <div className="flex items-center whitespace-nowrap">
+                        <span className={`text-xl font-bold tracking-tight ${themeClass('text')}`}>K</span>
+                        <MotionDiv
+                          initial={{ width: 0, opacity: 0 }}
+                          animate={{ width: scrolled ? 'auto' : 0, opacity: scrolled ? 1 : 0 }}
+                          transition={{ duration: 0.5, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <span className={`text-xl font-bold tracking-tight ${themeClass('text')}`}>ushyanth</span>
+                        </MotionDiv>
+                        <span className={`text-xl font-bold tracking-tight ${themeClass('text')} ml-1`}>P</span>
+                        <MotionDiv
+                          initial={{ width: 0, opacity: 0 }}
+                          animate={{ width: scrolled ? 'auto' : 0, opacity: scrolled ? 1 : 0 }}
+                          transition={{ duration: 0.5, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <span className={`text-xl font-bold tracking-tight ${themeClass('text')}`}>othineni</span>
+                        </MotionDiv>
+                      </div>
+                    </MotionDiv>
+                  </div>                  <div className="flex items-center space-x-6">
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex space-x-8 bg-black/10 dark:bg-black/10 bg-opacity-10 backdrop-blur-sm rounded-3xl p-2">
+                      {navItems.map((item) => (
+                        <button
+                          key={item.name}
+                          onClick={() => scrollToSection(item.section)}
+                          className={`text-sm font-medium tracking-wider rounded-3xl px-3 py-2 transition-colors cursor-pointer ${activeSection === item.section ? 'bg-white dark:bg-white text-gray-900 dark:text-gray-900' : `bg-transparent ${themeClass('text')}`
+                            }`}
+                        >
+                          {item.name}
+                        </button>
+                      ))}
                     </div>
-                  </MotionDiv>
-                </div>                  <div className="flex items-center space-x-6">
-                  {/* Desktop Navigation */}
-                  <div className="hidden md:flex space-x-8 bg-black/10 dark:bg-black/10 bg-opacity-10 backdrop-blur-sm rounded-3xl p-2">
+
+                    {/* Theme Settings Button */}
+                    <div className="relative">
+                      <button
+                        className={`p-2 rounded-full ${themeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm transition-colors ${themeClass('text')}`}
+                        onClick={() => setShowThemeDrawer(true)}
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Mobile Navigation Button */}
+                    <button
+                      className={`md:hidden p-1.5 rounded-md ${themeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm transition-colors ${themeClass('text')}`}
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      aria-label="Toggle menu"
+                    >
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Menu */}
+              {isMenuOpen && (
+                <MotionDiv
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="md:hidden bg-white/30 dark:bg-black/30 backdrop-blur-md shadow-lg"
+                >
+                  <div className="px-2 pt-2 pb-3 space-y-1">
                     {navItems.map((item) => (
                       <button
                         key={item.name}
                         onClick={() => scrollToSection(item.section)}
-                        className={`text-sm font-medium tracking-wider rounded-3xl px-3 py-2 transition-colors cursor-pointer ${activeSection === item.section ? 'bg-white dark:bg-white text-gray-900 dark:text-gray-900' : `bg-transparent ${themeClass('text')}`
-                          }`}
+                        className={`block w-full px-3 py-2 text-center rounded-md transition-colors cursor-pointer ${activeSection === item.section ? 'bg-white dark:bg-white text-gray-900 dark:text-gray-900' : `bg-transparent ${themeClass('text')}`
+                          } hover:bg-${currentTheme}-200/20 dark:hover:bg-${currentTheme}-800/20`}
                       >
                         {item.name}
                       </button>
                     ))}
                   </div>
-
-                  {/* Theme Settings Button */}
-                  <div className="relative">
-                    <button
-                      className={`p-2 rounded-full ${themeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm transition-colors ${themeClass('text')}`}
-                      onClick={() => setShowThemeDrawer(true)}
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Mobile Navigation Button */}
-                  <button
-                    className={`md:hidden p-1.5 rounded-md ${themeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm transition-colors ${themeClass('text')}`}
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Toggle menu"
-                  >
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Menu */}
-            {isMenuOpen && (
-              <MotionDiv
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="md:hidden bg-white/30 dark:bg-black/30 backdrop-blur-md shadow-lg"
-              >
-                <div className="px-2 pt-2 pb-3 space-y-1">
-                  {navItems.map((item) => (
-                    <button
-                      key={item.name}
-                      onClick={() => scrollToSection(item.section)}
-                      className={`block w-full px-3 py-2 text-center rounded-md transition-colors cursor-pointer ${activeSection === item.section ? 'bg-white dark:bg-white text-gray-900 dark:text-gray-900' : `bg-transparent ${themeClass('text')}`
-                        } hover:bg-${currentTheme}-200/20 dark:hover:bg-${currentTheme}-800/20`}
-                    >
-                      {item.name}
-                    </button>
-                  ))}
-                </div>
-              </MotionDiv>
-            )}
-          </nav>
+                </MotionDiv>
+              )}
+            </nav>
           </MotionDiv>
 
           {/* Hero Section */}
           <section id="home" className="min-h-screen flex items-center relative overflow-hidden bg-black">
             {/* Fireworks Animation */}
-            <Fireworks 
-              currentTheme={currentTheme} 
-              isDarkMode={isDarkMode} 
+            <Fireworks
+              currentTheme={currentTheme}
+              isDarkMode={isDarkMode}
               currentBackground={currentBackground}
             />
 
@@ -791,25 +793,25 @@ export default function Home() {
                 <div className="flex md:hidden items-center gap-2 text-white/70 text-xs">
                   <span>Tap screen to skip animation</span>
                   <MotionDiv
-                    animate={{ 
+                    animate={{
                       scale: [1, 0.85, 1],
                       opacity: [0.7, 1, 0.7]
                     }}
-                    transition={{ 
+                    transition={{
                       duration: 1.5,
                       repeat: Infinity,
                       ease: "easeInOut"
                     }}
                     className="relative"
                   >
-                    <svg 
-                      width="24" 
-                      height="24" 
-                      viewBox="0 0 512 512" 
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 512 512"
                       className="text-white/80 drop-shadow-lg"
                       fill="currentColor"
                     >
-                      <path d="M230.469,513C224.211,509.881,217.887,507.784,212.763,503.394C203.538,495.491,198.182,485.655,196.624,473.573C194.826,459.630,195.478,445.631,195.885,431.698C196.099,424.377,192.858,420.983,187.168,417.975C179.249,413.790,171.145,409.909,163.713,404.833C152.822,397.395,145.538,386.533,137.134,376.767C125.561,363.319,114.158,349.717,103.006,335.920C96.038,327.300,88.136,319.452,82.419,309.776C71.359,291.059,75.328,262.537,96.198,248.890C114.318,237.043,139.445,239.412,154.918,254.757C158.053,257.865,160.862,261.358,164.726,263.943C166.206,261.515,165.617,259.137,165.620,256.892C165.663,218.226,165.593,179.560,165.706,140.895C165.726,134.111,166.608,127.394,168.688,120.819C174.183,103.455,193.030,90.430,210.094,90.424C229.549,90.416,243.622,98.374,252.886,115.040C255.596,119.916,257.398,125.352,257.371,131.193C257.301,146.526,257.333,161.859,257.371,177.192C257.375,178.984,256.957,180.851,258.149,183.122C263.279,181.432,268.717,181.682,274.149,181.635C283.101,181.556,291.231,184.206,298.357,189.420C301.159,191.470,302.793,191.628,305.624,189.486C322.486,176.734,350.356,179.417,364.672,194.454C369.046,199.048,372.602,204.250,374.653,210.331C375.538,212.953,376.610,213.669,379.736,212.925C403.444,207.287,426.137,217.645,434.968,241.010C436.750,245.725,437.429,250.542,437.414,255.624C437.298,295.622,437.031,335.625,437.523,375.618C437.695,389.591,432.396,400.912,423.911,410.976C412.970,423.952,404.543,437.429,407.221,455.502C408.043,461.047,407.271,466.818,407.381,472.482C407.436,475.362,406.889,478.059,406.039,480.788C401.503,495.350,392.190,505.427,378.004,511.025C377.095,511.384,376.280,511.983,375.211,512.735C326.979,513,278.958,513,230.469,513M335.688,213.498C323.861,212.958,319.937,215.590,317.963,227.288C316.271,237.314,317.312,247.562,317.429,257.700C317.576,270.499,304.037,275.757,294.100,270.815C287.290,267.428,285.848,260.785,285.703,253.923C285.512,244.929,285.681,235.928,285.639,226.930C285.607,219.869,280.625,213.981,274.269,213.378C265.491,212.543,259.839,216.593,258.330,224.758C256.313,235.666,257.403,246.677,257.456,257.626C257.518,270.384,244.312,275.790,234.180,270.870C226.937,267.352,225.698,260.239,225.685,253.047C225.612,213.888,225.662,174.729,225.634,135.570C225.629,128.878,220.259,122.974,213.849,122.407C205.923,121.706,199.975,125.616,198.485,132.767C197.744,136.324,197.288,139.918,197.294,143.619C197.376,197.109,197.302,250.598,197.408,304.088C197.422,310.986,194.953,316.252,188.685,318.948C182.039,321.806,175.718,320.798,170.383,315.441C158.977,303.989,147.540,292.567,136.069,281.180C134.189,279.314,132.189,277.524,130.043,275.977C124.342,271.866,116.274,272.484,111.851,277.212C107.576,281.782,106.923,290.823,110.980,295.743C120.142,306.852,129.563,317.746,138.834,328.765C148.421,340.159,157.996,351.564,167.502,363.025C174.523,371.489,181.672,379.522,192.117,384.279C200.065,387.900,207.891,392.145,214.682,397.830C222.240,404.158,227.190,412.046,227.308,422.198C227.469,436.027,227.263,449.860,227.383,463.689C227.468,473.584,231.569,480.023,238.697,481.486C242.246,482.214,245.836,482.721,249.543,482.710C284.535,482.605,319.529,482.648,354.522,482.649C355.522,482.649,356.523,482.685,357.521,482.640C368.917,482.125,376.643,477.269,375.753,464.373C375.203,456.413,375.406,448.374,375.714,440.387C376.102,430.351,378.195,420.846,383.671,412.016C388.331,404.502,394.204,397.982,399.161,390.755C402.229,386.283,405.712,382.026,405.699,376.023C405.614,336.364,405.674,296.705,405.634,257.046C405.624,246.473,395.247,240.163,385.602,244.595C379.067,247.599,378.366,253.668,377.420,259.533C376.281,266.599,370.902,272.141,364.476,272.350C353.907,272.695,348.359,269.004,346.654,260.510C344.566,250.112,345.705,239.595,345.796,229.152C345.861,221.687,343.078,216.748,335.688,213.498z"/>
+                      <path d="M230.469,513C224.211,509.881,217.887,507.784,212.763,503.394C203.538,495.491,198.182,485.655,196.624,473.573C194.826,459.630,195.478,445.631,195.885,431.698C196.099,424.377,192.858,420.983,187.168,417.975C179.249,413.790,171.145,409.909,163.713,404.833C152.822,397.395,145.538,386.533,137.134,376.767C125.561,363.319,114.158,349.717,103.006,335.920C96.038,327.300,88.136,319.452,82.419,309.776C71.359,291.059,75.328,262.537,96.198,248.890C114.318,237.043,139.445,239.412,154.918,254.757C158.053,257.865,160.862,261.358,164.726,263.943C166.206,261.515,165.617,259.137,165.620,256.892C165.663,218.226,165.593,179.560,165.706,140.895C165.726,134.111,166.608,127.394,168.688,120.819C174.183,103.455,193.030,90.430,210.094,90.424C229.549,90.416,243.622,98.374,252.886,115.040C255.596,119.916,257.398,125.352,257.371,131.193C257.301,146.526,257.333,161.859,257.371,177.192C257.375,178.984,256.957,180.851,258.149,183.122C263.279,181.432,268.717,181.682,274.149,181.635C283.101,181.556,291.231,184.206,298.357,189.420C301.159,191.470,302.793,191.628,305.624,189.486C322.486,176.734,350.356,179.417,364.672,194.454C369.046,199.048,372.602,204.250,374.653,210.331C375.538,212.953,376.610,213.669,379.736,212.925C403.444,207.287,426.137,217.645,434.968,241.010C436.750,245.725,437.429,250.542,437.414,255.624C437.298,295.622,437.031,335.625,437.523,375.618C437.695,389.591,432.396,400.912,423.911,410.976C412.970,423.952,404.543,437.429,407.221,455.502C408.043,461.047,407.271,466.818,407.381,472.482C407.436,475.362,406.889,478.059,406.039,480.788C401.503,495.350,392.190,505.427,378.004,511.025C377.095,511.384,376.280,511.983,375.211,512.735C326.979,513,278.958,513,230.469,513M335.688,213.498C323.861,212.958,319.937,215.590,317.963,227.288C316.271,237.314,317.312,247.562,317.429,257.700C317.576,270.499,304.037,275.757,294.100,270.815C287.290,267.428,285.848,260.785,285.703,253.923C285.512,244.929,285.681,235.928,285.639,226.930C285.607,219.869,280.625,213.981,274.269,213.378C265.491,212.543,259.839,216.593,258.330,224.758C256.313,235.666,257.403,246.677,257.456,257.626C257.518,270.384,244.312,275.790,234.180,270.870C226.937,267.352,225.698,260.239,225.685,253.047C225.612,213.888,225.662,174.729,225.634,135.570C225.629,128.878,220.259,122.974,213.849,122.407C205.923,121.706,199.975,125.616,198.485,132.767C197.744,136.324,197.288,139.918,197.294,143.619C197.376,197.109,197.302,250.598,197.408,304.088C197.422,310.986,194.953,316.252,188.685,318.948C182.039,321.806,175.718,320.798,170.383,315.441C158.977,303.989,147.540,292.567,136.069,281.180C134.189,279.314,132.189,277.524,130.043,275.977C124.342,271.866,116.274,272.484,111.851,277.212C107.576,281.782,106.923,290.823,110.980,295.743C120.142,306.852,129.563,317.746,138.834,328.765C148.421,340.159,157.996,351.564,167.502,363.025C174.523,371.489,181.672,379.522,192.117,384.279C200.065,387.900,207.891,392.145,214.682,397.830C222.240,404.158,227.190,412.046,227.308,422.198C227.469,436.027,227.263,449.860,227.383,463.689C227.468,473.584,231.569,480.023,238.697,481.486C242.246,482.214,245.836,482.721,249.543,482.710C284.535,482.605,319.529,482.648,354.522,482.649C355.522,482.649,356.523,482.685,357.521,482.640C368.917,482.125,376.643,477.269,375.753,464.373C375.203,456.413,375.406,448.374,375.714,440.387C376.102,430.351,378.195,420.846,383.671,412.016C388.331,404.502,394.204,397.982,399.161,390.755C402.229,386.283,405.712,382.026,405.699,376.023C405.614,336.364,405.674,296.705,405.634,257.046C405.624,246.473,395.247,240.163,385.602,244.595C379.067,247.599,378.366,253.668,377.420,259.533C376.281,266.599,370.902,272.141,364.476,272.350C353.907,272.695,348.359,269.004,346.654,260.510C344.566,250.112,345.705,239.595,345.796,229.152C345.861,221.687,343.078,216.748,335.688,213.498z" />
                     </svg>
                   </MotionDiv>
                 </div>
@@ -1009,22 +1011,22 @@ export default function Home() {
                     transition={{ duration: 0.5 }}
                     className="flex justify-center order-1 md:order-2"
                   >
-                  <div
-                    className="relative w-48 h-48 md:w-80 md:h-80 cursor-pointer md:cursor-pointer"
-                    onClick={triggerClickAnimation}
-                  >
-                    {/* Profile image */}
-                    <div className={`relative w-full h-full rounded-full overflow-hidden border-8 border-white dark:border-gray-800 shadow-2xl z-10 ${themeClass('bg')}`}>
-                      <Image
-                        src="https://i.ibb.co/LXLWTXFb/picofme-2.png"
-                        alt="Kushyanth Pothineni"
-                        layout="fill"
-                        objectFit="cover"
-                        priority
-                      />
+                    <div
+                      className="relative w-48 h-48 md:w-80 md:h-80 cursor-pointer md:cursor-pointer"
+                      onClick={triggerClickAnimation}
+                    >
+                      {/* Profile image */}
+                      <div className={`relative w-full h-full rounded-full overflow-hidden border-8 border-white dark:border-gray-800 shadow-2xl z-10 ${themeClass('bg')}`}>
+                        <Image
+                          src="https://i.ibb.co/LXLWTXFb/picofme-2.png"
+                          alt="Kushyanth Pothineni"
+                          layout="fill"
+                          objectFit="cover"
+                          priority
+                        />
+                      </div>
                     </div>
-                  </div>
-                </MotionDiv>
+                  </MotionDiv>
                 )}
               </div>
             </div>
@@ -1586,85 +1588,135 @@ export default function Home() {
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5 }}
                   viewport={{ once: true, amount: 0.2 }}
+                  className="relative"
                 >
-                  <form onSubmit={handleSubmit} className="bg-white dark:bg-black p-4 md:p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
-                    <div className="space-y-4 md:space-y-6">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Your Name
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          required
-                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200`}
-                          placeholder="John Doe"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200`}
-                          placeholder="you@example.com"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="message" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Your Message
-                        </label>
-                        <textarea
-                          id="message"
-                          name="message"
-                          value={formData.message}
-                          onChange={handleInputChange}
-                          required
-                          rows="4"
-                          className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200 resize-none`}
-                          placeholder="Your message here..."
-                        ></textarea>
-                      </div>
-
-                      {submitStatus === 'success' && (
-                        <div className="p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-md">
-                          Message sent successfully!
-                        </div>
+                  {/* Toggle Button */}
+                  <button
+                    onClick={() => setShowScheduler(!showScheduler)}
+                    className={`absolute -top-4 right-0 z-10 px-4 py-2 rounded-full ${themeClass('bg')} text-white hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2`}
+                    title={showScheduler ? 'Switch to Contact Form' : 'Switch to Calendar'}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {showScheduler ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       )}
+                    </svg>
+                    <span className="text-sm font-semibold">
+                      {showScheduler ? 'Contact Form' : 'Schedule Meeting'}
+                    </span>
+                  </button>
 
-                      {submitStatus === 'error' && (
-                        <div className="p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md">
-                          Failed to send message. Please try again.
-                        </div>
+                  {/* Contact Form or Calendar Scheduler */}
+                  <div className="relative">
+                    <AnimatePresence mode="wait">
+                      {showScheduler ? (
+                        <motion.div
+                          key="scheduler"
+                          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                          transition={{
+                            duration: 0.4,
+                            ease: [0.4, 0, 0.2, 1]
+                          }}
+                        >
+                          <CalendarScheduler currentTheme={currentTheme} isDarkMode={isDarkMode} />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="contact-form"
+                          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                          transition={{
+                            duration: 0.4,
+                            ease: [0.4, 0, 0.2, 1]
+                          }}
+                        >
+                          <form onSubmit={handleSubmit} className="bg-white dark:bg-black p-4 md:p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+                            <div className="space-y-4 md:space-y-6">
+                              <div>
+                                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                  Your Name
+                                </label>
+                                <input
+                                  type="text"
+                                  id="name"
+                                  name="name"
+                                  value={formData.name}
+                                  onChange={handleInputChange}
+                                  required
+                                  className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200`}
+                                  placeholder="John Doe"
+                                />
+                              </div>
+
+                              <div>
+                                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                  Email Address
+                                </label>
+                                <input
+                                  type="email"
+                                  id="email"
+                                  name="email"
+                                  value={formData.email}
+                                  onChange={handleInputChange}
+                                  required
+                                  className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200`}
+                                  placeholder="you@example.com"
+                                />
+                              </div>
+
+                              <div>
+                                <label htmlFor="message" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                  Your Message
+                                </label>
+                                <textarea
+                                  id="message"
+                                  name="message"
+                                  value={formData.message}
+                                  onChange={handleInputChange}
+                                  required
+                                  rows="4"
+                                  className={`block w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-transparent focus:border-${currentTheme}-500 focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-${currentTheme}-500 outline-none transition-colors duration-200 resize-none`}
+                                  placeholder="Your message here..."
+                                ></textarea>
+                              </div>
+
+                              {submitStatus === 'success' && (
+                                <div className="p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-md">
+                                  Message sent successfully!
+                                </div>
+                              )}
+
+                              {submitStatus === 'error' && (
+                                <div className="p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md">
+                                  Failed to send message. Please try again.
+                                </div>
+                              )}
+
+                              <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={`w-full ${themeClass('bg')} text-white py-3 px-6 rounded-lg font-semibold hover:${themeClass('bg')} dark:hover:${themeClass('bg')} focus:outline-none focus:ring-2 focus:ring-${currentTheme}-500 focus:ring-offset-2 transition-colors duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed`}
+                              >
+                                <div className="flex items-center justify-center gap-2">
+                                  <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
+                                  {!isSubmitting && (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                  )}
+                                </div>
+                              </button>
+                            </div>
+                          </form>
+                        </motion.div>
                       )}
-
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={`w-full ${themeClass('bg')} text-white py-3 px-6 rounded-lg font-semibold hover:${themeClass('bg')} dark:hover:${themeClass('bg')} focus:outline-none focus:ring-2 focus:ring-${currentTheme}-500 focus:ring-offset-2 transition-colors duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
-                          {!isSubmitting && (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                          )}
-                        </div>
-                      </button>
-                    </div>
-                  </form>
+                    </AnimatePresence>
+                  </div>
                 </MotionDiv>
               </div>
             </div>
