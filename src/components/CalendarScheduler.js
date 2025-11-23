@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import Cal, { getCalApi } from '@calcom/embed-react';
 
-export default function CalendarScheduler({ currentTheme, isDarkMode }) {
+function CalendarScheduler({ currentTheme, isDarkMode }) {
     useEffect(() => {
         (async function () {
             const cal = await getCalApi({ namespace: '30min' });
@@ -26,3 +26,6 @@ export default function CalendarScheduler({ currentTheme, isDarkMode }) {
         </div>
     );
 }
+
+// Memoize to prevent re-renders when theme changes
+export default memo(CalendarScheduler);

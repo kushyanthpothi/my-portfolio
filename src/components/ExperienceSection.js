@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-const ExperienceSection = ({ currentTheme, themeClass }) => {
+function ExperienceSection({ currentTheme, themeClass }) {
   return (
     <section
       id="experience"
@@ -64,12 +64,12 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
               <div className="w-full md:w-5/12 md:pr-6">
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
-                    <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
+                    <div className={`w-10 h-10 md:w-10 md:h-10 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-1 shadow-sm flex-shrink-0`}>
                       <Image
                         src="https://i.ibb.co/tMBZRQY6/images-2.png"
                         alt="NinjaCart Logo"
-                        width={48}
-                        height={48}
+                        width={40}
+                        height={40}
                         className="object-contain w-full h-full"
                       />
                     </div>
@@ -77,10 +77,10 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
                         Software Development Engineer
                       </h3>
-                      <p className={`${themeClass('text', currentTheme)} font-medium text-sm md:text-base`}>
-                        <a 
-                          href="https://ninjacart.com/" 
-                          target="_blank" 
+                      <p className={`${themeClass('text', currentTheme)} font - medium text - sm md: text - base`}>
+                        <a
+                          href="https://ninjacart.com/"
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="hover:underline transition-all duration-200"
                         >
@@ -91,25 +91,25 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                         June 2025 - Present
                       </p>
                     </div>
-                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0`}>
+                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0 border border-${currentTheme}-700 shadow-sm`}>
                       Current
                     </span>
                   </div>
                   <ul className="space-y-2 mb-4 md:mb-5">
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-600 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -600 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         Developing AI-powered agents for supply chain optimization
                       </span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-500 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -500 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         Building scalable RESTful APIs with Spring Boot
                       </span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-700 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -700 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         Microservices architecture implementation
                       </span>
@@ -117,7 +117,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                   </ul>
                   <div className="flex space-x-4 md:space-x-8 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         45%
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -125,7 +125,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         3+
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -133,7 +133,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         20%
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -159,12 +159,12 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
               <div className="w-full md:w-5/12 md:pl-6">
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
-                    <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
+                    <div className={`w-10 h-10 md:w-10 md:h-10 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-1 shadow-sm flex-shrink-0`}>
                       <Image
                         src="https://i.ibb.co/tMBZRQY6/images-2.png"
                         alt="NinjaCart Logo"
-                        width={48}
-                        height={48}
+                        width={40}
+                        height={40}
                         className="object-contain w-full h-full"
                       />
                     </div>
@@ -172,10 +172,10 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
                         Software Developer Intern
                       </h3>
-                      <p className={`${themeClass('text', currentTheme)} font-medium text-sm md:text-base`}>
-                        <a 
-                          href="https://ninjacart.com/" 
-                          target="_blank" 
+                      <p className={`${themeClass('text', currentTheme)} font - medium text - sm md: text - base`}>
+                        <a
+                          href="https://ninjacart.com/"
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="hover:underline transition-all duration-200"
                         >
@@ -186,25 +186,25 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                         April 2025 - May 2025
                       </p>
                     </div>
-                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0`}>
+                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0 border border-${currentTheme}-700 shadow-sm`}>
                       Completed
                     </span>
                   </div>
                   <ul className="space-y-2 mb-4 md:mb-5">
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-600 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -600 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         RESTful API development with Spring Boot
                       </span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-500 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -500 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         Database optimization for MySQL & PostgreSQL
                       </span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-700 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -700 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         AI integration with RAG models
                       </span>
@@ -212,7 +212,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                   </ul>
                   <div className="flex space-x-4 md:space-x-8 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         35%
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -220,7 +220,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         200+
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -228,7 +228,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         45%
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -254,12 +254,12 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
               <div className="w-full md:w-5/12 md:pr-6">
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
-                    <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-2 shadow-sm flex-shrink-0`}>
+                    <div className={`w-10 h-10 md:w-10 md:h-10 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-1 shadow-sm flex-shrink-0`}>
                       <Image
                         src="https://i.ibb.co/HLsn4PN8/images-3.png"
                         alt="Blackbucks Engineers Logo"
-                        width={48}
-                        height={48}
+                        width={40}
+                        height={40}
                         className="object-contain w-full h-full"
                       />
                     </div>
@@ -267,10 +267,10 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
                         Full Stack Developer Intern
                       </h3>
-                      <p className={`${themeClass('text', currentTheme)} font-medium text-sm md:text-base`}>
-                        <a 
-                          href="https://theblackbucks.com/" 
-                          target="_blank" 
+                      <p className={`${themeClass('text', currentTheme)} font - medium text - sm md: text - base`}>
+                        <a
+                          href="https://theblackbucks.com/"
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="hover:underline transition-all duration-200"
                         >
@@ -281,25 +281,25 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                         May 2024 - July 2024
                       </p>
                     </div>
-                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0`}>
+                    <span className={`bg-${currentTheme}-600 text-black px-2 py-1 md:px-3 md:py-1 rounded-full text-xs font-medium flex-shrink-0 border border-${currentTheme}-700 shadow-sm`}>
                       Completed
                     </span>
                   </div>
                   <ul className="space-y-2 mb-4 md:mb-5">
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-600 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -600 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         Django web application enhancement
                       </span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-500 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -500 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         RESTful API development with DRF
                       </span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <div className={`w-2 h-2 bg-${currentTheme}-700 rounded-full mt-1.5 flex-shrink-0`} />
+                      <div className={`w - 2 h - 2 bg - ${currentTheme} -700 rounded - full mt - 1.5 flex - shrink - 0`} />
                       <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                         React.js frontend interface revamp
                       </span>
@@ -307,7 +307,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                   </ul>
                   <div className="flex space-x-4 md:space-x-8 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         40%
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -315,7 +315,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         30%
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -323,7 +323,7 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className={`text-base md:text-lg font-semibold ${themeClass('text', currentTheme)}`}>
+                      <p className={`text - base md: text - lg font - semibold ${themeClass('text', currentTheme)} `}>
                         25%
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -339,6 +339,6 @@ const ExperienceSection = ({ currentTheme, themeClass }) => {
       </div>
     </section>
   );
-};
+}
 
-export default ExperienceSection;
+export default memo(ExperienceSection);

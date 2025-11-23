@@ -111,6 +111,13 @@ export default function ProjectClientPage({ project }) {
             </div>
             <Link
               href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                // Set flag to skip animations and go to projects section
+                sessionStorage.setItem('skipAnimations', 'true');
+                sessionStorage.setItem('scrollToSection', 'projects');
+                window.location.href = '/';
+              }}
               className={`inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base ${getThemeClass('bg')} bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm transition-colors ${getThemeClass('text')} rounded-md`}
             >
               <svg className="w-3 h-3 md:w-4 md:h-4 mr-1.5 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

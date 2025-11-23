@@ -1,26 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { themeClass, loadDarkMode, setupSystemThemeListener } from '../utils/theme';
+import { SOCIAL_LINKS } from '../constants/userData';
+import { NAV_ITEMS } from '../constants/navigation';
+import { scrollToSection as scrollToSectionUtil } from '../utils/scrollUtils';
 
-// Data constants that would typically come from a config file or CMS
-const userData = {
-  socialLinks: {
-    github: "https://github.com/kushyanthpothi/",
-    linkedin: "https://www.linkedin.com/in/kushyanth-pothineni/",
-    twitter: "https://x.com/KushyanthPothi1"
-  }
-};
-
-const navItems = [
-  { name: 'HOME', section: 'home' },
-  { name: 'ABOUT', section: 'about' },
-  { name: 'EXPERIENCE', section: 'experience' },
-  { name: 'PROJECTS', section: 'projects' },
-  { name: 'CERTIFICATIONS', section: 'certifications' },
-  { name: 'CONTACT', section: 'contact' },
-];
-
-export default function Footer({ showQuickLinks = true, currentTheme = 'orange' }) {
+function Footer({ showQuickLinks = true, currentTheme = 'orange' }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
@@ -89,7 +74,7 @@ export default function Footer({ showQuickLinks = true, currentTheme = 'orange' 
             <div>
               <h3 className="text-lg font-bold mb-2">Quick Links</h3>
               <ul className="space-y-1">
-                {navItems.map((item) => (
+                {NAV_ITEMS.map((item) => (
                   <li key={item.name}>
                     <button
                       onClick={() => scrollToSection(item.section)}
@@ -106,7 +91,7 @@ export default function Footer({ showQuickLinks = true, currentTheme = 'orange' 
           <div className={showQuickLinks ? '' : 'md:col-start-2'}>
             <h3 className="text-lg font-bold mb-2">Connect</h3>
             <div className="flex space-x-3">
-              {Object.entries(userData.socialLinks).map(([platform, link]) => (
+              {Object.entries(SOCIAL_LINKS).map(([platform, link]) => (
                 <a
                   key={platform}
                   href={link}
@@ -134,3 +119,5 @@ export default function Footer({ showQuickLinks = true, currentTheme = 'orange' 
     </footer>
   );
 }
+
+export default memo(Footer);

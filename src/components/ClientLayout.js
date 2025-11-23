@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { loadDarkMode, setupSystemThemeListener } from '../utils/theme';
-import { useScrollRestore } from '../utils/scrollRestore';
+import { saveScrollPosition } from '../utils/scrollRestore';
 
 export default function ClientLayout({ children }) {
   useEffect(() => {
@@ -12,8 +12,8 @@ export default function ClientLayout({ children }) {
     // Setup system theme listener
     const cleanup = setupSystemThemeListener();
     
-    // Setup scroll position restoration globally
-    const scrollCleanup = useScrollRestore();
+    // Setup scroll position saving (restoration handled by page component)
+    window.addEventListener('beforeunload', saveScrollPosition);
     
     // Listen for storage events to sync theme across tabs/pages
     const handleStorageChange = (e) => {
@@ -26,8 +26,8 @@ export default function ClientLayout({ children }) {
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('beforeunload', saveScrollPosition);
       cleanup();
-      scrollCleanup();
     };
   }, []);
 

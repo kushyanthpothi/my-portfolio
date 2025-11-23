@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 import Silk from '../Backgrounds/Silk/Silk';
 import Beams from '../Backgrounds/Beams/Beams';
 import Dither from '../Backgrounds/Dither/Dither';
@@ -8,10 +8,10 @@ import PixelBlast from '../Backgrounds/PixelBlast/PixelBlast';
 import { GridScan } from '../Backgrounds/GridScan/GridScan';
 import ColorBends from '../Backgrounds/ColorBends/ColorBends';
 
-export default function Fireworks({ 
-  currentTheme = 'blue', 
-  isDarkMode = false, 
-  currentBackground = 'beams' 
+function Fireworks({
+  currentTheme = 'blue',
+  isDarkMode = false,
+  currentBackground = 'beams'
 }) {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
@@ -110,7 +110,7 @@ export default function Fireworks({
     explode() {
       this.exploded = true;
       const particleCount = Math.random() * 20 + 30;
-      
+
       for (let i = 0; i < particleCount; i++) {
         particlesRef.current.push(new Particle(this.x, this.y, this.color));
       }
@@ -149,15 +149,15 @@ export default function Fireworks({
       ctx.save();
       ctx.globalAlpha = this.alpha;
       ctx.fillStyle = this.color;
-      
+
       // Add glow effect
       ctx.shadowColor = this.color;
       ctx.shadowBlur = 5;
-      
+
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
       ctx.fill();
-      
+
       ctx.restore();
     }
 
@@ -240,8 +240,8 @@ export default function Fireworks({
       {!isBirthday && (
         <>
           {currentBackground === 'beams' && (
-            <Beams 
-              currentTheme={currentTheme} 
+            <Beams
+              currentTheme={currentTheme}
               isDarkMode={isDarkMode}
               speed={1}
               beamNumber={8}
@@ -249,29 +249,29 @@ export default function Fireworks({
             />
           )}
           {currentBackground === 'dither' && (
-            <Dither 
-              currentTheme={currentTheme} 
+            <Dither
+              currentTheme={currentTheme}
               isDarkMode={isDarkMode}
               waveSpeed={0.02}
               waveAmplitude={0.2}
             />
           )}
           {currentBackground === 'silk' && (
-            <Silk 
-              currentTheme={currentTheme} 
+            <Silk
+              currentTheme={currentTheme}
               isDarkMode={isDarkMode}
               speed={2}
             />
           )}
           {currentBackground === 'pixelblast' && (
-            <PixelBlast 
-              currentTheme={currentTheme} 
+            <PixelBlast
+              currentTheme={currentTheme}
               isDarkMode={isDarkMode}
               speed={0.2}
             />
           )}
           {currentBackground === 'gridscan' && (
-            <GridScan 
+            <GridScan
               linesColor={colors[0]}
               scanColor={colors[1]}
               enableWebcam={false}
@@ -296,7 +296,7 @@ export default function Fireworks({
             />
           )}
           {currentBackground === 'colorbends' && (
-            <ColorBends 
+            <ColorBends
               colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']}
               speed={0.3}
               scale={1.2}
@@ -310,7 +310,7 @@ export default function Fireworks({
           )}
         </>
       )}
-      
+
       {/* Canvas for fireworks */}
       <canvas
         ref={canvasRef}
@@ -324,3 +324,12 @@ export default function Fireworks({
     </div>
   );
 }
+
+// Memoize component with custom comparison to prevent unnecessary re-renders
+export default memo(Fireworks, (prevProps, nextProps) => {
+  return (
+    prevProps.currentTheme === nextProps.currentTheme &&
+    prevProps.isDarkMode === nextProps.isDarkMode &&
+    prevProps.currentBackground === nextProps.currentBackground
+  );
+});
