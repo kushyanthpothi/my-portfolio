@@ -1,6 +1,6 @@
 # Kushyanth Pothineni - Portfolio Website
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.3.0-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19.0.0-blue?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Firebase](https://img.shields.io/badge/Firebase-Hosting-orange?style=for-the-badge&logo=firebase&logoColor=white)](https://firebase.google.com)
@@ -41,7 +41,7 @@ A modern, responsive portfolio website showcasing the work and skills of Kushyan
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **Framework**: Next.js 15.3.0 (App Router)
+- **Framework**: Next.js 16.0.3 (App Router)
 - **UI Library**: React 19.0.0
 - **Styling**: TailwindCSS 3.4.1
 - **Animations**: Framer Motion 12.16.0, GSAP 3.13.0
