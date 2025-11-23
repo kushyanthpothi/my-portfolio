@@ -206,10 +206,10 @@ my-portfolio/
 
 ### 🛠️ Skills
 **Technical Skills Display**:
-- **Programming Languages**: JavaScript (92%), Python (85%), Java (78%), C/C++
-- **Frontend Development**: React.js (85%), Next.js (85%), Angular, HTML/CSS (95%)
-- **Backend Development**: Django (85%), Node.js, REST APIs (86%)
-- **Databases**: MongoDB (80%), MySQL (82%), PostgreSQL
+- **Programming Languages**: JavaScript, Python, Java, C/C++
+- **Frontend Development**: React.js, Next.js, Angular, HTML/CSS
+- **Backend Development**: Django, Node.js, REST APIs
+- **Databases**: MongoDB, MySQL, PostgreSQL
 - **Cloud & DevOps**: AWS, Firebase, Docker, Git
 - **Mobile Development**: Android (Java/Kotlin)
 - **Animated Progress Bars**: Visual representation of skill proficiency levels
