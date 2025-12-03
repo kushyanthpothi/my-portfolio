@@ -70,10 +70,10 @@ const projectsData = {
       "Created a platform that adapts to individual learning styles"
     ],
     projectLink: "https://github.com/kushyanthpothi/instans",
-    image: "https://i.ibb.co/JRtFvVD2/Airbrush-image-extender-1.jpg",
+    image: "/images/projects/instans.jpg",
     viewSiteLink: "https://instans.netlify.app/",
     screenshots: [
-      "https://i.ibb.co/JRtFvVD2/Airbrush-image-extender-1.jpg"
+      "/images/projects/instans.jpg"
     ],
     demoLinks: [
       { name: "Live Demo", url: "https://instans.netlify.app/" },
@@ -141,10 +141,10 @@ const projectsData = {
       "Created a scalable platform for future expansion"
     ],
     projectLink: "https://github.com/kushyanthpothi/EventMania",
-    image: "https://i.ibb.co/gJQKjNK/Event-Mania-Design.png",
+    image: "/images/projects/event-mania.png",
     viewSiteLink: "https://ap-event-mania.web.app/",
     screenshots: [
-      "https://i.ibb.co/gJQKjNK/Event-Mania-Design.png"
+      "/images/projects/event-mania.png"
     ],
     demoLinks: [
       { name: "Live Demo", url: "https://ap-event-mania.web.app/" },
@@ -213,9 +213,9 @@ const projectsData = {
       "Demonstrated practical Django application development"
     ],
     projectLink: "https://github.com/kushyanthpothi/ytdownloader",
-    image: "https://i.ibb.co/FB9hXK8/Laptop-Design-edit.png",
+    image: "/images/projects/youtube-downloader.png",
     screenshots: [
-      "https://i.ibb.co/FB9hXK8/Laptop-Design-edit.png"
+      "/images/projects/youtube-downloader.png"
     ],
     demoLinks: [
       { name: "GitHub Repository", url: "https://github.com/kushyanthpothi/ytdownloader" }
@@ -284,9 +284,9 @@ const projectsData = {
       "Created a foundation for future mobile productivity apps"
     ],
     projectLink: "https://github.com/kushyanthpothi/ProReader",
-    image: "https://i.ibb.co/sQYYbks/Pro-Reader-Banner-web-1.png",
+    image: "/images/projects/pro-reader.png",
     screenshots: [
-      "https://i.ibb.co/sQYYbks/Pro-Reader-Banner-web-1.png"
+      "/images/projects/pro-reader.png"
     ],
     demoLinks: [
       { name: "GitHub Repository", url: "https://github.com/kushyanthpothi/ProReader" }
@@ -356,10 +356,10 @@ const projectsData = {
       "Demonstrated modern web application development"
     ],
     projectLink: "https://github.com/kushyanthpothi/pin-noter",
-    image: "https://i.ibb.co/Fk2jTJWP/screely-1752326497618.png",
+    image: "/images/projects/pin-noter.png",
     viewSiteLink: "https://pin-noter.netlify.app/",
     screenshots: [
-      "https://i.ibb.co/Fk2jTJWP/screely-1752326497618.png"
+      "/images/projects/pin-noter.png"
     ],
     demoLinks: [
       { name: "Live Demo", url: "https://pin-noter.netlify.app/" },
@@ -435,9 +435,9 @@ const projectsData = {
       "Demonstrated enterprise-level Django application development"
     ],
     projectLink: "https://github.com/kushyanthpothi/employeerecordsystem",
-    image: "https://i.ibb.co/ffTn15M/Untitled-design-1.png",
+    image: "/images/projects/employee-record-system.png",
     screenshots: [
-      "https://i.ibb.co/ffTn15M/Untitled-design-1.png"
+      "/images/projects/employee-record-system.png"
     ],
     demoLinks: [
       { name: "GitHub Repository", url: "https://github.com/kushyanthpothi/employeerecordsystem" }

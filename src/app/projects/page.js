@@ -27,27 +27,27 @@ export default function Projects() {
     if (savedTheme) {
       setCurrentTheme(savedTheme);
     }
-    
+
     // Load and apply dark mode
     const darkModeEnabled = loadDarkMode();
     setIsDarkMode(darkModeEnabled);
-    
+
     // Force scroll to top when component mounts (for projects page)
     // Clear any existing scroll restoration first
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('scrollPosition');
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      
+
       // Additional scroll to top after a brief delay to ensure it works
       const scrollTimer = setTimeout(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       }, 50);
-      
+
       // Another backup scroll after DOM is fully settled
       const backupScrollTimer = setTimeout(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       }, 200);
-      
+
       // Listen for storage changes to sync dark mode and theme across tabs
       const handleStorageChange = (e) => {
         if (e.key === 'darkMode' || e.type === 'storage') {
@@ -61,7 +61,7 @@ export default function Projects() {
           }
         }
       };
-      
+
       // Listen for custom theme change events (for same-tab updates)
       const handleThemeChange = (event) => {
         if (event.detail?.theme) {
@@ -71,10 +71,10 @@ export default function Projects() {
           setIsDarkMode(event.detail.darkMode);
         }
       };
-      
+
       window.addEventListener('storage', handleStorageChange);
       window.addEventListener('themeChanged', handleThemeChange);
-      
+
       return () => {
         window.removeEventListener('storage', handleStorageChange);
         window.removeEventListener('themeChanged', handleThemeChange);
@@ -88,9 +88,9 @@ export default function Projects() {
     projects: [
       {
         title: "instans",
-        description:"Instans is an AI-powered interview preparation assistant that combines real-time screen sharing with intelligent chat capabilities. The platform leverages Google's Generative AI to provide personalized interview coaching, technical problem-solving guidance, and resume analysis.",
+        description: "Instans is an AI-powered interview preparation assistant that combines real-time screen sharing with intelligent chat capabilities. The platform leverages Google's Generative AI to provide personalized interview coaching, technical problem-solving guidance, and resume analysis.",
         techStack: ["React", "Firebase", "HTML/CSS", "Open Source", "Gemini"],
-        image: "https://i.ibb.co/JRtFvVD2/Airbrush-image-extender-1.jpg",
+        image: "/images/projects/instans.jpg",
         slug: "instans",
         viewSiteLink: "https://instans.netlify.app/"
       },
@@ -98,7 +98,7 @@ export default function Projects() {
         title: "Event Mania",
         description: "Event Mania is a one-stop platform designed to simplify event management for colleges and students. Whether you're a student looking for exciting events to join or a college representative organizing events, Event Mania bridges the gap and creates a seamless experience.",
         techStack: ["React", "Firebase", "HTML/CSS", "Authentication"],
-        image: "https://i.ibb.co/gJQKjNK/Event-Mania-Design.png",
+        image: "/images/projects/event-mania.png",
         slug: "event-mania",
         viewSiteLink: "https://ap-event-mania.web.app/"
       },
@@ -106,21 +106,21 @@ export default function Projects() {
         title: "YouTube Video and Audio Downloader",
         description: "This Django-based project empowers you to download YouTube videos and audio in your preferred format and resolution. Select quality options and extract audio with just a few clicks.",
         techStack: ["Django", "Python", "HTML/CSS", "ffmpeg", "pytube"],
-        image: "https://i.ibb.co/FB9hXK8/Laptop-Design-edit.png",
+        image: "/images/projects/youtube-downloader.png",
         slug: "youtube-downloader"
       },
       {
         title: "Pro Reader",
         description: "Pro Reader is a feature-packed Android application that empowers you to handle QR codes, speech, and text with ease. Whether it's scanning, generating, converting, or extracting text, Pro Reader is your ultimate tool.",
         techStack: ["Java/Kotlin", "Firebase", "ML Kit", "Android"],
-        image: "https://i.ibb.co/sQYYbks/Pro-Reader-Banner-web-1.png",
+        image: "/images/projects/pro-reader.png",
         slug: "pro-reader"
       },
       {
         title: "Pin Noter",
         description: "Pin Noter is a React-based note-taking application offering rich text formatting options like bold, underline, and lists. It supports offline caching for seamless note-taking without logging in and automatically syncs notes to the cloud upon login.",
         techStack: ["React.js", "Firebase", "CSS3", "React-dom"],
-        image: "https://i.ibb.co/Fk2jTJWP/screely-1752326497618.png",
+        image: "/images/projects/pin-noter.png",
         slug: "pin-noter",
         viewSiteLink: "https://pin-noter.netlify.app/"
       },
@@ -128,7 +128,7 @@ export default function Projects() {
         title: "Employee Record System",
         description: "A comprehensive web-based employee management system built with Django, designed to streamline employee data management for organizations. Features dual interface system with admin and employee panels, profile management, and role-based authentication.",
         techStack: ["Django", "Python", "MySQL", "Bootstrap", "JavaScript"],
-        image: "https://i.ibb.co/ffTn15M/Untitled-design-1.png",
+        image: "/images/projects/employee-record-system.png",
         slug: "employee-record-system"
       }
     ]
@@ -236,7 +236,7 @@ export default function Projects() {
           </div>
         </div>
       </section>
-      <Footer currentTheme={currentTheme}/>
+      <Footer currentTheme={currentTheme} />
     </main>
   );
 }

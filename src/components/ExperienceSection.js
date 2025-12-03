@@ -66,7 +66,7 @@ function ExperienceSection({ currentTheme, themeClass }) {
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-10 md:h-10 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-1 shadow-sm flex-shrink-0`}>
                       <Image
-                        src="https://i.ibb.co/tMBZRQY6/images-2.png"
+                        src="/images/experience/ninjacart.png"
                         alt="NinjaCart Logo"
                         width={40}
                         height={40}
@@ -161,7 +161,7 @@ function ExperienceSection({ currentTheme, themeClass }) {
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-10 md:h-10 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-1 shadow-sm flex-shrink-0`}>
                       <Image
-                        src="https://i.ibb.co/tMBZRQY6/images-2.png"
+                        src="/images/experience/ninjacart.png"
                         alt="NinjaCart Logo"
                         width={40}
                         height={40}
@@ -256,7 +256,7 @@ function ExperienceSection({ currentTheme, themeClass }) {
                   <div className="flex items-start space-x-3 md:space-x-4 mb-4 md:mb-5">
                     <div className={`w-10 h-10 md:w-10 md:h-10 bg-gradient-to-br from-${currentTheme}-200 to-${currentTheme}-400 dark:from-${currentTheme}-700 dark:to-${currentTheme}-900 rounded-lg p-1 shadow-sm flex-shrink-0`}>
                       <Image
-                        src="https://i.ibb.co/HLsn4PN8/images-3.png"
+                        src="/images/experience/blackbucks.png"
                         alt="Blackbucks Engineers Logo"
                         width={40}
                         height={40}

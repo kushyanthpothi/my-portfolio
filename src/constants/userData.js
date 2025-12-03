@@ -35,7 +35,7 @@ export const PROJECTS = [
         title: "instans",
         description: "Instans is an AI-powered interview preparation assistant that combines real-time screen sharing with intelligent chat capabilities. The platform leverages Google's Generative AI to provide personalized interview coaching, technical problem-solving guidance, and resume analysis.",
         techStack: ["React", "Firebase", "HTML/CSS", "Open Source", "Gemini"],
-        image: "https://i.ibb.co/JRtFvVD2/Airbrush-image-extender-1.jpg",
+        image: "/images/projects/instans.jpg",
         slug: "instans",
         viewSiteLink: "https://instans.netlify.app/"
     },
@@ -43,7 +43,7 @@ export const PROJECTS = [
         title: "Event Mania",
         description: "Event Mania is a one-stop platform designed to simplify event management for colleges and students. Whether you're a student looking for exciting events to join or a college representative organizing events, Event Mania bridges the gap and creates a seamless experience.",
         techStack: ["React", "Firebase", "HTML/CSS", "Authentication"],
-        image: "https://i.ibb.co/gJQKjNK/Event-Mania-Design.png",
+        image: "/images/projects/event-mania.png",
         slug: "event-mania",
         viewSiteLink: "https://ap-event-mania.web.app/"
     },
@@ -51,21 +51,21 @@ export const PROJECTS = [
         title: "YouTube Video and Audio Downloader",
         description: "This Django-based project empowers you to download YouTube videos and audio in your preferred format and resolution. Select quality options and extract audio with just a few clicks.",
         techStack: ["Django", "Python", "HTML/CSS", "ffmpeg", "pytube"],
-        image: "https://i.ibb.co/FB9hXK8/Laptop-Design-edit.png",
+        image: "/images/projects/youtube-downloader.png",
         slug: "youtube-downloader"
     },
     {
         title: "Pro Reader",
         description: "Pro Reader is a feature-packed Android application that empowers you to handle QR codes, speech, and text with ease. Whether it's scanning, generating, converting, or extracting text, Pro Reader is your ultimate tool.",
         techStack: ["Java/Kotlin", "Firebase", "ML Kit", "Android"],
-        image: "https://i.ibb.co/sQYYbks/Pro-Reader-Banner-web-1.png",
+        image: "/images/projects/pro-reader.png",
         slug: "pro-reader"
     },
     {
         title: "Pin Noter",
         description: "Pin Noter is a React-based note-taking application offering rich text formatting options like bold, underline, and lists. It supports offline caching for seamless note-taking without logging in and automatically syncs notes to the cloud upon login.",
         techStack: ["React.js", "Firebase", "CSS3", "React-dom"],
-        image: "https://i.ibb.co/Fk2jTJWP/screely-1752326497618.png",
+        image: "/images/projects/pin-noter.png",
         slug: "pin-noter",
         viewSiteLink: "https://pin-noter.netlify.app/"
     },
@@ -73,7 +73,7 @@ export const PROJECTS = [
         title: "Employee Record System",
         description: "A comprehensive web-based employee management system built with Django, designed to streamline employee data management for organizations. Features dual interface system with admin and employee panels, profile management, and role-based authentication.",
         techStack: ["Django", "Python", "MySQL", "Bootstrap", "JavaScript"],
-        image: "https://i.ibb.co/ffTn15M/Untitled-design-1.png",
+        image: "/images/projects/employee-record-system.png",
         slug: "employee-record-system"
     }
 ];
@@ -81,37 +81,37 @@ export const PROJECTS = [
 export const CERTIFICATIONS = [
     {
         name: "ServiceNow Certified System Administrator",
-        image: "https://i.ibb.co/5WRM8C76/Service-Now-CSA-page-0001.jpg",
+        image: "/images/certificates/servicenow-csa.jpg",
         link: "https://drive.google.com/file/d/1QdWYq6ditLGmzjzqcEITSwpAC9x-ZXUN/view?usp=sharing"
     },
     {
         name: "AWS Academy Machine Learning Foundations",
-        image: "https://i.ibb.co/mFFtB0B/AWS-Academy-Machine-Learning-Foundations-page-0001.jpg",
+        image: "/images/certificates/aws-ml.jpg",
         link: "https://www.credly.com/badges/446553a7-d24b-4955-889e-55eec636f750/linked_in_profile"
     },
     {
         name: "Wipro Talent Next Java Full Stack Certification",
-        image: "https://i.ibb.co/vPfStSV/Wipro-Certificate.png",
+        image: "/images/certificates/wipro-java.png",
         link: "https://cert.diceid.com/cid/xNkRt2LMUe"
     },
     {
         name: "Responsive Web Designer Certification",
-        image: "https://i.ibb.co/rdvfGyY/image.png",
+        image: "/images/certificates/fcc-responsive.png",
         link: "https://www.freecodecamp.org/certification/Kushyanthpothi/responsive-web-design"
     },
     {
         name: "Introduction to Internet of Things",
-        image: "https://i.ibb.co/gjkdXfn/NPTEL-Introduction-To-Internet-Of-Things-page-0001.jpg",
+        image: "/images/certificates/nptel-iot.jpg",
         link: "https://nptel.ac.in/noc/E_Certificate/NPTEL24CS35S65630220730556258"
     },
     {
         name: "Junior Software Developer",
-        image: "https://i.ibb.co/6nzykQ3/1735105593467-page-0001.jpg",
+        image: "/images/certificates/junior-dev.jpg",
         link: "https://drive.google.com/file/d/1q3-3-lYH3mm08gcnGXN66SIFSRwyQm0u/view?usp=sharing"
     },
     {
         name: "The Fundamentals of Digital Marketing",
-        image: "https://i.ibb.co/8gqNBvR/Google-Digital-Garage-The-fundamentals-of-digital-marketing-page-0001.jpg",
+        image: "/images/certificates/digital-marketing.jpg",
         link: "https://learndigital.withgoogle.com/link/1qsdpcedm9s"
     }
 ];
@@ -125,10 +125,10 @@ export const SKILL_CATEGORIES = [
             </svg>
         ),
         skills: [
-            { name: 'JavaScript', wiki: 'https://en.wikipedia.org/wiki/JavaScript', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg' },
-            { name: 'Python', wiki: 'https://en.wikipedia.org/wiki/Python_(programming_language)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg' },
-            { name: 'Java', wiki: 'https://en.wikipedia.org/wiki/Java_(programming_language)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg' },
-            { name: 'C/C++', wiki: 'https://en.wikipedia.org/wiki/C%2B%2B', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg' }
+            { name: 'JavaScript', wiki: 'https://en.wikipedia.org/wiki/JavaScript', image: '/images/skills/javascript.svg' },
+            { name: 'Python', wiki: 'https://en.wikipedia.org/wiki/Python_(programming_language)', image: '/images/skills/python.svg' },
+            { name: 'Java', wiki: 'https://en.wikipedia.org/wiki/Java_(programming_language)', image: '/images/skills/java.svg' },
+            { name: 'C/C++', wiki: 'https://en.wikipedia.org/wiki/C%2B%2B', image: '/images/skills/cpp.svg' }
         ]
     },
     {
@@ -139,10 +139,10 @@ export const SKILL_CATEGORIES = [
             </svg>
         ),
         skills: [
-            { name: 'React.js', wiki: 'https://en.wikipedia.org/wiki/React_(JavaScript_library)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg' },
-            { name: 'Next.js', wiki: 'https://en.wikipedia.org/wiki/Next.js', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg' },
-            { name: 'Angular', wiki: 'https://en.wikipedia.org/wiki/Angular_(web_framework)', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg' },
-            { name: 'HTML/CSS', wiki: 'https://en.wikipedia.org/wiki/HTML', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg' }
+            { name: 'React.js', wiki: 'https://en.wikipedia.org/wiki/React_(JavaScript_library)', image: '/images/skills/react.svg' },
+            { name: 'Next.js', wiki: 'https://en.wikipedia.org/wiki/Next.js', image: '/images/skills/nextjs.svg' },
+            { name: 'Angular', wiki: 'https://en.wikipedia.org/wiki/Angular_(web_framework)', image: '/images/skills/angular.svg' },
+            { name: 'HTML/CSS', wiki: 'https://en.wikipedia.org/wiki/HTML', image: '/images/skills/html.svg' }
         ]
     },
     {
@@ -153,10 +153,10 @@ export const SKILL_CATEGORIES = [
             </svg>
         ),
         skills: [
-            { name: 'Django', wiki: 'https://en.wikipedia.org/wiki/Django_(web_framework)', image: 'https://www.svgrepo.com/show/353657/django-icon.svg' },
-            { name: 'Node.js', wiki: 'https://en.wikipedia.org/wiki/Node.js', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg' },
-            { name: 'REST APIs', wiki: 'https://en.wikipedia.org/wiki/Representational_state_transfer', image: 'https://www.svgrepo.com/show/375531/api.svg' },
-            { name: 'Firebase', wiki: 'https://en.wikipedia.org/wiki/Firebase', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg' }
+            { name: 'Django', wiki: 'https://en.wikipedia.org/wiki/Django_(web_framework)', image: '/images/skills/django.svg' },
+            { name: 'Node.js', wiki: 'https://en.wikipedia.org/wiki/Node.js', image: '/images/skills/nodejs.svg' },
+            { name: 'REST APIs', wiki: 'https://en.wikipedia.org/wiki/Representational_state_transfer', image: '/images/skills/api.svg' },
+            { name: 'Firebase', wiki: 'https://en.wikipedia.org/wiki/Firebase', image: '/images/skills/firebase.svg' }
         ]
     },
     {
@@ -167,10 +167,10 @@ export const SKILL_CATEGORIES = [
             </svg>
         ),
         skills: [
-            { name: 'MongoDB', wiki: 'https://en.wikipedia.org/wiki/MongoDB', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg' },
-            { name: 'PostgreSQL', wiki: 'https://en.wikipedia.org/wiki/PostgreSQL', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg' },
-            { name: 'MySQL', wiki: 'https://en.wikipedia.org/wiki/MySQL', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg' },
-            { name: 'Firebase', wiki: 'https://en.wikipedia.org/wiki/Firebase', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg' }
+            { name: 'MongoDB', wiki: 'https://en.wikipedia.org/wiki/MongoDB', image: '/images/skills/mongodb.svg' },
+            { name: 'PostgreSQL', wiki: 'https://en.wikipedia.org/wiki/PostgreSQL', image: '/images/skills/postgresql.svg' },
+            { name: 'MySQL', wiki: 'https://en.wikipedia.org/wiki/MySQL', image: '/images/skills/mysql.svg' },
+            { name: 'Firebase', wiki: 'https://en.wikipedia.org/wiki/Firebase', image: '/images/skills/firebase.svg' }
         ]
     },
     {
@@ -182,10 +182,10 @@ export const SKILL_CATEGORIES = [
             </svg>
         ),
         skills: [
-            { name: 'Git', wiki: 'https://en.wikipedia.org/wiki/Git', image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
-            { name: 'MCP', wiki: 'https://www.anthropic.com/news/model-context-protocol', image: 'https://avatars.githubusercontent.com/u/182288589?s=200&v=4' },
-            { name: 'SDLC', wiki: 'https://en.wikipedia.org/wiki/Software_development_life_cycle', image: 'https://cdn2.iconfinder.com/data/icons/programming-76/512/SDLC-software-development-life_cycle-512.png' },
-            { name: 'API Integration', wiki: 'https://en.wikipedia.org/wiki/API', image: 'https://www.svgrepo.com/show/375531/api.svg' }
+            { name: 'Git', wiki: 'https://en.wikipedia.org/wiki/Git', image: '/images/skills/git.svg' },
+            { name: 'MCP', wiki: 'https://www.anthropic.com/news/model-context-protocol', image: '/images/skills/mcp.png' },
+            { name: 'SDLC', wiki: 'https://en.wikipedia.org/wiki/Software_development_life_cycle', image: '/images/skills/sdlc.png' },
+            { name: 'API Integration', wiki: 'https://en.wikipedia.org/wiki/API', image: '/images/skills/api.svg' }
         ]
     }
 ];

@@ -44,9 +44,10 @@ export const FORM_CONFIG = {
  * Image URLs
  */
 export const IMAGES = {
-    PROFILE_HERO: "https://i.ibb.co/LXLWTXFb/picofme-2.png",
-    PROFILE_ABOUT: "https://i.ibb.co/CKF58Rkb/1762666415465.png",
+    PROFILE_HERO: "/images/profile/hero.png",
+    PROFILE_ABOUT: "/images/profile/about.png",
 };
+
 
 /**
  * External links

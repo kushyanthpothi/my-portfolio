@@ -49,7 +49,7 @@ export const metadata = {
     siteName: "Kushyanth Pothineni Portfolio",
     images: [
       {
-        url: "https://i.ibb.co/CpW4rW5s/picofme-2.png",
+        url: "/images/profile/hero-og.png",
         width: 1200,
         height: 630,
         alt: "Kushyanth Pothineni - Software Developer",
@@ -64,7 +64,7 @@ export const metadata = {
     title: "Kushyanth Pothineni – Software Developer & Full Stack Engineer",
     description:
       "Software Developer specializing in React.js, Next.js, Django, and Python. Creator of AI Interview Assistant and other full stack projects.",
-    images: ["https://i.ibb.co/CpW4rW5s/picofme-2.png"],
+    images: ["/images/profile/hero-og.png"],
   },
 
   robots: {
