@@ -4,12 +4,12 @@ import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { themeColors, themeClass, THEME_MODES, BACKGROUND_OPTIONS, isBackgroundSwitchDisabled } from '../utils/theme';
 
-export default function ThemeDrawer({ 
-  isOpen, 
-  onClose, 
-  currentTheme, 
-  onThemeChange, 
-  themeMode, 
+export default function ThemeDrawer({
+  isOpen,
+  onClose,
+  currentTheme,
+  onThemeChange,
+  themeMode,
   onThemeModeChange,
   currentBackground,
   onBackgroundChange,
@@ -26,7 +26,8 @@ export default function ThemeDrawer({
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
-    }  }, [isOpen, onClose]);
+    }
+  }, [isOpen, onClose]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -41,23 +42,23 @@ export default function ThemeDrawer({
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 24 
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 24
       }
     }
   };
 
   const buttonHoverVariants = {
-    hover: { 
+    hover: {
       scale: 1.02,
       transition: { duration: 0.2 }
     },
-    tap: { 
+    tap: {
       scale: 0.98,
       transition: { duration: 0.1 }
     }
@@ -68,22 +69,22 @@ export default function ThemeDrawer({
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] transition-all duration-300"
             onClick={onClose}
           />
-          
+
           {/* Drawer */}
-          <motion.div 
+          <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 300, 
+            transition={{
+              type: "spring",
+              stiffness: 300,
               damping: 30,
               duration: 0.4
             }}
@@ -91,7 +92,7 @@ export default function ThemeDrawer({
           >
             <div className="flex flex-col h-full">
               {/* Header */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.3 }}
@@ -113,7 +114,7 @@ export default function ThemeDrawer({
               </motion.div>
 
               {/* Content */}
-              <motion.div 
+              <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -127,26 +128,29 @@ export default function ThemeDrawer({
                     </svg>
                     Appearance Mode
                   </h3>
-                  <div className="grid grid-cols-1 gap-3">
+                  <div className="relative grid grid-cols-1 gap-3">
                     {/* Light Mode Button */}
                     <motion.button
                       variants={buttonHoverVariants}
                       whileHover="hover"
                       whileTap="tap"
                       onClick={() => onThemeModeChange(THEME_MODES.LIGHT)}
-                      className={`group flex items-center p-4 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm ${
-                        themeMode === THEME_MODES.LIGHT
-                          ? `border-${currentTheme}-500/80 ${themeClass('bgSelected', currentTheme)} shadow-lg shadow-${currentTheme}-500/20`
-                          : 'border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md'
-                      }`}
+                      className="group relative flex items-center p-4 rounded-xl border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md transition-all duration-300 backdrop-blur-sm overflow-hidden"
                     >
-                      <div className="w-12 h-8 rounded-lg bg-gradient-to-br from-white to-gray-100 border border-gray-300/50 mr-4 relative overflow-hidden shadow-inner">
+                      {themeMode === THEME_MODES.LIGHT && (
+                        <motion.div
+                          layoutId="appearanceMode"
+                          className={`absolute inset-0 border-${currentTheme}-500/80 ${themeClass('bgSelected', currentTheme)} shadow-lg shadow-${currentTheme}-500/20 rounded-xl border-2`}
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <div className="w-12 h-8 rounded-lg bg-gradient-to-br from-white to-gray-100 border border-gray-300/50 mr-4 relative overflow-hidden shadow-inner z-10">
                         <div className="absolute inset-1 bg-gray-50 rounded-md"></div>
                         <div className="absolute top-1 left-1 w-2 h-1 bg-yellow-400 rounded-full shadow-sm"></div>
                         <div className="absolute top-3 left-1 right-1 h-0.5 bg-gray-300 rounded-full"></div>
                         <div className="absolute top-4 left-1 right-1 h-0.5 bg-gray-300 rounded-full"></div>
                       </div>
-                      <div className="flex-1 text-left">
+                      <div className="flex-1 text-left z-10">
                         <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                           Light
                         </span>
@@ -155,11 +159,11 @@ export default function ThemeDrawer({
                         </p>
                       </div>
                       {themeMode === THEME_MODES.LIGHT && (
-                        <motion.svg 
+                        <motion.svg
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className={`w-4 h-4 ${themeClass('text', currentTheme)} ml-2`} 
-                          fill="currentColor" 
+                          className={`w-4 h-4 ${themeClass('text', currentTheme)} ml-2 z-10`}
+                          fill="currentColor"
                           viewBox="0 0 20 20"
                         >
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -173,19 +177,22 @@ export default function ThemeDrawer({
                       whileHover="hover"
                       whileTap="tap"
                       onClick={() => onThemeModeChange(THEME_MODES.DARK)}
-                      className={`group flex items-center p-4 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm ${
-                        themeMode === THEME_MODES.DARK
-                          ? `border-${currentTheme}-500/80 ${themeClass('bgSelected', currentTheme)} shadow-lg shadow-${currentTheme}-500/20`
-                          : 'border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md'
-                      }`}
+                      className="group relative flex items-center p-4 rounded-xl border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md transition-all duration-300 backdrop-blur-sm overflow-hidden"
                     >
-                      <div className="w-12 h-8 rounded-lg bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/50 mr-4 relative overflow-hidden shadow-inner">
+                      {themeMode === THEME_MODES.DARK && (
+                        <motion.div
+                          layoutId="appearanceMode"
+                          className={`absolute inset-0 border-${currentTheme}-500/80 ${themeClass('bgSelected', currentTheme)} shadow-lg shadow-${currentTheme}-500/20 rounded-xl border-2`}
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <div className="w-12 h-8 rounded-lg bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/50 mr-4 relative overflow-hidden shadow-inner z-10">
                         <div className="absolute inset-1 bg-gray-800 rounded-md"></div>
                         <div className="absolute top-1 left-1 w-2 h-1 bg-blue-400 rounded-full shadow-sm"></div>
                         <div className="absolute top-3 left-1 right-1 h-0.5 bg-gray-600 rounded-full"></div>
                         <div className="absolute top-4 left-1 right-1 h-0.5 bg-gray-600 rounded-full"></div>
                       </div>
-                      <div className="flex-1 text-left">
+                      <div className="flex-1 text-left z-10">
                         <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                           Dark
                         </span>
@@ -194,11 +201,11 @@ export default function ThemeDrawer({
                         </p>
                       </div>
                       {themeMode === THEME_MODES.DARK && (
-                        <motion.svg 
+                        <motion.svg
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className={`w-4 h-4 ${themeClass('text', currentTheme)} ml-2`} 
-                          fill="currentColor" 
+                          className={`w-4 h-4 ${themeClass('text', currentTheme)} ml-2 z-10`}
+                          fill="currentColor"
                           viewBox="0 0 20 20"
                         >
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -212,13 +219,16 @@ export default function ThemeDrawer({
                       whileHover="hover"
                       whileTap="tap"
                       onClick={() => onThemeModeChange(THEME_MODES.SYSTEM)}
-                      className={`group flex items-center p-4 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm ${
-                        themeMode === THEME_MODES.SYSTEM
-                          ? `border-${currentTheme}-500/80 ${themeClass('bgSelected', currentTheme)} shadow-lg shadow-${currentTheme}-500/20`
-                          : 'border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md'
-                      }`}
+                      className="group relative flex items-center p-4 rounded-xl border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md transition-all duration-300 backdrop-blur-sm overflow-hidden"
                     >
-                      <div className="w-12 h-8 rounded-lg mr-4 relative overflow-hidden shadow-inner border border-gray-300/50 dark:border-gray-700/50">
+                      {themeMode === THEME_MODES.SYSTEM && (
+                        <motion.div
+                          layoutId="appearanceMode"
+                          className={`absolute inset-0 border-${currentTheme}-500/80 ${themeClass('bgSelected', currentTheme)} shadow-lg shadow-${currentTheme}-500/20 rounded-xl border-2`}
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <div className="w-12 h-8 rounded-lg mr-4 relative overflow-hidden shadow-inner border border-gray-300/50 dark:border-gray-700/50 z-10">
                         <div className="absolute inset-0 rounded-lg overflow-hidden">
                           <div className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-br from-white to-gray-100 border-r border-gray-300/50">
                             <div className="absolute inset-1 bg-gray-50 rounded-l-md"></div>
@@ -232,7 +242,7 @@ export default function ThemeDrawer({
                           </div>
                         </div>
                       </div>
-                      <div className="flex-1 text-left">
+                      <div className="flex-1 text-left z-10">
                         <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                           System
                         </span>
@@ -241,11 +251,11 @@ export default function ThemeDrawer({
                         </p>
                       </div>
                       {themeMode === THEME_MODES.SYSTEM && (
-                        <motion.svg 
+                        <motion.svg
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className={`w-4 h-4 ${themeClass('text', currentTheme)} ml-2`} 
-                          fill="currentColor" 
+                          className={`w-4 h-4 ${themeClass('text', currentTheme)} ml-2 z-10`}
+                          fill="currentColor"
                           viewBox="0 0 20 20"
                         >
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -261,7 +271,7 @@ export default function ThemeDrawer({
                     <div className="w-5 h-5 rounded-full bg-gradient-conic from-red-500 via-orange-500 via-yellow-500 via-green-500 via-blue-500 via-purple-500 to-red-500 border-2 border-white dark:border-gray-800 shadow-sm"></div>
                     Color Theme
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="relative grid grid-cols-2 gap-3">
                     {Object.keys(themeColors).map((color, index) => {
                       const colorClasses = {
                         blue: 'bg-blue-500',
@@ -274,7 +284,7 @@ export default function ThemeDrawer({
                       };
                       // Disable all colors except lightgray when ColorBends is selected
                       const isDisabled = currentBackground === 'colorbends' && color !== 'lightgray';
-                      
+
                       return (
                         <motion.button
                           key={color}
@@ -286,33 +296,36 @@ export default function ThemeDrawer({
                           transition={{ delay: index * 0.05 }}
                           onClick={() => !isDisabled && onThemeChange(color)}
                           disabled={isDisabled}
-                          className={`group flex items-center space-x-3 p-3 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm ${
-                            isDisabled
-                              ? 'opacity-50 cursor-not-allowed border-gray-200/30 dark:border-gray-700/30'
-                              : color === currentTheme 
-                                ? `border-${color}-500/80 ${themeClass('bgSelected', color)} shadow-lg shadow-${color}-500/20`
-                                : 'border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md'
-                          }`}
+                          className={`group relative flex items-center space-x-3 p-3 rounded-xl border-2 border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 backdrop-blur-sm overflow-hidden ${isDisabled
+                            ? 'opacity-50 cursor-not-allowed border-gray-200/30 dark:border-gray-700/30'
+                            : 'hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md'
+                            }`}
                         >
-                          <motion.div 
-                            className={`w-6 h-6 rounded-full ${colorClasses[color]} shadow-lg border-2 border-white dark:border-gray-800`}
+                          {color === currentTheme && !isDisabled && (
+                            <motion.div
+                              layoutId="colorTheme"
+                              className={`absolute inset-0 border-${color}-500/80 ${themeClass('bgSelected', color)} shadow-lg shadow-${color}-500/20 rounded-xl border-2`}
+                              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            />
+                          )}
+                          <motion.div
+                            className={`w-6 h-6 rounded-full ${colorClasses[color]} shadow-lg border-2 border-white dark:border-gray-800 z-10`}
                             whileHover={!isDisabled ? { scale: 1.2, rotate: 360 } : {}}
                             transition={{ duration: 0.3 }}
                           />
-                          <span className={`text-sm font-semibold capitalize transition-colors ${
-                            isDisabled
-                              ? 'text-gray-400 dark:text-gray-600'
-                              : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
-                          }`}>
+                          <span className={`text-sm font-semibold capitalize transition-colors z-10 ${isDisabled
+                            ? 'text-gray-400 dark:text-gray-600'
+                            : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
+                            }`}>
                             {color}
                           </span>
                           {color === currentTheme && (
-                            <motion.svg 
+                            <motion.svg
                               initial={{ scale: 0, rotate: -180 }}
                               animate={{ scale: 1, rotate: 0 }}
                               transition={{ type: "spring", stiffness: 300 }}
-                              className={`w-4 h-4 ${themeClass('text', color)} ml-auto`} 
-                              fill="currentColor" 
+                              className={`w-4 h-4 ${themeClass('text', color)} ml-auto z-10`}
+                              fill="currentColor"
                               viewBox="0 0 20 20"
                             >
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -334,7 +347,7 @@ export default function ThemeDrawer({
                       Background
                     </h3>
                     {isBackgroundSwitchDisabled() && (
-                      <motion.span 
+                      <motion.span
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         className="text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/20 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-800/50"
@@ -343,22 +356,18 @@ export default function ThemeDrawer({
                       </motion.span>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 gap-3">
+                  <div className="relative grid grid-cols-1 gap-3">
                     {Object.entries(BACKGROUND_OPTIONS).map(([key, value], index) => {
                       const backgroundNames = {
                         beams: 'Beams',
-                        dither: 'Dither',
                         silk: 'Silk',
-                        pixelblast: 'PixelBlast',
                         gridscan: 'GridScan',
                         colorbends: 'ColorBends'
                       };
-                      
+
                       const backgroundDescriptions = {
                         beams: 'Animated light beams',
-                        dither: 'Retro dithered waves',
                         silk: 'Flowing silk patterns',
-                        pixelblast: 'Interactive pixel effects',
                         gridscan: 'Futuristic grid scanner',
                         colorbends: 'Colorful bending waves'
                       };
@@ -366,7 +375,7 @@ export default function ThemeDrawer({
                       const isSpecialBackground = value === 'colorbends';
 
                       const isDisabled = isBackgroundSwitchDisabled();
-                      
+
                       return (
                         <motion.button
                           key={value}
@@ -378,17 +387,21 @@ export default function ThemeDrawer({
                           transition={{ delay: index * 0.1 }}
                           onClick={() => !isDisabled && onBackgroundChange(value)}
                           disabled={isDisabled}
-                          className={`group flex items-center p-4 rounded-xl border-2 transition-all duration-300 backdrop-blur-sm ${
-                            isDisabled
-                              ? 'opacity-50 cursor-not-allowed border-gray-200/50 dark:border-gray-700/50'
-                              : value === currentBackground
-                                ? `border-${currentTheme}-500/80 ${themeClass('bgSelected', currentTheme)} shadow-lg shadow-${currentTheme}-500/20`
-                                : 'border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md'
-                          }`}
+                          className={`group relative flex items-center p-4 rounded-xl border-2 border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 backdrop-blur-sm overflow-hidden ${isDisabled
+                            ? 'opacity-50 cursor-not-allowed'
+                            : 'hover:border-gray-300/70 dark:hover:border-gray-600/70 hover:shadow-md'
+                            }`}
                         >
+                          {value === currentBackground && !isDisabled && (
+                            <motion.div
+                              layoutId="backgroundOption"
+                              className={`absolute inset-0 border-${currentTheme}-500/80 ${themeClass('bgSelected', currentTheme)} shadow-lg shadow-${currentTheme}-500/20 rounded-xl border-2`}
+                              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            />
+                          )}
                           {/* Background Icon - Static Preview */}
-                          <motion.div 
-                            className="w-20 h-14 rounded-lg mr-4 relative overflow-hidden border border-gray-300/50 dark:border-gray-600/50 shadow-inner"
+                          <motion.div
+                            className="w-20 h-14 rounded-lg mr-4 relative overflow-hidden border border-gray-300/50 dark:border-gray-600/50 shadow-inner z-10"
                             whileHover={{ scale: 1.05 }}
                             transition={{ duration: 0.2 }}
                           >
@@ -404,31 +417,7 @@ export default function ThemeDrawer({
                                 <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 via-transparent to-transparent"></div>
                               </div>
                             )}
-                            {value === 'dither' && (
-                              <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-red-900 to-purple-900">
-                                {/* Dithered/pixelated pattern */}
-                                <div className="absolute inset-0" style={{
-                                  backgroundImage: `
-                                    repeating-linear-gradient(
-                                      0deg,
-                                      rgba(255, 120, 0, 0.3) 0px,
-                                      rgba(255, 120, 0, 0.3) 2px,
-                                      transparent 2px,
-                                      transparent 4px
-                                    ),
-                                    repeating-linear-gradient(
-                                      90deg,
-                                      rgba(255, 120, 0, 0.2) 0px,
-                                      rgba(255, 120, 0, 0.2) 2px,
-                                      transparent 2px,
-                                      transparent 4px
-                                    )
-                                  `,
-                                  backgroundSize: '4px 4px'
-                                }}></div>
-                                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-transparent to-purple-500/20"></div>
-                              </div>
-                            )}
+
                             {value === 'silk' && (
                               <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800">
                                 {/* Flowing silk curves */}
@@ -455,57 +444,7 @@ export default function ThemeDrawer({
                                 <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 via-blue-500/10 to-transparent"></div>
                               </div>
                             )}
-                            {value === 'pixelblast' && (
-                              <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-                                {/* Pixelated grid effect */}
-                                <div className="absolute inset-0 grid grid-cols-8 grid-rows-5 gap-0.5 p-1">
-                                  <div className="bg-blue-500/40 rounded-sm"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-gray-700/40"></div>
-                                  <div className="bg-blue-400/30 rounded-sm"></div>
-                                  <div className="bg-gray-700/50"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-blue-300/50 rounded-sm"></div>
-                                  <div className="bg-gray-700/40"></div>
-                                  
-                                  <div className="bg-gray-700/50"></div>
-                                  <div className="bg-blue-400/50 rounded-sm"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-gray-700/40"></div>
-                                  <div className="bg-blue-500/40 rounded-sm"></div>
-                                  <div className="bg-gray-700/50"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-blue-300/40 rounded-sm"></div>
-                                  
-                                  <div className="bg-blue-300/40 rounded-sm"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-blue-500/50 rounded-sm"></div>
-                                  <div className="bg-gray-700/50"></div>
-                                  <div className="bg-gray-700/40"></div>
-                                  <div className="bg-blue-400/40 rounded-sm"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-gray-700/50"></div>
-                                  
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-gray-700/50"></div>
-                                  <div className="bg-blue-400/40 rounded-sm"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-blue-300/50 rounded-sm"></div>
-                                  <div className="bg-gray-700/40"></div>
-                                  <div className="bg-gray-700/50"></div>
-                                  <div className="bg-blue-500/40 rounded-sm"></div>
-                                  
-                                  <div className="bg-blue-400/50 rounded-sm"></div>
-                                  <div className="bg-gray-700/40"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-blue-300/40 rounded-sm"></div>
-                                  <div className="bg-gray-700/50"></div>
-                                  <div className="bg-gray-700/60"></div>
-                                  <div className="bg-blue-500/50 rounded-sm"></div>
-                                  <div className="bg-gray-700/40"></div>
-                                </div>
-                              </div>
-                            )}
+
                             {value === 'gridscan' && (
                               <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/20 to-black">
                                 {/* Grid lines */}
@@ -515,12 +454,12 @@ export default function ThemeDrawer({
                                   <line x1="0" y1="20" x2="80" y2="20" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="0.5" />
                                   <line x1="0" y1="30" x2="80" y2="30" stroke="rgba(139, 92, 246, 0.4)" strokeWidth="0.5" />
                                   <line x1="0" y1="40" x2="80" y2="40" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="0.5" />
-                                  
+
                                   {/* Vertical lines */}
                                   <line x1="20" y1="0" x2="20" y2="50" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="0.5" />
                                   <line x1="40" y1="0" x2="40" y2="50" stroke="rgba(139, 92, 246, 0.4)" strokeWidth="0.5" />
                                   <line x1="60" y1="0" x2="60" y2="50" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="0.5" />
-                                  
+
                                   {/* Scan line */}
                                   <line x1="0" y1="25" x2="80" y2="25" stroke="rgba(236, 72, 153, 0.6)" strokeWidth="1.5">
                                     <animate attributeName="y1" values="10;40;10" dur="2s" repeatCount="indefinite" />
@@ -547,13 +486,13 @@ export default function ThemeDrawer({
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
                               </div>
                             )}
-                          </motion.div>                          <div className="flex-1 text-left">
+                          </motion.div>                          <div className="flex-1 text-left z-10">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                                 {backgroundNames[value]}
                               </span>
                               {isSpecialBackground && (
-                                <motion.span 
+                                <motion.span
                                   initial={{ scale: 0 }}
                                   animate={{ scale: 1 }}
                                   className="text-xs text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/20 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800/50"
@@ -566,14 +505,14 @@ export default function ThemeDrawer({
                               {backgroundDescriptions[value]}
                             </p>
                           </div>
-                          
+
                           {value === currentBackground && !isDisabled && (
-                            <motion.svg 
+                            <motion.svg
                               initial={{ scale: 0, rotate: -180 }}
                               animate={{ scale: 1, rotate: 0 }}
                               transition={{ type: "spring", stiffness: 300 }}
-                              className={`w-4 h-4 ${themeClass('text', currentTheme)} ml-2`} 
-                              fill="currentColor" 
+                              className={`w-4 h-4 ${themeClass('text', currentTheme)} ml-2 z-10`}
+                              fill="currentColor"
                               viewBox="0 0 20 20"
                             >
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -584,7 +523,7 @@ export default function ThemeDrawer({
                     })}
                   </div>
                   {isBackgroundSwitchDisabled() && (
-                    <motion.p 
+                    <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="text-xs text-gray-500 dark:text-gray-400 text-center"
@@ -596,7 +535,7 @@ export default function ThemeDrawer({
               </motion.div>
 
               {/* Footer */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5, duration: 0.3 }}

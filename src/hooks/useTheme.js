@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-    loadTheme,
     setTheme as setThemeUtil,
     loadThemeMode,
     setThemeMode as setThemeModeUtil,
@@ -9,82 +8,76 @@ import {
     THEME_MODES,
     loadBackground,
     setBackground as setBackgroundUtil,
+    loadUserThemePreference,
+    setUserThemePreference,
+    BACKGROUND_OPTIONS
 } from '../utils/theme';
 
 /**
  * Custom hook for theme management
  * Handles theme color, dark mode, and background selection
+ * Separates user preference from active (visual) theme
  */
 export function useTheme() {
-    const [currentTheme, setCurrentTheme] = useState('orange');
+    // Initialize with consistent defaults to prevent hydration mismatch
+    // localStorage values will be loaded after first render on client
+    const [userTheme, setUserTheme] = useState('orange');
+    const [activeTheme, setActiveTheme] = useState('orange');
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [themeMode, setThemeModeState] = useState(THEME_MODES.SYSTEM);
-    const [currentBackground, setCurrentBackground] = useState('colorbends');
-    const [previousTheme, setPreviousTheme] = useState('orange');
+    const [currentBackground, setCurrentBackground] = useState(BACKGROUND_OPTIONS.BEAMS);
+    const [isHydrated, setIsHydrated] = useState(false);
 
-    // Initialize theme on mount
+    // Initialize theme on mount (client-side only)
     useEffect(() => {
-        const savedTheme = loadTheme();
-        setCurrentTheme(savedTheme);
-        setPreviousTheme(savedTheme);
+        // 1. Load User Preference
+        const savedUserTheme = loadUserThemePreference();
+        setUserTheme(savedUserTheme);
 
+        // 2. Load Background
         const savedBackground = loadBackground();
         setCurrentBackground(savedBackground);
 
-        // Special handling for ColorBends
-        if (savedBackground === 'colorbends') {
-            setThemeUtil('lightgray');
-            setCurrentTheme('lightgray');
+        // 3. Determine Active Theme based on Background
+        let initialActiveTheme = savedUserTheme;
+        if (savedBackground === BACKGROUND_OPTIONS.COLORBENDS) {
+            initialActiveTheme = 'lightgray';
         }
 
+        setActiveTheme(initialActiveTheme);
+        setThemeUtil(initialActiveTheme); // Apply it globally
+
+        // 4. Load Theme Mode (Dark/Light/System)
         const savedThemeMode = loadThemeMode();
         setThemeModeState(savedThemeMode);
 
         const darkModeEnabled = getEffectiveDarkMode();
         setIsDarkMode(darkModeEnabled);
 
-        // Setup system theme listener
+        // 5. Mark as hydrated
+        setIsHydrated(true);
+
+        // 6. Setup system theme listener
         const cleanup = setupSystemThemeListener((isDark, mode) => {
             setIsDarkMode(isDark);
             setThemeModeState(mode);
         });
 
-        // Listen for background changes
-        const handleBackgroundChange = (event) => {
-            const newBackground = event.detail.background;
-
-            // Store previous theme when switching to ColorBends
-            if (newBackground === 'colorbends' && currentBackground !== 'colorbends') {
-                setPreviousTheme(currentTheme);
-            }
-
-            // Restore previous theme when switching away from ColorBends
-            if (currentBackground === 'colorbends' && newBackground !== 'colorbends') {
-                setThemeUtil(previousTheme);
-                setCurrentTheme(previousTheme);
-            }
-
-            setCurrentBackground(newBackground);
-
-            // Special handling for ColorBends
-            if (newBackground === 'colorbends') {
-                setThemeUtil('lightgray');
-                setCurrentTheme('lightgray');
-            }
-        };
-
-        window.addEventListener('backgroundChanged', handleBackgroundChange);
-
-        return () => {
-            cleanup();
-            window.removeEventListener('backgroundChanged', handleBackgroundChange);
-        };
+        return cleanup;
     }, []);
 
     const changeTheme = useCallback((color) => {
-        setCurrentTheme(color);
-        setThemeUtil(color);
-    }, []);
+        // Always update and persist the user's preference
+        setUserTheme(color);
+        setUserThemePreference(color);
+
+        // Only update the active (visual) theme if we are NOT in an override state
+        // (i.e., NOT using ColorBends, which forces lightgray)
+        if (currentBackground !== BACKGROUND_OPTIONS.COLORBENDS) {
+            setActiveTheme(color);
+            setThemeUtil(color);
+        }
+    }, [currentBackground]);
 
     const changeThemeMode = useCallback((mode) => {
         const isDark = setThemeModeUtil(mode);
@@ -98,34 +91,31 @@ export function useTheme() {
     }, []);
 
     const changeBackground = useCallback((background) => {
-        // Store previous theme when switching to ColorBends
-        if (background === 'colorbends' && currentBackground !== 'colorbends') {
-            setPreviousTheme(currentTheme);
-        }
-
-        // Restore previous theme when switching away from ColorBends
-        if (currentBackground === 'colorbends' && background !== 'colorbends') {
-            setThemeUtil(previousTheme);
-            setCurrentTheme(previousTheme);
-        }
-
-        // Special handling for ColorBends
-        if (background === 'colorbends') {
-            setThemeUtil('lightgray');
-            setCurrentTheme('lightgray');
-        }
-
         setBackgroundUtil(background);
         setCurrentBackground(background);
-    }, [currentBackground, currentTheme, previousTheme]);
+
+        if (background === BACKGROUND_OPTIONS.COLORBENDS) {
+            // ColorBends forces the theme to lightgray
+            // We do NOT update userTheme here, so the preference is preserved
+            setActiveTheme('lightgray');
+            setThemeUtil('lightgray');
+        } else {
+            // Switching to a normal background
+            // Restore the user's preferred theme
+            setActiveTheme(userTheme);
+            setThemeUtil(userTheme);
+        }
+    }, [userTheme]);
 
     return {
-        currentTheme,
+        currentTheme: activeTheme, // Components see the active visual theme
+        userThemePreference: userTheme, // Exposed in case UI needs to know the hidden preference
         isDarkMode,
         themeMode,
         currentBackground,
         changeTheme,
         changeThemeMode,
         changeBackground,
+        isHydrated, // Expose hydration state
     };
 }

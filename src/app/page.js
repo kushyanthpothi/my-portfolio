@@ -214,12 +214,21 @@ export default function Home() {
                         <button
                           key={item.name}
                           onClick={() => scrollToSection(item.section)}
-                          className={`text-sm font-medium tracking-wider rounded-3xl px-3 py-2 transition-colors cursor-pointer ${activeSection === item.section
-                            ? 'bg-white dark:bg-white text-gray-900 dark:text-gray-900'
-                            : `bg-transparent ${themeClass('text')}`
-                            }`}
+                          className="relative text-sm font-medium tracking-wider rounded-3xl px-3 py-2 transition-colors cursor-pointer"
                         >
-                          {item.name}
+                          {activeSection === item.section && (
+                            <MotionDiv
+                              layoutId="activeSection"
+                              className="absolute inset-0 bg-white dark:bg-white rounded-3xl"
+                              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            />
+                          )}
+                          <span className={`relative z-10 ${activeSection === item.section
+                            ? 'text-gray-900 dark:text-gray-900'
+                            : themeClass('text')
+                            }`}>
+                            {item.name}
+                          </span>
                         </button>
                       ))}
                     </div>

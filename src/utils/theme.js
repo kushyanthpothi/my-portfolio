@@ -34,20 +34,33 @@ export const THEME_MODES = {
   SYSTEM: 'system'
 };
 
-// Theme utility functions
-export const loadTheme = () => {
-  if (typeof window === 'undefined') return 'orange'; // Default theme
-  
-  const savedTheme = localStorage.getItem('siteTheme');
-  return savedTheme || 'orange'; // Default to orange theme
+// --- User Preference Management ---
+
+export const loadUserThemePreference = () => {
+  if (typeof window === 'undefined') return 'orange';
+  const saved = localStorage.getItem('user_theme_preference');
+  return saved || 'orange';
 };
 
+export const setUserThemePreference = (theme) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('user_theme_preference', theme);
+};
+
+// --- Active Theme Management ---
+
+// loadTheme now returns the *active* theme state (which might be an override)
+// But for initialization, we usually rely on the hook to derive it.
+// This function is kept for non-hook usage if needed, but might default to preference.
+export const loadTheme = () => {
+  return loadUserThemePreference();
+};
+
+// setTheme now updates the global event system, but persistence is handled by setUserThemePreference
 export const setTheme = (theme) => {
   if (typeof window === 'undefined') return;
-  
-  localStorage.setItem('siteTheme', theme);
-  
-  // Dispatch custom event to notify components
+
+  // Dispatch custom event to notify components of the *active* theme change
   window.dispatchEvent(new CustomEvent('themeChanged', {
     detail: { theme }
   }));
@@ -56,43 +69,41 @@ export const setTheme = (theme) => {
 // Background options
 export const BACKGROUND_OPTIONS = {
   BEAMS: 'beams',
-  DITHER: 'dither',
   SILK: 'silk',
-  PIXELBLAST: 'pixelblast',
   GRIDSCAN: 'gridscan',
   COLORBENDS: 'colorbends'
 };
 
 // Background utility functions
 export const loadBackground = () => {
-  if (typeof window === 'undefined') return BACKGROUND_OPTIONS.COLORBENDS;
-  
+  if (typeof window === 'undefined') return BACKGROUND_OPTIONS.BEAMS;
+
   const savedBackground = localStorage.getItem('selectedBackground');
-  
-  // Migration: Replace 'galaxy' with 'dither' for existing users
-  if (savedBackground === 'galaxy') {
-    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.DITHER);
-    return BACKGROUND_OPTIONS.DITHER;
+
+  // Migration: Replace 'galaxy' with 'colorbends' for existing users
+  if (savedBackground === 'galaxy' || savedBackground === 'dither' || savedBackground === 'pixelblast') {
+    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.COLORBENDS);
+    return BACKGROUND_OPTIONS.COLORBENDS;
   }
-  
+
   if (savedBackground && Object.values(BACKGROUND_OPTIONS).includes(savedBackground)) {
     return savedBackground;
   } else {
-    // Default to colorbends
-    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.COLORBENDS);
-    return BACKGROUND_OPTIONS.COLORBENDS;
+    // Default to beams
+    localStorage.setItem('selectedBackground', BACKGROUND_OPTIONS.BEAMS);
+    return BACKGROUND_OPTIONS.BEAMS;
   }
 };
 
 export const setBackground = (background) => {
   if (typeof window === 'undefined') return;
-  
+
   if (!Object.values(BACKGROUND_OPTIONS).includes(background)) {
-    background = BACKGROUND_OPTIONS.PIXELBLAST;
+    background = BACKGROUND_OPTIONS.COLORBENDS;
   }
-  
+
   localStorage.setItem('selectedBackground', background);
-  
+
   // Dispatch custom event to notify components
   window.dispatchEvent(new CustomEvent('backgroundChanged', {
     detail: { background }
@@ -113,12 +124,12 @@ export const getSystemTheme = () => {
 
 export const loadThemeMode = () => {
   if (typeof window === 'undefined') return THEME_MODES.SYSTEM;
-  
+
   // Run migration first
   migrateLegacyThemeSettings();
-  
+
   const savedMode = localStorage.getItem('themeMode');
-  
+
   // Check if user has saved preference, otherwise default to system mode
   if (savedMode && Object.values(THEME_MODES).includes(savedMode)) {
     return savedMode;
@@ -131,9 +142,9 @@ export const loadThemeMode = () => {
 
 export const getEffectiveDarkMode = (themeMode = null) => {
   if (typeof window === 'undefined') return false;
-  
+
   const mode = themeMode || loadThemeMode();
-  
+
   switch (mode) {
     case THEME_MODES.LIGHT:
       return false;
@@ -147,7 +158,7 @@ export const getEffectiveDarkMode = (themeMode = null) => {
 
 export const loadDarkMode = () => {
   if (typeof window === 'undefined') return false;
-  
+
   const themeMode = loadThemeMode();
   const isDark = getEffectiveDarkMode(themeMode);
   applyDarkMode(isDark);
@@ -156,7 +167,7 @@ export const loadDarkMode = () => {
 
 export const applyDarkMode = (isDarkMode) => {
   if (typeof window === 'undefined') return;
-  
+
   if (isDarkMode) {
     document.documentElement.classList.add('dark');
     document.body.classList.add('dark');
@@ -168,29 +179,29 @@ export const applyDarkMode = (isDarkMode) => {
 
 export const setThemeMode = (mode) => {
   if (typeof window === 'undefined') return false;
-  
+
   if (!Object.values(THEME_MODES).includes(mode)) {
     mode = THEME_MODES.SYSTEM;
   }
-  
+
   localStorage.setItem('themeMode', mode);
   const isDark = getEffectiveDarkMode(mode);
   applyDarkMode(isDark);
-  
+
   // Dispatch storage event to notify other components
   setTimeout(() => {
     window.dispatchEvent(new Event('storage'));
   }, 0);
-  
+
   return isDark;
 };
 
 export const toggleDarkMode = () => {
   if (typeof window === 'undefined') return false;
-  
+
   const currentMode = loadThemeMode();
   let newMode;
-  
+
   switch (currentMode) {
     case THEME_MODES.LIGHT:
       newMode = THEME_MODES.DARK;
@@ -203,16 +214,16 @@ export const toggleDarkMode = () => {
       newMode = THEME_MODES.LIGHT;
       break;
   }
-  
+
   return setThemeMode(newMode);
 };
 
 // Setup system theme listener
 export const setupSystemThemeListener = (callback) => {
-  if (typeof window === 'undefined') return () => {};
-  
+  if (typeof window === 'undefined') return () => { };
+
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  
+
   const handleChange = () => {
     const currentMode = loadThemeMode();
     if (currentMode === THEME_MODES.SYSTEM) {
@@ -221,9 +232,9 @@ export const setupSystemThemeListener = (callback) => {
       if (callback) callback(isDark, currentMode);
     }
   };
-  
+
   mediaQuery.addEventListener('change', handleChange);
-  
+
   return () => {
     mediaQuery.removeEventListener('change', handleChange);
   };
@@ -232,16 +243,16 @@ export const setupSystemThemeListener = (callback) => {
 // Migration function to handle old localStorage format
 export const migrateLegacyThemeSettings = () => {
   if (typeof window === 'undefined') return;
-  
+
   // Check if old darkMode setting exists and new themeMode doesn't
   const oldDarkMode = localStorage.getItem('darkMode');
   const newThemeMode = localStorage.getItem('themeMode');
-  
+
   if (oldDarkMode !== null && newThemeMode === null) {
     // Migrate from old boolean darkMode to new themeMode system
     const wasUsingDarkMode = oldDarkMode === 'true';
     const newMode = wasUsingDarkMode ? THEME_MODES.DARK : THEME_MODES.LIGHT;
-    
+
     localStorage.setItem('themeMode', newMode);
     // Keep the old darkMode for backward compatibility, but don't rely on it
   }

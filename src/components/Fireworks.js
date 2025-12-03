@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState, memo } from 'react';
 import Silk from '../Backgrounds/Silk/Silk';
 import Beams from '../Backgrounds/Beams/Beams';
-import Dither from '../Backgrounds/Dither/Dither';
-import PixelBlast from '../Backgrounds/PixelBlast/PixelBlast';
+
 import { GridScan } from '../Backgrounds/GridScan/GridScan';
 import ColorBends from '../Backgrounds/ColorBends/ColorBends';
 
@@ -248,14 +247,7 @@ function Fireworks({
               noiseIntensity={1}
             />
           )}
-          {currentBackground === 'dither' && (
-            <Dither
-              currentTheme={currentTheme}
-              isDarkMode={isDarkMode}
-              waveSpeed={0.02}
-              waveAmplitude={0.2}
-            />
-          )}
+
           {currentBackground === 'silk' && (
             <Silk
               currentTheme={currentTheme}
@@ -263,13 +255,7 @@ function Fireworks({
               speed={2}
             />
           )}
-          {currentBackground === 'pixelblast' && (
-            <PixelBlast
-              currentTheme={currentTheme}
-              isDarkMode={isDarkMode}
-              speed={0.2}
-            />
-          )}
+
           {currentBackground === 'gridscan' && (
             <GridScan
               linesColor={colors[0]}

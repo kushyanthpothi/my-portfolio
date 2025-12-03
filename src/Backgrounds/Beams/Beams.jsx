@@ -2,13 +2,16 @@
 	Installed from https://reactbits.dev/tailwind/
 */
 
+'use client';
+
 /* eslint-disable react/no-unknown-property */
 import {
   forwardRef,
   useImperativeHandle,
   useEffect,
   useRef,
-  useMemo
+  useMemo,
+  useState
 } from "react";
 
 import * as THREE from "three";
@@ -66,11 +69,23 @@ function extendMaterial(BaseMaterial, cfg) {
   return mat;
 }
 
-const CanvasWrapper = ({ children, disableAnimation = false }) => (
-  <Canvas dpr={[1, 2]} frameloop={disableAnimation ? "never" : "always"} className="w-full h-full relative">
-    {children}
-  </Canvas>
-);
+const CanvasWrapper = ({ children, disableAnimation = false }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="w-full h-full relative" />;
+  }
+
+  return (
+    <Canvas dpr={[1, 2]} frameloop={disableAnimation ? "never" : "always"} className="w-full h-full relative">
+      {children}
+    </Canvas>
+  );
+};
 
 const hexToNormalizedRGB = (hex) => {
   const clean = hex.replace("#", "");

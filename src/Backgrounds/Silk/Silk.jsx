@@ -2,9 +2,11 @@
 	Installed from https://reactbits.dev/tailwind/
 */
 
+'use client';
+
 /* eslint-disable react/no-unknown-property */
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { forwardRef, useRef, useMemo, useLayoutEffect, useEffect } from "react";
+import { forwardRef, useRef, useMemo, useLayoutEffect, useEffect, useState } from "react";
 import { Color } from "three";
 
 const hexToNormalizedRGB = (hex) => {
@@ -142,6 +144,16 @@ const Silk = ({
       meshRef.current.material.uniforms.uColor.value = new Color(...hexToNormalizedRGB(updatedColors[0]));
     }
   }, [currentTheme, isDarkMode, themeColors]);
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="w-full h-full" />;
+  }
 
   return (
     <Canvas dpr={[1, 2]} frameloop={disableAnimation ? "never" : "always"}>
