@@ -1,0 +1,333 @@
+.contactSection {
+    padding: 120px 5vw;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+}
+
+/* Left Column: Fixed Card Style (Memoji) */
+.cardContainer {
+    position: relative;
+    width: 450px;
+    /* Increased from 320px */
+    height: 555px;
+    /* Increased from 420px */
+    border-radius: 30px;
+    /* Increased radius slightly */
+    background-color: #f5f5f7;
+    /* Light background for card */
+    margin: 0 auto;
+    /* Center in column */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+    /* Slightly stronger shadow */
+}
+
+[data-theme="dark"] .cardContainer {
+    background-color: #2a2a2a;
+}
+
+.cardImage {
+    width: 100%;
+    height: 95%;
+    /* Leave some space at bottom if needed, or 100% */
+    object-fit: contain;
+    object-position: bottom;
+}
+
+.hiBubble {
+    position: absolute;
+    bottom: -30px;
+    /* Adjusted */
+    left: -50px;
+    /* Adjusted */
+    width: 125px;
+    /* Increased from 100px */
+    height: 125px;
+    /* Increased from 100px */
+    background-color: var(--accent-color);
+    color: #303030;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    /* Increased font size */
+    font-weight: 500;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+}
+
+/* Right Column: Content & Form */
+.contentContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.header {
+    font-family: var(--font-heading);
+    font-size: 4rem;
+    line-height: 0.9;
+    text-transform: uppercase;
+    margin-bottom: 25px;
+}
+
+.subtext {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 500px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    /* Increased gap for better breathing room */
+    margin-top: 20px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Increased gap label-input */
+}
+
+.row {
+    display: flex;
+    gap: 30px;
+    /* Wider gap between name/email */
+}
+
+.halfWidth {
+    flex: 1;
+}
+
+.label {
+    color: var(--accent-color);
+    /* Changed from blue to yellow */
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.input,
+.select,
+.textarea {
+    width: 100%;
+    padding: 18px 24px;
+    /* More padding for modern feel */
+    background-color: var(--bg-secondary);
+    border: 1px solid transparent;
+    /* Prepare for border transition */
+    border-radius: 16px;
+    /* Softer corners */
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    /* Very subtle shadow */
+}
+
+.input::placeholder,
+.textarea::placeholder {
+    color: #999;
+    font-weight: 400;
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    /* Slight darken on hover light */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .input:hover,
+[data-theme="dark"] .select:hover,
+[data-theme="dark"] .textarea:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23303030' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 20px center;
+    background-size: 16px;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 4px rgba(255, 214, 10, 0.1);
+    /* Soft focus ring with accent color */
+}
+
+.textarea {
+    resize: none;
+    /* Disable manual resize to keep clean look, or keep vertical */
+    min-height: 160px;
+}
+
+.submitWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* Removed space-between since switch is gone */
+    margin-top: 10px;
+}
+
+.submitButton {
+    background: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 20px 50px;
+    border-radius: 40px;
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: color 0.4s ease;
+    font-family: var(--font-heading);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.submitButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--accent-color);
+    z-index: -1;
+    clip-path: circle(0% at 0% 0%);
+    transition: clip-path 0.5s ease-out;
+}
+
+.submitButton:hover::before {
+    clip-path: circle(150% at 0% 0%);
+}
+
+.submitButton:hover {
+    color: #000;
+}
+
+.submitButton:active {
+    transform: translateY(0);
+}
+
+/* Success State */
+.success {
+    border-color: #4CAF50 !important;
+    color: #4CAF50 !important;
+    pointer-events: none;
+    /* Prevent hover interactions */
+}
+
+.success::before {
+    clip-path: circle(0% at 0% 0%) !important;
+}
+
+/* Error State */
+.error {
+    border-color: #FF5252 !important;
+    color: #FF5252 !important;
+}
+
+.error::before {
+    clip-path: circle(0% at 0% 0%) !important;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 1fr;
+        gap: 60px;
+    }
+
+    .cardContainer {
+        width: 320px;
+        height: 400px;
+        order: 1;
+        margin: 0 auto;
+    }
+
+    .contentContainer {
+        order: 2;
+        padding: 0 20px;
+    }
+
+    .header {
+        font-size: 3rem;
+        text-align: center;
+    }
+
+    .subtext {
+        text-align: center;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .contactSection {
+        padding: 80px 20px;
+    }
+
+    .container {
+        gap: 50px;
+    }
+
+    .cardContainer {
+        width: 280px;
+        height: 360px;
+    }
+
+    .hiBubble {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+        left: -20px;
+    }
+
+    .header {
+        font-size: 2.5rem;
+    }
+
+    .row {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .submitButton {
+        width: 100%;
+        justify-content: center;
+    }
+}

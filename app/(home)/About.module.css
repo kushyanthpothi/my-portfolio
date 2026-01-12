@@ -1,0 +1,212 @@
+.section {
+    padding: 100px 5vw;
+    background-color: var(--bg-primary);
+    display: flex;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+    min-height: 100vh;
+    /* Ensure full height */
+    position: relative;
+}
+
+.container {
+    max-width: 1400px;
+    width: 100%;
+    position: relative;
+    text-align: left;
+    /* Switch to left align */
+}
+
+/* Old label class kept for compatibility or reference, but title is used now */
+.label {
+    display: none;
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-size: 5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    line-height: 1;
+}
+
+.contentWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.contentLeft {
+    max-width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.bio {
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    font-weight: 300;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.paragraph {
+    display: flex;
+    flex-wrap: wrap;
+    line-height: 1.5;
+}
+
+.wordWrapper {
+    position: relative;
+    margin-right: 6px;
+    display: inline-block;
+}
+
+.shadow {
+    position: absolute;
+    opacity: 0.1;
+}
+
+.highlight {
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+/* Stats */
+.statsContainer {
+    display: flex;
+    gap: 3rem;
+    margin-bottom: 1rem;
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+}
+
+.statNumber {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    line-height: 1;
+    font-family: var(--font-heading);
+}
+
+.statLabel {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-top: 0.5rem;
+    max-width: 130px;
+}
+
+/* Contact */
+.contactContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.contactItem {
+    display: flex;
+    flex-direction: column;
+}
+
+.contactLabel {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.contactValue {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+}
+
+/* Socials */
+.socialsContainer {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.icon:hover {
+    color: var(--accent-color);
+}
+
+/* Action */
+.actionContainer {
+    margin-top: 1rem;
+}
+
+.ctaButton {
+    background: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 20px 50px;
+    border-radius: 40px;
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: color 0.4s ease;
+    font-family: var(--font-heading);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.ctaButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--accent-color);
+    z-index: -1;
+    clip-path: circle(0% at 0% 0%);
+    transition: clip-path 0.5s ease-out;
+}
+
+.ctaButton:hover::before {
+    clip-path: circle(150% at 0% 0%);
+}
+
+.ctaButton:hover {
+    color: #000;
+}
+
+@media (max-width: 768px) {
+    .section {
+        padding: 80px 20px;
+    }
+
+    .contentLeft {
+        max-width: 100%;
+    }
+
+    .title {
+        font-size: 3.5rem;
+    }
+
+    .statsContainer {
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+}

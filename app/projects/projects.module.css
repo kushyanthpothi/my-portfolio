@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Antonio:wght@100..700&family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+.pageContainer {
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    font-family: 'Outfit', sans-serif;
+    padding-top: 8rem;
+}
+
+/* Featured Section */
+.featuredSection {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+}
+
+.sectionHeader {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.mainTitle {
+    font-family: 'Antonio', sans-serif;
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 1.5rem 0;
+}
+
+.sectionDescription {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    max-width: 50rem;
+    margin: 0 auto;
+}
+
+
+
+/* Stack Container */
+.stackContainer {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding-top: 2.5rem;
+    overflow: clip;
+}
+
+.cardWrapper {
+    position: -webkit-sticky;
+    position: sticky;
+    margin-bottom: 3rem;
+}
+
+.card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2rem;
+    color: white;
+    min-height: 650px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.5s ease-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cardContentWrapper {
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 10;
+}
+
+.badgeWrapper {
+    margin-bottom: 1.5rem;
+}
+
+.categoryBadge {
+    background-color: #bef264;
+    color: #1a2e05;
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+}
+
+.centerContent {
+    max-width: 50rem;
+}
+
+.cardTitle {
+    font-family: 'Antonio', sans-serif;
+    font-size: 6rem;
+    line-height: 0.9;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    letter-spacing: 0.02em;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cardDescription {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    max-width: 40rem;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* More Projects Section */
+.moreProjectsSection {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 6rem 1.5rem;
+}
+
+.sectionDivider {
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+}
+
+.sectionDivider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-color);
+    z-index: 0;
+}
+
+.sectionTitle {
+    font-family: 'Antonio', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    background: var(--bg-primary);
+    padding: 0 2rem;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+
+.projectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 2.5rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .mainTitle {
+        font-size: 3.5rem;
+    }
+
+    .sectionTitle {
+        font-size: 2.5rem;
+    }
+
+    .projectsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .pageContainer {
+        padding-top: 6rem;
+    }
+
+    .mainTitle {
+        font-size: 2.5rem;
+    }
+
+    .sectionDescription {
+        font-size: 1rem;
+    }
+
+    .card {
+        min-height: 400px;
+    }
+
+    .cardTitle {
+        font-size: 2.5rem;
+    }
+
+    .cardDescription {
+        font-size: 1rem;
+    }
+
+    .cardContentWrapper {
+        padding: 1.5rem;
+    }
+
+    .cardWrapper {
+        margin-bottom: 2rem;
+    }
+
+    .sectionTitle {
+        font-size: 2rem;
+        padding: 0 1rem;
+    }
+
+    .projectsGrid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .featuredSection,
+    .moreProjectsSection {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

@@ -1,0 +1,38 @@
+.mouseBubble {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.arrowIcon {
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hide on mobile devices */
+@media (max-width: 1024px) {
+    .mouseBubble {
+        display: none;
+    }
+}
+
+/* Hide default cursor on interactive elements */
+:global([data-cursor-hover]),
+:global([data-cursor-blog]) {
+    cursor: none;
+}
+
+.blogCursor {
+    background-color: #facc15;
+}

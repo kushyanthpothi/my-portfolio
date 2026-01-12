@@ -1,0 +1,563 @@
+/* Main Layout */
+.aboutPage {
+    width: 100%;
+    min-height: 90vh;
+    background-color: var(--bg-primary);
+    transition: background-color 0.3s ease;
+    padding: 70px 5vw 0 5vw;
+}
+
+.container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.mainGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    position: relative;
+    width: 100%;
+}
+
+/* Left Column: Scrollable Content */
+.leftColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 200px;
+    /* Space between About and Services sections */
+    padding-bottom: 0px;
+}
+
+.aboutContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    min-height: 80vh;
+    /* Ensure it takes up space before Services */
+    justify-content: center;
+}
+
+.heroTitle {
+    font-family: var(--font-heading);
+    font-size: 5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-primary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+}
+
+.name {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.bioText {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 1rem;
+    padding-bottom: 25px;
+}
+
+.bioText p {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.socialsContainer {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.socialsContainer a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.socialsContainer a:hover {
+    transform: translateY(-3px);
+}
+
+.socialIcon {
+    width: 28px;
+    height: 28px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.socialsContainer a:hover .socialIcon {
+    color: var(--accent-color);
+}
+
+/* Services Content in Left Column */
+.servicesContent {
+    display: flex;
+    flex-direction: column;
+    min-height: 80vh;
+}
+
+.header {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    margin-bottom: 60px;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.item {
+    display: flex;
+    flex-direction: column;
+    padding: 30px 0;
+    border-top: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.item:last-child {
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+}
+
+.itemHeader {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.itemNumber {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    font-family: var(--font-heading);
+    margin-right: 20px;
+    flex-shrink: 0;
+}
+
+.itemTitle {
+    font-size: 1.8rem;
+    font-family: var(--font-heading);
+    flex: 1;
+    transition: transform 0.3s, color 0.3s;
+    color: var(--text-primary);
+    margin-right: 20px;
+}
+
+.item:hover .itemTitle {
+    transform: translateX(10px);
+    color: var(--accent-color);
+}
+
+.itemDesc {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    max-width: 100%;
+    margin-top: 20px;
+    padding-left: 50px;
+}
+
+.arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+/* Right Column: Sticky Image Swap */
+.rightColumn {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    /* align-items: flex-start;  Default is stretch, which is fine, or flex-start */
+    align-items: flex-start;
+    padding-top: 0;
+    padding-bottom: 30px;
+    /* Reset padding as sticky card handles the offset */
+}
+
+.stickyCard {
+    width: 100%;
+    max-width: 380px;
+    aspect-ratio: 3/4;
+    border-radius: 20px;
+    overflow: hidden;
+    position: sticky;
+    top: 150px;
+    z-index: 10;
+}
+
+.imageLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-secondary);
+    /* prevented transparency issues */
+}
+
+.cardImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+
+/* Experience Content */
+.experienceContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.experienceList {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.experienceItem {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+}
+
+.experienceItem:last-child {
+    border-bottom: none;
+}
+
+.expRoleWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.expRole {
+    font-size: 1.8rem;
+    font-family: var(--font-heading);
+    color: var(--text-primary);
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.expCompany {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin: 0;
+}
+
+.expDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.expPeriod {
+    font-size: 0.9rem;
+
+    font-family: var(--font-body);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.expDesc {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 90%;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .mainGrid {
+        grid-template-columns: 1fr;
+        gap: 4rem;
+    }
+
+    .aboutPage {
+        padding-top: 120px;
+        /* Increased top padding for tablet/mobile */
+    }
+
+    .mobileImageContainer {
+        width: 100%;
+        max-width: 500px;
+        /* Optional constraint */
+        margin: 0 auto 2rem auto;
+        border-radius: 20px;
+        overflow: hidden;
+        aspect-ratio: 16/9;
+    }
+
+    .mobileProfileImageContainer {
+        width: 100%;
+        max-width: 380px;
+        margin: 0 0 2rem 0;
+        /* Aligned left with text */
+        border-radius: 20px;
+        overflow: hidden;
+        aspect-ratio: 3/4;
+        /* Portrait for profile */
+    }
+
+    .mobileImage {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .rightColumn {
+        display: none;
+        /* Hide sticky image column on tablet/mobile */
+        position: static;
+        height: auto;
+    }
+
+    .leftColumn {
+        gap: 80px;
+    }
+
+    .aboutContent,
+    .servicesContent,
+    .experienceContent {
+        min-height: auto;
+    }
+
+    .heroTitle {
+        font-size: 4rem;
+    }
+
+    .name {
+        font-size: 1.25rem;
+    }
+
+    .bioText p {
+        font-size: 1rem;
+    }
+
+    .header {
+        font-size: 2.2rem;
+        margin-bottom: 40px;
+    }
+
+    .item {
+        padding: 25px 0;
+    }
+
+    .itemTitle {
+        font-size: 1.4rem;
+    }
+
+    .itemNumber {
+        font-size: 1rem;
+        margin-right: 15px;
+    }
+
+    .itemDesc {
+        font-size: 0.95rem;
+        padding-left: 40px;
+    }
+
+    .expRole {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .aboutPage {
+        padding: 120px 20px 80px 20px;
+    }
+
+    .heroTitle {
+        font-size: 3rem;
+    }
+
+    .name {
+        font-size: 1.125rem;
+    }
+
+    .bioText p {
+        font-size: 1rem;
+    }
+
+    .socialsContainer {
+        gap: 1.25rem;
+    }
+
+    .socialIcon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .header {
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+    }
+
+    .item {
+        padding: 20px 0;
+    }
+
+    .itemTitle {
+        font-size: 1.1rem;
+    }
+
+    .itemDesc {
+        padding-left: 0;
+        font-size: 0.9rem;
+    }
+
+    .itemNumber {
+        margin-right: 10px;
+        font-size: 0.9rem;
+    }
+
+    .arrow {
+        margin-left: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .heroTitle {
+        font-size: 2.5rem;
+        letter-spacing: -1px;
+    }
+
+    .name {
+        font-size: 1.0rem;
+        letter-spacing: 1px;
+    }
+
+    .bioText {
+        gap: 1rem;
+    }
+
+    .bioText p {
+        font-size: 0.9375rem;
+    }
+
+    .heroSection {
+        padding: 80px 20px;
+    }
+}
+
+/* Tech Stack Section */
+.techStackContent {
+    display: flex;
+    flex-direction: column;
+    min-height: 80vh;
+}
+
+.techStackList {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.techStackItem {
+    display: flex;
+    align-items: center;
+    padding: 30px 0;
+    border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
+    gap: 30px;
+    transition: transform 0.3s ease;
+}
+
+.techStackItem:last-child {
+    border-bottom: none;
+}
+
+.techStackItem:hover {
+    transform: translateX(10px);
+}
+
+.techLogoContainer {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    /* Ensure this var exists, else use fallback */
+    border-radius: 12px;
+    padding: 10px;
+    flex-shrink: 0;
+}
+
+.techLogo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.techInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.techName {
+    font-size: 1.5rem;
+    font-family: var(--font-heading);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.techDesc {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+    max-width: 500px;
+}
+
+@media (max-width: 768px) {
+    .techStackItem {
+        padding: 20px 0;
+        gap: 20px;
+    }
+
+    .techLogoContainer {
+        width: 50px;
+        height: 50px;
+    }
+
+    .techName {
+        font-size: 1.25rem;
+    }
+
+    .techDesc {
+        font-size: 0.9rem;
+    }
+}

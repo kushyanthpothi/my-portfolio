@@ -1,0 +1,417 @@
+.navContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 2.5rem 2rem;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: none;
+    font-family: var(--font-body);
+}
+
+.navPill {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 8px 12px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease, border-color 0.3s ease, padding 0.3s ease, border-radius 0.3s ease;
+    overflow: hidden;
+    /* Ensure content stays inside */
+    flex-direction: row;
+    width: auto;
+    /* Fit content by default */
+}
+
+[data-theme="dark"] .navPill {
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.profileImage {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #eee;
+    overflow: hidden;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .profileImage {
+    background-color: #444;
+}
+
+.profileImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Desktop View Wrapper */
+.desktopView {
+    display: flex;
+    align-items: center;
+}
+
+/* 3D Cube Rotation Effect */
+.navLink {
+    position: relative;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text-primary);
+    border-radius: 30px;
+    overflow: hidden;
+    line-height: 1.6;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    perspective: 120px;
+    cursor: pointer;
+}
+
+.textContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+    transform-style: preserve-3d;
+}
+
+.navLink:hover .textContainer {
+    transform: rotateX(90deg);
+}
+
+.originalText,
+.hoverText {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    white-space: nowrap;
+    backface-visibility: hidden;
+}
+
+.originalText {
+    position: relative;
+    transform: translateZ(10px);
+    color: inherit;
+}
+
+.hoverText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotateX(-90deg) translateZ(10px);
+    color: var(--accent-color);
+}
+
+[data-theme="dark"] .navLink:hover {
+    background-color: transparent;
+}
+
+.contactBtn {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 300;
+    margin-left: 5px;
+    transition: color 0.4s ease;
+    line-height: 1.6;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    perspective: 120px;
+    cursor: pointer;
+    position: relative;
+    isolation: isolate;
+}
+
+.contactBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    /* Come from top right */
+    width: 450px;
+    /* Large enough to cover */
+    height: 450px;
+    background-color: #CCFF00;
+    /* Yellow */
+    border-radius: 50%;
+    transform: translate(50%, -50%) scale(0);
+    /* Start scaled down at corner */
+    z-index: -1;
+    transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+    pointer-events: none;
+}
+
+.contactBtn:hover::before {
+    transform: translate(50%, -50%) scale(1);
+    /* Expand to cover */
+}
+
+.contactBtn:hover {
+    color: #000;
+}
+
+/* Ensure text is above background */
+.btnText {
+    position: relative;
+    z-index: 1;
+}
+
+[data-theme="dark"] .contactBtn {
+    background-color: #FFFFFF;
+    color: #1a1a1a;
+}
+
+[data-theme="dark"] .contactBtn:hover::before {
+    background-color: #CCFF00;
+}
+
+[data-theme="dark"] .contactBtn:hover {
+    /* background-color turns transparent causing flicker. Removed. */
+    color: #1a1a1a;
+}
+
+.statusContainer {
+    overflow: hidden;
+    margin-right: 0;
+    display: flex;
+    align-items: center;
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    padding: 0;
+    margin-right: 0;
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .statusBadge {
+    background: transparent;
+}
+
+.statusDot {
+    width: 6px;
+    height: 6px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* =========================================
+   Mobile View Styles
+   ========================================= */
+
+.mobileView {
+    display: none;
+    /* Hidden by default on desktop */
+    flex-direction: column;
+    width: 100%;
+    /* Fill the fixed 320px container */
+    transition: width 0.3s ease;
+}
+
+.mobileHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.mobileProfileAndStatus {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.statusBadgeMobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+[data-theme="dark"] .statusBadgeMobile {
+    background: transparent;
+}
+
+/* Mobile Specific Styles */
+
+.menuToggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background-color: #CCFF00;
+    /* Bright Green/Yellow Accent */
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    color: #000;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.burgerIcon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.burgerLine {
+    position: absolute;
+    width: 14px;
+    height: 2px;
+    background-color: #000;
+    display: block;
+    border-radius: 2px;
+}
+
+/* Expanded Pill State */
+.navPillExpanded {
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 30px;
+    /* Consistent rounded corners for expanded state */
+    background-color: #111;
+    /* Dark background for expanded state */
+    padding: 24px;
+    /* Larger padding when expanded */
+    width: 320px;
+    /* Set a fixed width or max-width for the expanded card */
+    max-width: 90vw;
+}
+
+.navPillExpanded .mobileView {
+    width: 100%;
+    /* Expand to fill */
+}
+
+/* When expanded, we likely want to invert text colors in the pill if not already dark mode */
+.navPillExpanded .statusBadgeMobile,
+.navPillExpanded .mobileNavLink {
+    color: #fff;
+}
+
+.mobileContent {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    /* Removed margin-top to avoid ghost height */
+    align-items: center;
+    overflow: hidden;
+}
+
+.mobileMenuLinks {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 24px;
+    margin-top: 24px;
+    /* Spacing handled here so it's hidden when container height is 0 */
+}
+
+.mobileNavLink {
+    font-size: 18px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 300;
+    padding: 5px;
+    width: 100%;
+    text-align: center;
+}
+
+.mobileMenuFooter {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.mobileMenuFooter .contactBtn {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
+    /* Maintain desktop look (black/white) but fill container */
+}
+
+/* Media Query - Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .desktopView {
+        display: none;
+    }
+
+    .mobileView {
+        display: flex;
+    }
+
+    .navPill {
+        width: 380px;
+        max-width: 90vw;
+        border-radius: 30px;
+    }
+}
+
+/* Media Query - Mobile */
+@media (max-width: 768px) {
+    .desktopView {
+        display: none;
+    }
+
+    .mobileView {
+        display: flex;
+    }
+
+    .navPill {
+        width: 320px;
+        max-width: 90vw;
+        border-radius: 30px;
+    }
+}

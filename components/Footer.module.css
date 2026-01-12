@@ -1,0 +1,130 @@
+.footer {
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
+    padding: 80px 5vw 40px;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    margin-top: 50px;
+    position: relative;
+    z-index: 10;
+}
+
+.top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    justify-content: center;
+}
+
+.ctaText {
+    font-family: var(--font-heading);
+    font-size: 10vw;
+    line-height: 1.1;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    word-spacing: 0.1em;
+}
+
+.button {
+    background-color: white;
+    color: #303030;
+    padding: 20px 60px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: transform 0.3s, color 0.3s;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    cursor: pointer;
+    border: none;
+}
+
+.button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 600px;
+    /* Increased to ensure full coverage */
+    height: 600px;
+    background-color: #CCFF00;
+    border-radius: 50%;
+    transform: translate(50%, -50%) scale(0);
+    z-index: -1;
+    transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+    pointer-events: none;
+    /* Prevent interference */
+}
+
+.button:hover::before {
+    transform: translate(50%, -50%) scale(1);
+}
+
+.button:hover {
+    transform: scale(1.05);
+    /* Keep generic scale */
+    color: #000;
+}
+
+.bottom {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 40px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.column h4 {
+    font-size: 0.9rem;
+    opacity: 0.6;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.column a {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.column a:hover {
+    text-decoration: underline;
+}
+
+.copyright {
+    font-size: 3rem;
+    font-family: var(--font-heading);
+    opacity: 0.2;
+}
+
+@media (max-width: 768px) {
+    .footer {
+        padding: 60px 20px 40px;
+        min-height: 60vh;
+    }
+
+    .bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        border-top: none;
+        margin-top: 60px;
+    }
+
+    .ctaText {
+        font-size: 15vw;
+    }
+
+    .button {
+        padding: 16px 40px;
+        font-size: 1rem;
+    }
+}

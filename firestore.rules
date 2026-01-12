@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public Content (Read: Public, Write: Admin)
+    match /blogs/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /projects/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /experiences/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /services/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /techStack/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /tech_stack/{document=**} { allow read: if true; allow write: if request.auth != null; }
+
+    // Analytics (Read/Write: Public)
+    match /analytics/{document=**} { allow read, write: if true; }
+
+    // Protected Settings (API Keys) - Admin Only
+    match /settings/{document=**} { allow read, write: if request.auth != null; }
+
+    // Default catch-all (Secure)
+    match /{document=**} { allow read, write: if request.auth != null; }
+  }
+}

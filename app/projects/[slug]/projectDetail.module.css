@@ -1,0 +1,349 @@
+@import url('https://fonts.googleapis.com/css2?family=Antonio:wght@100..700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+.pageContainer {
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    font-family: 'Outfit', sans-serif;
+    padding-top: 8rem;
+}
+
+.contentWrapper {
+    max-width: 75rem;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+}
+
+/* Hero Section */
+.heroSection {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.categoryPill {
+    display: inline-block;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 0.5rem 1.5rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+}
+
+.projectTitle {
+    font-family: 'Antonio', sans-serif;
+    font-size: 5.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin: 0 0 1.5rem 0;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.projectSummary {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    max-width: 50rem;
+    margin: 0 auto 3rem;
+    font-weight: 500;
+}
+
+/* Metadata Grid */
+.metadataGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    max-width: 45rem;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.metadataItem {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.metadataLabel {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.metadataValue {
+    font-size: 1.25rem;
+    color: #ffd700;
+    font-weight: 700;
+}
+
+/* Hero Image */
+.heroImageWrapper {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 3rem 0 5rem;
+    background: var(--bg-tertiary);
+}
+
+.heroImage {
+    object-fit: cover;
+}
+
+/* Content Section */
+.contentSection {
+    max-width: 70rem;
+    margin: 0 auto;
+}
+
+.textBlock {
+    margin-bottom: 4rem;
+}
+
+.sectionHeading {
+    font-family: 'Antonio', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin: 0 0 1.5rem 0;
+    color: var(--text-primary);
+}
+
+.sectionText {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Content Images */
+.contentImageWrapper {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    border-radius: 24px;
+    overflow: hidden;
+    margin: 4rem 0;
+    background: var(--bg-tertiary);
+}
+
+.contentImage {
+    object-fit: cover;
+}
+
+/* Tech Stack */
+.techStackSection {
+    margin: 4rem 0;
+    padding: 2.5rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.techStackTitle {
+    font-family: 'Antonio', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 0 0 1.5rem 0;
+    color: var(--text-primary);
+}
+
+.techStackGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.techBadge {
+    background: var(--accent-color);
+    color: var(--bg-primary);
+    padding: 0.6rem 1.25rem;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* Links */
+.linksSection {
+    display: flex;
+    gap: 2rem;
+    margin: 4rem 0;
+    flex-wrap: wrap;
+}
+
+.projectLink {
+    background: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 1rem 2.5rem;
+    border-radius: 40px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.4s ease;
+    font-family: 'Antonio', sans-serif;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    display: inline-block;
+}
+
+.projectLink::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--accent-color);
+    z-index: -1;
+    clip-path: circle(0% at 0% 0%);
+    transition: clip-path 0.5s ease-out;
+}
+
+.projectLink:hover::before {
+    clip-path: circle(150% at 0% 0%);
+}
+
+.projectLink:hover {
+    color: #000;
+    /* No background change needed here as pseudo-element handles it */
+}
+
+/* More Projects Section */
+.moreProjectsSection {
+    margin-top: 8rem;
+    padding-top: 4rem;
+}
+
+.sectionDivider {
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+}
+
+.sectionDivider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-color);
+    z-index: 0;
+}
+
+.moreProjectsTitle {
+    font-family: 'Antonio', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    background: var(--bg-primary);
+    padding: 0 2rem;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+
+.projectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2.5rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .projectTitle {
+        font-size: 4rem;
+    }
+
+    .heroImageWrapper {
+        height: 450px;
+    }
+
+    .contentImageWrapper {
+        height: 400px;
+    }
+
+    .projectsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .pageContainer {
+        padding-top: 6rem;
+    }
+
+    .contentWrapper {
+        padding: 0 1.5rem 3rem;
+    }
+
+    .projectTitle {
+        font-size: 2.5rem;
+    }
+
+    .projectSummary {
+        font-size: 1rem;
+    }
+
+    .metadataGrid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .heroImageWrapper {
+        height: 300px;
+        margin: 2rem 0 3rem;
+    }
+
+    .sectionHeading {
+        font-size: 2rem;
+    }
+
+    .sectionText {
+        font-size: 1rem;
+    }
+
+    .contentImageWrapper {
+        height: 250px;
+        margin: 3rem 0;
+    }
+
+    .moreProjectsTitle {
+        font-size: 2rem;
+        padding: 0 1rem;
+    }
+
+    .projectsGrid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .linksSection {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .projectLink {
+        text-align: center;
+    }
+}

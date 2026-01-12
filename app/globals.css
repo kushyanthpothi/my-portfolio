@@ -1,0 +1,88 @@
+:root {
+  /* Light Mode Colors */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F5F7;
+  --text-primary: #303030;
+  --text-secondary: #666666;
+  --accent-color: #FFD60A;
+  --accent-hover: #D1AF08;
+  --footer-bg: #FFD60A;
+  --footer-text: #303030;
+
+  /* Typography */
+  --font-heading: 'Antonio', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing */
+  --container-width: 1400px;
+  --header-height: 80px;
+  --section-padding: 120px;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #252525;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B0B0B0;
+  --accent-color: #FFD60A;
+  --accent-hover: #D1AF08;
+  --footer-bg: #FFD60A;
+  --footer-text: #303030;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  position: relative;
+  /* Prevent flash on page load */
+  opacity: 1;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+::selection {
+  background-color: var(--accent-color);
+  color: #303030;
+}

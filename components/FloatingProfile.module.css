@@ -1,0 +1,104 @@
+.floatingContainer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    pointer-events: none;
+    perspective: 1000px;
+}
+
+.card {
+    width: 320px;
+    height: 420px;
+    position: relative;
+    border-radius: 20px;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: #333;
+    /* Fallback */
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.frontImage {
+    width: 100%;
+    height: 95%;
+    object-fit: contain;
+    object-position: bottom;
+    display: block;
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .floatingContainer {
+        top: 47%;
+    }
+
+    .card {
+        width: 280px;
+        height: 370px;
+    }
+
+    .hiBadge {
+        width: 85px;
+        height: 85px;
+        font-size: 2rem;
+        left: -30px;
+        bottom: -15px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .floatingContainer {
+        display: none;
+    }
+
+    .card {
+        width: 260px;
+        height: 340px;
+    }
+
+    .hiBadge {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+        left: -30px;
+    }
+}
+
+.hiBadge {
+    position: absolute;
+    bottom: -20px;
+    left: -40px;
+    background-color: var(--accent-color);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    z-index: 10;
+    pointer-events: auto;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    color: #303030;
+}

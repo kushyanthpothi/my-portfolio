@@ -1,11 +1,20 @@
 {
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-south1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "hosting": {
     "public": "out",
+    "cleanUrls": true,
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "predeploy": "npm run build"
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

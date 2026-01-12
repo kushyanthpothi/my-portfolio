@@ -1,0 +1,86 @@
+.themeSwitchContainer {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+}
+
+.toggleSwitch {
+    width: 56px;
+    height: 30px;
+    background: linear-gradient(135deg, #000000 0%, #000000 100%);
+    border-radius: 50px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.toggleSwitch:hover {
+    transform: scale(1.05);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.toggleSwitch.dark {
+    background: linear-gradient(135deg, #FFD60A 0%, #F5C400 100%);
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 2px 8px rgba(255, 214, 10, 0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.toggleSwitch.dark:hover {
+    box-shadow:
+        0 4px 12px rgba(255, 214, 10, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.toggleKnob {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.2),
+        0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.toggleSwitch.dark .toggleKnob {
+    transform: translateX(26px);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+    .themeSwitchContainer {
+        bottom: 30px;
+    }
+
+    .toggleSwitch {
+        width: 48px;
+        height: 26px;
+    }
+
+    .toggleKnob {
+        width: 18px;
+        height: 18px;
+        top: 2px;
+        left: 3px;
+    }
+
+    .toggleSwitch.dark .toggleKnob {
+        transform: translateX(22px);
+    }
+}
