@@ -121,41 +121,9 @@ export default function AIAutoBlogger() {
         loadConfig();
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem('aiConfig', JSON.stringify(config));
-        if (config.enabled && config.scheduleTime) {
-            scheduleNextRun();
-        } else {
-            clearTimer();
-            setStatus('Idle');
-        }
-        return () => clearTimer();
-    }, [config.enabled, config.scheduleTime]);
 
-    const clearTimer = () => {
-        if (timerId) clearTimeout(timerId);
-        setTimerId(null);
-    };
+    // Removed client-side auto-scheduling in favor of GitHub Actions server-side cron.
 
-    const scheduleNextRun = () => {
-        clearTimer();
-        const now = new Date();
-        const [hours, minutes] = config.scheduleTime.split(':').map(Number);
-        const nextRun = new Date(now);
-        nextRun.setHours(hours, minutes, 0, 0);
-        if (nextRun <= now) nextRun.setDate(nextRun.getDate() + 1);
-        const delay = nextRun.getTime() - now.getTime();
-        const nextRunStr = nextRun.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        setStatus(`Scheduled for ${nextRunStr}`);
-        const id = setTimeout(() => runGeneration(), delay);
-        setTimerId(id);
-    };
-
-    useEffect(() => {
-        if (status === 'Waiting for next cycle' && config.enabled) {
-            scheduleNextRun();
-        }
-    }, [status]);
 
     const handleSave = async () => {
         setIsLoading(true);
@@ -195,6 +163,7 @@ export default function AIAutoBlogger() {
                     query: query,
                     search_depth: 'basic',
                     include_answer: true,
+                    include_images: true,
                     max_results: 5
                 })
             });
@@ -203,6 +172,7 @@ export default function AIAutoBlogger() {
             const data = await response.json();
             return {
                 answer: data.answer || '',
+                images: data.images || [],
                 results: (data.results || []).map(r => ({
                     title: r.title,
                     url: r.url,
@@ -257,13 +227,15 @@ Return ONLY valid JSON without markdown:
                     content: `Research: "${promptText}"
 Today: ${today}${searchContext}
 
+IMPORTANT: Use the 'images' array from the WEB SEARCH RESULTS to populate the 'imageUrls' field. Select high-quality, relevant images.
+
 Return ONLY valid JSON without markdown:
 {
     "topic": "${promptText}",
     "sources": [{ "title": "...", "url": "...", "imageUrl": "..." }],
     "facts": ["fact1", "fact2", "fact3"],
     "quotes": ["quote1"],
-    "imageUrls": ["url1"],
+    "imageUrls": ["url1", "url2"],
     "publishedDate": "${today}"
 }`
                 }
@@ -315,6 +287,7 @@ ANALYSIS: ${JSON.stringify(analysis)}
 RESEARCH: ${JSON.stringify(research)}
 
 IMPORTANT: Use the exact category from the analysis: "${analysis.category}"
+IMPORTANT: Pick the best image from 'research.imageUrls' for 'coverImage' if available.
 
 Return ONLY valid JSON without markdown:
 {

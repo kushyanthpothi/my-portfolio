@@ -7,9 +7,10 @@ const BASE_URL = 'https://kushyanth-portfolio.web.app';
 
 export async function generateStaticParams() {
     const blogs = await fetchBlogs();
-    return blogs.map((blog) => ({
+    const params = blogs.map((blog) => ({
         slug: blog.slug,
     }));
+    return [...params, { slug: '__fallback' }];
 }
 
 // Dynamic metadata for each blog post

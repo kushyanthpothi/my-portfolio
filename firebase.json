@@ -8,6 +8,16 @@
   "hosting": {
     "public": "out",
     "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "/blogs/**",
+        "destination": "/blogs/__fallback.html"
+      },
+      {
+        "source": "/projects/**",
+        "destination": "/projects/__fallback.html"
+      }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

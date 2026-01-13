@@ -18,12 +18,21 @@ export default function ProjectClient() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!slug) return;
+        let currentSlug = slug;
+
+        // Handle Firebase fallback rewrite
+        if (currentSlug === '__fallback' && typeof window !== 'undefined') {
+            // Extract actual slug from URL: /projects/actual-slug
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            currentSlug = pathParts[pathParts.length - 1];
+        }
+
+        if (!currentSlug) return;
 
         const loadProject = async () => {
             try {
                 const { fetchProjectBySlug: fetchProject, fetchProjects } = await import('@/lib/firestoreUtils');
-                const fetchedProject = await fetchProject(slug);
+                const fetchedProject = await fetchProject(currentSlug);
                 if (fetchedProject) {
                     setProject(fetchedProject);
                 } else {
@@ -34,7 +43,7 @@ export default function ProjectClient() {
                 // Also fetch other projects for "More Projects" section
                 const allProjects = await fetchProjects();
                 if (allProjects && allProjects.length > 0) {
-                    const others = allProjects.filter(p => p.slug !== slug).slice(0, 4);
+                    const others = allProjects.filter(p => p.slug !== currentSlug).slice(0, 4);
                     setOtherProjects(others);
                 }
 

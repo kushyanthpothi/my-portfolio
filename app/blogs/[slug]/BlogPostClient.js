@@ -18,8 +18,19 @@ export default function BlogPostClient() {
     useEffect(() => {
         const loadBlog = async () => {
             try {
+                let slug = params.slug;
+
+                // Handle Firebase fallback rewrite
+                if (slug === '__fallback' && typeof window !== 'undefined') {
+                    // Extract actual slug from URL: /blogs/actual-slug
+                    const pathParts = window.location.pathname.split('/').filter(p => p);
+                    slug = pathParts[pathParts.length - 1];
+                }
+
+                if (!slug) return;
+
                 const { fetchBlogBySlug, fetchBlogs } = await import('@/lib/firestoreUtils');
-                const fetchedBlog = await fetchBlogBySlug(params.slug);
+                const fetchedBlog = await fetchBlogBySlug(slug);
                 setBlog(fetchedBlog);
 
                 // Update document title to blog title
@@ -29,7 +40,7 @@ export default function BlogPostClient() {
 
                 // Fetch related blogs (other blogs in the same category or just other blogs)
                 const allBlogs = await fetchBlogs();
-                const related = allBlogs.filter(b => b.slug !== params.slug).slice(0, 3);
+                const related = allBlogs.filter(b => b.slug !== slug).slice(0, 3);
                 setRelatedBlogs(related);
             } catch (error) {
                 console.error("Failed to load blog:", error);
@@ -38,9 +49,7 @@ export default function BlogPostClient() {
             }
         };
 
-        if (params.slug) {
-            loadBlog();
-        }
+        loadBlog();
     }, [params.slug]);
 
     if (loading) {
@@ -66,8 +75,6 @@ export default function BlogPostClient() {
                         Back to Blogs
                     </Link>
                 </div>
-                <Footer />
-                <ThemeSwitch />
             </main>
         );
     }
