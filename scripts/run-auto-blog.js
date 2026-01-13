@@ -142,7 +142,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
     // --- GEMINI HANDLER ---
     if (isGemini) {
-        const apiKey = process.env.GEMINI_API_KEY || config.apiKey;
+        const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
         if (!apiKey) throw new Error("Missing Gemini API Key (config.apiKey)");
 
         const genAI = new GoogleGenerativeAI(apiKey);
@@ -165,7 +165,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
         const today = new Date().toLocaleDateString();
 
         let searchResults = null;
-        const tavilyKey = process.env.TAVILY_API_KEY || config.tavilyApiKey;
+        const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
 
         if (useSearch && tavilyKey) {
             const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
@@ -222,7 +222,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
     }
 
     // --- GROQ HANDLER (Fallback) ---
-    const apiKey = process.env.GROQ_API_KEY || config.groqApiKey;
+    const apiKey = config.groqApiKey || process.env.GROQ_API_KEY;
     if (!apiKey) {
         console.error("Missing Groq API Key.");
         throw new Error("Missing Groq API Key");
@@ -236,7 +236,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
     let searchResults = null;
     // Prefer Env Var for Tavily, fallback to config
-    const tavilyKey = process.env.TAVILY_API_KEY || config.tavilyApiKey;
+    const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
 
     if (useSearch && tavilyKey) {
         const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
