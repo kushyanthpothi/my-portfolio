@@ -1,31 +1,9 @@
-const { initializeApp } = require("firebase/app");
-const { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc } = require("firebase/firestore");
-const Groq = require("groq-sdk");
-
-// Polyfill Fetch for Node environments (Node 18+ has it globally, but good to be safe if older)
-// If running in Node 18+, fetch is global.
-
 // --- CONFIGURATION ---
-const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
-};
+// Note: Admin SDK credentials are handled via lib/admin.js
+const { db } = require('../lib/admin');
+const Groq = require("groq-sdk");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Check required ENV vars
-const requiredEnv = ['NEXT_PUBLIC_FIREBASE_API_KEY', 'NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'GROQ_API_KEY'];
-const missingEnv = requiredEnv.filter(key => !process.env[key]);
-if (missingEnv.length > 0) {
-    console.error(`[ERROR] Missing environment variables: ${missingEnv.join(', ')}`);
-    process.exit(1);
-}
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 // --- HELPER FUNCTIONS ---
 
@@ -62,9 +40,9 @@ function validateImageUrl(url) {
 
 async function getSettings(settingsId) {
     try {
-        const docRef = doc(db, "settings", settingsId);
-        const docSnap = await getDoc(docRef);
-        return docSnap.exists() ? docSnap.data() : null;
+        const docRef = db.collection("settings").doc(settingsId);
+        const docSnap = await docRef.get();
+        return docSnap.exists ? docSnap.data() : null;
     } catch (error) {
         console.error("Error fetching settings:", error);
         return null;
@@ -73,7 +51,7 @@ async function getSettings(settingsId) {
 
 async function saveSettings(settingsId, data) {
     try {
-        await setDoc(doc(db, "settings", settingsId), data, { merge: true });
+        await db.collection("settings").doc(settingsId).set(data, { merge: true });
         return { success: true };
     } catch (error) {
         console.error("Error saving settings:", error);
@@ -92,7 +70,7 @@ async function addBlog(blogData) {
             day: 'numeric'
         });
 
-        await setDoc(doc(db, "blogs", slug), {
+        await db.collection("blogs").doc(slug).set({
             ...blogData,
             date: date,
             createdAt: new Date().toISOString()
@@ -106,7 +84,7 @@ async function addBlog(blogData) {
 
 async function fetchExistingBlogs() {
     try {
-        const querySnapshot = await getDocs(collection(db, "blogs"));
+        const querySnapshot = await db.collection("blogs").get();
         const blogs = [];
         querySnapshot.forEach((doc) => {
             blogs.push({ ...doc.data(), slug: doc.id });
@@ -158,7 +136,98 @@ async function tavilySearch(query, apiKey) {
 
 // --- AI GENERATION ENGINE ---
 async function generateAI(promptText, contextMode, config, extraContext = {}) {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    // Determine Model & Provider
+    const modelName = config.model || "llama-3.3-70b-versatile";
+    const isGemini = modelName.toLowerCase().includes('gemini');
+
+    // --- GEMINI HANDLER ---
+    if (isGemini) {
+        const apiKey = process.env.GEMINI_API_KEY || config.apiKey;
+        if (!apiKey) throw new Error("Missing Gemini API Key (config.apiKey)");
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        // Clean model name for Google SDK if it's an OpenRouter ID like "google/gemini-..."
+        const cleanModel = modelName.replace('google/', '').replace(':free', '');
+        const model = genAI.getGenerativeModel({ model: cleanModel });
+
+        // Prepare System Prompt
+        const systemPrompt = "You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.";
+
+        // Construct Prompt based on Mode
+        let fullPrompt = "";
+
+        // Helper to perform web search within Gemini if needed (ignoring Tavily for now as Gemini has search, but for consistency we use prompt context)
+        // Note: For now we inject search results into prompt like Groq flow
+
+        // ... (Reusing logic to build messages, but flattening for Gemini) ...
+        // We need to execute the web search part first identical to Groq flow
+        const useSearch = ['discover', 'research'].includes(contextMode);
+        const today = new Date().toLocaleDateString();
+
+        let searchResults = null;
+        const tavilyKey = process.env.TAVILY_API_KEY || config.tavilyApiKey;
+
+        if (useSearch && tavilyKey) {
+            const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
+            console.log(`  → Web Search (Tavily): "${searchQuery}"`);
+            searchResults = await tavilySearch(searchQuery, tavilyKey);
+            if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
+        }
+
+        // Construct the actual user message content
+        let userContent = "";
+        if (contextMode === 'discover') {
+            const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
+            userContent = `Find exactly 5 trending tech news headlines from TODAY: ${today}.\nUser Criteria: ${promptText}${searchContext}\nReturn ONLY valid JSON without markdown:\n{ "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }`;
+        } else if (contextMode === 'research') {
+            const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
+            userContent = `Research: "${promptText}"\nToday: ${today}${searchContext}\nIMPORTANT: Use the 'images' array from the WEB SEARCH RESULTS to populate the 'imageUrls' field.\nReturn ONLY valid JSON without markdown:\n{ "topic": "${promptText}", "sources": [{ "title": "...", "url": "...", "imageUrl": "..." }], "facts": [], "quotes": [], "imageUrls": [], "publishedDate": "${today}" }`;
+        } else if (contextMode === 'analyze') {
+            const research = extraContext.research || {};
+            userContent = `Analyze research: ${JSON.stringify(research)}\nDetermine MOST APPROPRIATE category.\nReturn ONLY valid JSON without markdown:\n{ "mainAngle": "...", "category": "...", "keyPoints": [], "outline": [], "hook": "...", "tone": "..." }`;
+        } else if (contextMode === 'write-json') {
+            const { research = {}, analysis = {} } = extraContext;
+            userContent = `Create metadata.\nANALYSIS: ${JSON.stringify(analysis)}\nRESEARCH: ${JSON.stringify(research)}\nReturn ONLY valid JSON:\n{ "title": "...", "slug": "...", "excerpt": "...", "category": "...", "coverImage": "..." }`;
+        } else if (contextMode === 'write-content') {
+            const { analysis = {}, metadata = {}, research = {} } = extraContext;
+            userContent = `Write a professional blog article in Markdown.\nMETADATA: ${JSON.stringify(metadata)}\nANALYSIS: ${JSON.stringify(analysis)}\nRESEARCH: ${JSON.stringify(research)}\nReturn ONLY valid JSON:\n{ "content": "# Title\\n\\n..." }`;
+        }
+
+        // Execute Gemini
+        let retries = 3;
+        while (retries > 0) {
+            try {
+                const result = await model.generateContent([
+                    systemPrompt, // Passing system prompt as first part, or usage instruction
+                    userContent
+                ]);
+                const response = await result.response;
+                let text = response.text();
+
+                // Cleanup JSON
+                let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const firstOpen = jsonStr.indexOf('{');
+                const lastClose = jsonStr.lastIndexOf('}');
+                if (firstOpen !== -1 && lastClose !== -1) {
+                    jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
+                }
+                return JSON.parse(jsonStr);
+            } catch (error) {
+                console.warn(`Gemini Generation Error (Attempt ${4 - retries}):`, error.message);
+                retries--;
+                if (retries === 0) throw error;
+                await new Promise(r => setTimeout(r, 10000)); // Wait 10s before retry
+            }
+        }
+    }
+
+    // --- GROQ HANDLER (Fallback) ---
+    const apiKey = process.env.GROQ_API_KEY || config.groqApiKey;
+    if (!apiKey) {
+        console.error("Missing Groq API Key.");
+        throw new Error("Missing Groq API Key");
+    }
+    const groq = new Groq({ apiKey });
     // Use env var for Groq Key consistently in server script, 
     // though we can fallback to config if passed.
 
