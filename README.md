@@ -1,84 +1,201 @@
-# ⚡️ Kushyanth Portfolio v2.0.1
+# Kushyanth Portfolio
 
-![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-2.0.1-blue?style=for-the-badge)
-![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
-![Firebase](https://img.shields.io/badge/Firebase-Supported-orange?style=for-the-badge&logo=firebase)
+A modern, high-performance personal portfolio website showcasing my profile digitally — an interactive alternative to traditional resumes. 
 
-> A modern, high-performance personal portfolio website built with Next.js 14, featuring dynamic content management, AI-powered interactions, and a premium glassmorphism design.
+🔗 **Live Demo:** [kushyanth-portfolio.web.app](https://kushyanth-portfolio.web.app)
 
 ---
 
-## 🚀 New Features (v2)
+## Overview
 
-### 📝 Dynamic Blog System
-- **Real-time Content**: Fetched dynamically from Firebase Firestore.
-- **Rich Tech News**: Automatically curated tech news and articles.
-- **Smart Categorization**: Filtering and categorized views for easy navigation.
-
-### 🛠️ Admin Dashboard
-- **Content Management**: Secure `/admin` route to manage projects and blogs.
-- **AI Integration**: Experimental support for AI-generated blog drafts (Gemini powered).
-- **Secure Access**: Protected routes to ensure only authorized modifications.
-
-### 🎨 UI/UX Overhaul
-- **Glassmorphism Design**: Sleek, modern aesthetic with blurred backdrops and subtle gradients.
-- **Fluid Animations**: Smooth scrolling, page transitions, and interactive hover states.
-- **Responsive & Fast**: Fully optimized for mobile, tablet, and desktop viewports.
-
-### 🔌 Tech Stack
-- **Frontend**: Next.js 14, React, Vanilla CSS (Modules)
-- **Backend/Data**: Firebase Firestore, Firebase Storage
-- **CMS**: Native Admin Panel built into the app
+This portfolio is built with Next.js 16 and Firebase, featuring a glassmorphism design aesthetic with smooth animations, dynamic content management, and AI-powered features.  It serves as a digital showcase of my skills, projects, experience, and blog content.
 
 ---
 
-## 📂 Project Structure
+## Features
 
-- **/app**: Next.js App Router structure.
-  - `(home)`: Landing page components.
-  - `admin`: Admin dashboard routes.
-  - `blogs`: Dynamic blog listing and post pages.
-  - `projects`: Dynamic project case studies.
-- **/components**: Reusable UI components (Navbar, Footer, Cards).
-- **/lib**: Firebase configuration and helper functions.
-- **/OLD**: Archived source code for the previous version (v1.0.0).
+### Dynamic Blog System
+Real-time blog content powered by Firebase Firestore with automatic tech news curation and smart category-based filtering for easy navigation.
 
----
+### Admin Dashboard
+A secure `/admin` route providing complete content management for projects and blogs.  Includes AI-powered blog draft generation using Google Gemini, with protected authentication ensuring authorized access only.
 
-## 🛠️ Getting Started
+### Modern UI/UX
+- Glassmorphism design with blurred backdrops and subtle gradients
+- Fluid animations powered by Framer Motion
+- Smooth scrolling with Lenis
+- Magnetic hover effects on interactive elements
+- Fully responsive across all devices
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/kushyanthpothi/my-portfolio.git
-   cd my-portfolio
-   ```
-
-2. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Setup**
-   Create a `.env.local` file with your Firebase credentials:
-   ```env
-   NEXT_PUBLIC_FIREBASE_API_KEY=your_key
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
-   ...
-   ```
-
-4. **Run Development Server**
-   ```bash
-   npm run dev
-   ```
+### SEO Optimized
+- Dynamic sitemap and robots.txt generation
+- Structured data (JSON-LD) for rich search results
+- Atom feed for content syndication
+- Comprehensive meta tags
 
 ---
 
-## 📜 License
+## Tech Stack
+
+| Layer | Technologies |
+|-------|--------------|
+| Framework | Next.js 16, React 19 |
+| Styling | CSS Modules, Sass |
+| Animation | Framer Motion, Lenis |
+| Backend | Firebase Firestore, Firebase Storage |
+| AI Integration | Google Generative AI (Gemini), OpenAI, Groq |
+| Email | EmailJS |
+| Icons | Lucide React, React Icons |
+
+---
+
+## Project Structure
+
+```
+├── app/
+│   ├── (home)/          # Landing page components
+│   ├── about/           # About page
+│   ├── admin/           # Admin dashboard (protected)
+│   │   └── components/  # Dashboard, ProjectManager, BlogManager, AIAutoBlogger
+│   ├── api/             # API routes
+│   ├── blogs/           # Blog listing and dynamic posts
+│   │   └── [slug]/      # Individual blog pages
+│   └── projects/        # Project case studies
+├── components/          # Reusable UI components
+│   ├── Footer. js
+│   ├── Loading.js
+│   ├── Magnetic.js
+│   ├── ErrorPage.js
+│   └── StructuredData.js
+├── lib/                 # Firebase config and utilities
+│   ├── firebase.js
+│   ├── firestoreUtils.js
+│   ├── AuthContext.js
+│   └── seoSchemas.js
+├── public/              # Static assets
+├── scripts/             # Utility scripts
+└── OLD/                 # Archived v1 source code
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Firebase project with Firestore enabled
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/kushyanthpothi/my-portfolio.git
+cd my-portfolio
+
+# Install dependencies
+npm install
+```
+
+### Environment Setup
+
+Create a `.env.local` file in the root directory: 
+
+```env
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project. firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# AI Services (optional)
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_key
+OPENAI_API_KEY=your_openai_key
+GROQ_API_KEY=your_groq_key
+
+# EmailJS (optional)
+NEXT_PUBLIC_EMAILJS_SERVICE_ID=your_service_id
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_template_id
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your_public_key
+```
+
+### Development
+
+```bash
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+
+# Run linting
+npm run lint
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the site.
+
+---
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Home - Hero section with introduction |
+| `/about` | About - Professional background and skills |
+| `/blogs` | Blog - Tech articles and news |
+| `/blogs/[slug]` | Individual blog post |
+| `/projects` | Projects - Portfolio showcase |
+| `/admin` | Admin Dashboard (protected) |
+
+---
+
+## Admin Features
+
+Access the admin panel at `/admin` with Firebase Authentication: 
+
+- **Dashboard** — Overview of content statistics
+- **Project Manager** — Add, edit, and delete projects
+- **Blog Manager** — Manage blog posts with rich content
+- **AI Auto Blogger** — Generate blog drafts using AI
+- **Experience Manager** — Update work experience
+
+---
+
+## Deployment
+
+The portfolio is configured for Firebase Hosting: 
+
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Deploy
+firebase deploy
+```
+
+---
+
+## License
 
 This project is open-source and available under the [MIT License](LICENSE).
 
 ---
 
-*Designed & Developed by [Kushyanth Pothineni](https://github.com/kushyanthpothi)*
+## Connect
+
+- **Portfolio:** [kushyanth-portfolio.web.app](https://kushyanth-portfolio.web.app)
+- **GitHub:** [@kushyanthpothi](https://github.com/kushyanthpothi)
+- **LinkedIn:** [kushyanth-pothineni](https://www.linkedin.com/in/kushyanth/)
+- **Email:** pothineni.kushyanth@gmail.com
+
+---
+
+Built by [Kushyanth Pothineni](https://github.com/kushyanthpothi)
