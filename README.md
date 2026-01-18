@@ -668,16 +668,19 @@ Feel free to reach out for collaborations, questions, or just to say hi!
 ## 📸 Screenshots
 
 ### Homepage
-![Homepage Hero Section](public/images/og-image.jpg)
+<img width="1440" height="777" alt="image" src="https://github.com/user-attachments/assets/b33dd8dd-a838-4686-bba3-ba8e991fab7c" />
 
 ### Admin Dashboard
-*Secure admin panel for comprehensive content management with real-time analytics*
+<img width="1440" height="776" alt="image" src="https://github.com/user-attachments/assets/aab51f5d-a493-4685-89da-6840fe9238c4" />
 
-### Dynamic Blog System
-*AI-powered blog with rich text editor, categories, and SEO optimization*
+
+### Blog Page
+<img width="1440" height="779" alt="image" src="https://github.com/user-attachments/assets/566f0f42-af29-4ac9-afef-dbbda0ab2d97" />
+
 
 ### Project Showcase
-*Interactive project cards with detailed case studies and live demos*
+<img width="1440" height="778" alt="image" src="https://github.com/user-attachments/assets/1f779c56-b9e3-4509-bda9-e800001e660d" />
+
 
 ---
 
