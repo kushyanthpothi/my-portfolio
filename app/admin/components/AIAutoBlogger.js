@@ -45,7 +45,7 @@ export default function AIAutoBlogger() {
         groqApiKey: '',
         tavilyApiKey: '',
         scheduleTime: '21:00',
-        prompt: `Find 5 top trending high-impact tech news topics for {{date}}.`
+        prompt: `Find 5 trending tech topics for {{date}}. Focus ONLY on: AI tools & innovations, smartphone rumors & launches, tech product innovations, breakthrough technologies, popular tech trends. EXCLUDE: stock market news, financial reports, cryptocurrency prices, company earnings.`
     });
 
     const [logs, setLogs] = useState([]);
@@ -212,7 +212,22 @@ export default function AIAutoBlogger() {
                     role: "user",
                     content: `Find exactly 5 trending tech news headlines from TODAY: ${today}.
 
-User Criteria: ${promptText}${searchContext}
+User Criteria: ${promptText}
+
+FOCUS ON:
+- AI tools, AI innovations, and AI product launches
+- Smartphone rumors, leaks, and official announcements
+- Tech product innovations and breakthrough technologies
+- Popular trending tech topics and viral tech news
+- Software updates and new tech features
+
+EXCLUDE:
+- Stock market news and financial reports
+- Company earnings and revenue reports
+- Cryptocurrency price movements
+- Investment and trading news
+- Market analysis and financial forecasts
+${searchContext}
 
 Return ONLY valid JSON without markdown:
 { "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }`
@@ -389,37 +404,76 @@ Return ONLY valid JSON without markdown code blocks:
             const today = new Date().toLocaleDateString();
             const populatedPrompt = config.prompt.replace('{{date}}', today);
 
-            addLog(`Step 1: Discovering topics...`);
-            const discoverData = await generateAI(populatedPrompt, 'discover');
-            const topics = discoverData.topics;
-
-            if (!topics || topics.length === 0) throw new Error("No topics found");
-            addLog(`[SUCCESS] Found: ${topics.slice(0, 3).join(', ')}...`);
-
             // Load existing blogs to check for duplicates
             const { fetchBlogs } = await import('@/lib/firestoreUtils');
             const existingBlogs = await fetchBlogs();
             const existingTitles = existingBlogs.map(b => b.title?.toLowerCase().trim());
             addLog(`Loaded ${existingBlogs.length} existing blogs for duplicate checking`);
 
-            let successCount = 0;
-            let skippedCount = 0;
-            for (let i = 0; i < topics.length; i++) {
-                const topic = topics[i];
-                addLog(`\n[${i + 1}/${topics.length}] Processing: "${topic}"`);
+            let allTopics = [];
+            let uniqueTopics = [];
+            const maxAttempts = 3;
+            let attempt = 0;
 
-                try {
-                    // Check if similar blog already exists
+            // Keep discovering topics until we have 5 unique ones
+            while (uniqueTopics.length < 5 && attempt < maxAttempts) {
+                attempt++;
+                addLog(`\nAttempt ${attempt}: Discovering topics...`);
+
+                const discoverData = await generateAI(populatedPrompt, 'discover');
+                const newTopics = discoverData.topics || [];
+
+                if (newTopics.length === 0) {
+                    addLog('[WARNING] No topics found in this attempt');
+                    continue;
+                }
+
+                addLog(`[SUCCESS] Found: ${newTopics.join(', ')}`);
+
+                // Filter out duplicates
+                for (const topic of newTopics) {
                     const topicLower = topic.toLowerCase().trim();
-                    const isDuplicate = existingTitles.some(title =>
+
+                    // Check against existing blogs
+                    const isDuplicateInDB = existingTitles.some(title =>
                         title && (title.includes(topicLower.slice(0, 20)) || topicLower.includes(title.slice(0, 20)))
                     );
 
-                    if (isDuplicate) {
-                        addLog(`  [SKIP] Similar article already exists`);
-                        skippedCount++;
-                        continue;
+                    // Check against already selected topics in this session
+                    const isDuplicateInSession = uniqueTopics.some(t =>
+                        t.toLowerCase().includes(topicLower.slice(0, 20)) || topicLower.includes(t.toLowerCase().slice(0, 20))
+                    );
+
+                    if (isDuplicateInDB) {
+                        addLog(`  [SKIP] "${topic}" - Similar article exists in database`);
+                    } else if (isDuplicateInSession) {
+                        addLog(`  [SKIP] "${topic}" - Already selected in this session`);
+                    } else {
+                        uniqueTopics.push(topic);
+                        addLog(`  [ADDED] "${topic}" (${uniqueTopics.length}/5)`);
+
+                        if (uniqueTopics.length >= 5) break;
                     }
+                }
+
+                if (uniqueTopics.length < 5) {
+                    addLog(`\nNeed ${5 - uniqueTopics.length} more unique topics. Searching again...`);
+                    await new Promise(r => setTimeout(r, 2000)); // Small delay before retry
+                }
+            }
+
+            if (uniqueTopics.length === 0) {
+                throw new Error("Could not find any unique topics after multiple attempts");
+            }
+
+            addLog(`\n✓ Selected ${uniqueTopics.length} unique topics for generation\n`);
+
+            let successCount = 0;
+            for (let i = 0; i < uniqueTopics.length; i++) {
+                const topic = uniqueTopics[i];
+                addLog(`\n[${i + 1}/${uniqueTopics.length}] Processing: "${topic}"`);
+
+                try {
 
                     addLog(`  → Researching...`);
                     const research = await generateAI(topic, 'research');
@@ -492,7 +546,7 @@ Return ONLY valid JSON without markdown code blocks:
             }
 
             setStatus('Waiting for next cycle');
-            addLog(`Cycle complete. Published ${successCount}, Skipped ${skippedCount} duplicates.`);
+            addLog(`\n✅ Cycle complete! Successfully published ${successCount} out of ${uniqueTopics.length} unique articles.`);
             scheduleNextRun();
 
         } catch (error) {

@@ -19,9 +19,11 @@ export async function generateMetadata(props) {
     const blog = await fetchBlogBySlug(params.slug);
 
     if (!blog) {
+        // For fallback pages (newly published blogs not in static build)
+        // Return generic metadata - the client will update the title
         return {
-            title: 'Blog Not Found',
-            description: 'The requested blog post could not be found.',
+            title: 'Loading Article | Kushyanth Pothineni',
+            description: 'Loading blog article...',
         };
     }
 
@@ -70,6 +72,10 @@ export default async function BlogPostPage(props) {
     const params = await props.params;
     const blog = await fetchBlogBySlug(params.slug);
 
+    // Fetch related blogs
+    const allBlogs = await fetchBlogs();
+    const relatedBlogs = blog ? allBlogs.filter(b => b.slug !== params.slug).slice(0, 3) : [];
+
     const breadcrumbData = generateBreadcrumbSchema([
         { name: 'Home', url: BASE_URL },
         { name: 'Blogs', url: `${BASE_URL}/blogs` },
@@ -83,7 +89,7 @@ export default async function BlogPostPage(props) {
         <>
             <StructuredData data={breadcrumbData} />
             {articleSchema && <StructuredData data={articleSchema} />}
-            <BlogPostClient />
+            <BlogPostClient initialBlog={blog} initialRelatedBlogs={relatedBlogs} />
         </>
     );
 }

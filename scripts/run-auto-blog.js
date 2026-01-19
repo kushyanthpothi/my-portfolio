@@ -178,7 +178,27 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
         let userContent = "";
         if (contextMode === 'discover') {
             const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
-            userContent = `Find exactly 5 trending tech news headlines from TODAY: ${today}.\nUser Criteria: ${promptText}${searchContext}\nReturn ONLY valid JSON without markdown:\n{ "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }`;
+            userContent = `Find exactly 5 trending tech news headlines from TODAY: ${today}.
+
+User Criteria: ${promptText}
+
+FOCUS ON:
+- AI tools, AI innovations, and AI product launches
+- Smartphone rumors, leaks, and official announcements
+- Tech product innovations and breakthrough technologies
+- Popular trending tech topics and viral tech news
+- Software updates and new tech features
+
+EXCLUDE:
+- Stock market news and financial reports
+- Company earnings and revenue reports
+- Cryptocurrency price movements
+- Investment and trading news
+- Market analysis and financial forecasts
+${searchContext}
+
+Return ONLY valid JSON without markdown:
+{ "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }`;
         } else if (contextMode === 'research') {
             const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
             userContent = `Research: "${promptText}"\nToday: ${today}${searchContext}\nIMPORTANT: Use the 'images' array from the WEB SEARCH RESULTS to populate the 'imageUrls' field.\nReturn ONLY valid JSON without markdown:\n{ "topic": "${promptText}", "sources": [{ "title": "...", "url": "...", "imageUrl": "..." }], "facts": [], "quotes": [], "imageUrls": [], "publishedDate": "${today}" }`;
@@ -256,7 +276,22 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
                 role: "user",
                 content: `Find exactly 5 trending tech news headlines from TODAY: ${today}.
 
-User Criteria: ${promptText}${searchContext}
+User Criteria: ${promptText}
+
+FOCUS ON:
+- AI tools, AI innovations, and AI product launches
+- Smartphone rumors, leaks, and official announcements
+- Tech product innovations and breakthrough technologies
+- Popular trending tech topics and viral tech news
+- Software updates and new tech features
+
+EXCLUDE:
+- Stock market news and financial reports
+- Company earnings and revenue reports
+- Cryptocurrency price movements
+- Investment and trading news
+- Market analysis and financial forecasts
+${searchContext}
 
 Return ONLY valid JSON without markdown:
 { "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }`
@@ -451,36 +486,78 @@ async function main() {
     // 2. Perform Generation
     try {
         const today = new Date().toLocaleDateString();
-        const populatedPrompt = (settings.prompt || "Find 5 top trending high-impact tech news topics for {{date}}.").replace('{{date}}', today);
+        const populatedPrompt = (settings.prompt || "Find 5 trending tech topics for {{date}}. Focus ONLY on: AI tools & innovations, smartphone rumors & launches, tech product innovations, breakthrough technologies, popular tech trends. EXCLUDE: stock market news, financial reports, cryptocurrency prices, company earnings.").replace('{{date}}', today);
 
-        console.log("Step 1: Discovering topics...");
-        const discoverData = await generateAI(populatedPrompt, 'discover', settings);
-        const topics = discoverData.topics;
-
-        if (!topics || topics.length === 0) throw new Error("No topics found");
-        console.log(`[SUCCESS] Found: ${topics.join(', ')}`);
-
+        // Load existing blogs for duplicate checking
         const existingBlogs = await fetchExistingBlogs();
         const existingTitles = existingBlogs.map(b => b.title?.toLowerCase().trim());
+        console.log(`Loaded ${existingBlogs.length} existing blogs for duplicate checking`);
 
-        let successCount = 0;
+        let uniqueTopics = [];
+        const maxAttempts = 3;
+        let attempt = 0;
 
-        // Limit to processing 5 topics max
-        for (let i = 0; i < topics.length; i++) {
-            const topic = topics[i];
-            console.log(`\n[${i + 1}/${topics.length}] Processing: "${topic}"`);
+        // Keep discovering topics until we have 5 unique ones
+        while (uniqueTopics.length < 5 && attempt < maxAttempts) {
+            attempt++;
+            console.log(`\nAttempt ${attempt}: Discovering topics...`);
 
-            try {
-                // Check Duplicate
+            const discoverData = await generateAI(populatedPrompt, 'discover', settings);
+            const newTopics = discoverData.topics || [];
+
+            if (newTopics.length === 0) {
+                console.log('[WARNING] No topics found in this attempt');
+                continue;
+            }
+
+            console.log(`[SUCCESS] Found: ${newTopics.join(', ')}`);
+
+            // Filter out duplicates
+            for (const topic of newTopics) {
                 const topicLower = topic.toLowerCase().trim();
-                const isDuplicate = existingTitles.some(title =>
+
+                // Check against existing blogs
+                const isDuplicateInDB = existingTitles.some(title =>
                     title && (title.includes(topicLower.slice(0, 20)) || topicLower.includes(title.slice(0, 20)))
                 );
 
-                if (isDuplicate) {
-                    console.log(`  [SKIP] Similar article already exists`);
-                    continue;
+                // Check against already selected topics in this session
+                const isDuplicateInSession = uniqueTopics.some(t =>
+                    t.toLowerCase().includes(topicLower.slice(0, 20)) || topicLower.includes(t.toLowerCase().slice(0, 20))
+                );
+
+                if (isDuplicateInDB) {
+                    console.log(`  [SKIP] "${topic}" - Similar article exists in database`);
+                } else if (isDuplicateInSession) {
+                    console.log(`  [SKIP] "${topic}" - Already selected in this session`);
+                } else {
+                    uniqueTopics.push(topic);
+                    console.log(`  [ADDED] "${topic}" (${uniqueTopics.length}/5)`);
+
+                    if (uniqueTopics.length >= 5) break;
                 }
+            }
+
+            if (uniqueTopics.length < 5) {
+                console.log(`\nNeed ${5 - uniqueTopics.length} more unique topics. Searching again...`);
+                await new Promise(r => setTimeout(r, 2000)); // Small delay before retry
+            }
+        }
+
+        if (uniqueTopics.length === 0) {
+            throw new Error("Could not find any unique topics after multiple attempts");
+        }
+
+        console.log(`\n✓ Selected ${uniqueTopics.length} unique topics for generation\n`);
+
+        let successCount = 0;
+
+        // Process each unique topic
+        for (let i = 0; i < uniqueTopics.length; i++) {
+            const topic = uniqueTopics[i];
+            console.log(`\n[${i + 1}/${uniqueTopics.length}] Processing: "${topic}"`);
+
+            try {
 
                 console.log(`  → Researching...`);
                 const research = await generateAI(topic, 'research', settings);
@@ -535,7 +612,7 @@ async function main() {
 
         // 3. Update Last Run
         await saveSettings('ai_automation', { lastRun: new Date().toISOString() });
-        console.log(`\nCycle complete. Published ${successCount} new blogs.`);
+        console.log(`\n✅ Cycle complete! Successfully published ${successCount} out of ${uniqueTopics.length} unique articles.`);
 
     } catch (error) {
         console.error("CRITICAL FAILURE:", error);

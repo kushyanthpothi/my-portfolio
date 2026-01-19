@@ -1,5 +1,6 @@
 'use client';
 import { useRef, useState, useEffect } from 'react';
+import Link from 'next/link';
 import styles from './About.module.css';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Instagram, Github, Linkedin } from 'lucide-react';
@@ -69,7 +70,9 @@ export default function About() {
                         </div>
 
                         <div className={styles.actionContainer}>
-                            <button className={styles.ctaButton}>MY STORY</button>
+                            <Link href="/about">
+                                <button className={styles.ctaButton}>MY STORY</button>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -93,7 +96,7 @@ function Paragraph() {
 
     const { scrollYProgress } = useScroll({
         target: container,
-        offset: ["start 0.9", "start 0.25"]
+        offset: ["start 0.85", "start 0.30"]
     });
 
     const words = [

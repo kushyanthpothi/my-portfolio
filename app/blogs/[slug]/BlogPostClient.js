@@ -9,13 +9,19 @@ import ThemeSwitch from '../../../components/ThemeSwitch';
 import styles from './blogPost.module.css';
 import { motion } from 'framer-motion';
 
-export default function BlogPostClient() {
+export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs = [] }) {
     const params = useParams();
-    const [blog, setBlog] = useState(null);
-    const [relatedBlogs, setRelatedBlogs] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [blog, setBlog] = useState(initialBlog);
+    const [relatedBlogs, setRelatedBlogs] = useState(initialRelatedBlogs);
+    const [loading, setLoading] = useState(!initialBlog);
 
     useEffect(() => {
+        // Only fetch if we don't have initial data (fallback scenario)
+        if (initialBlog) {
+            setLoading(false);
+            return;
+        }
+
         const loadBlog = async () => {
             try {
                 let slug = params.slug;
@@ -33,9 +39,9 @@ export default function BlogPostClient() {
                 const fetchedBlog = await fetchBlogBySlug(slug);
                 setBlog(fetchedBlog);
 
-                // Update document title to blog title
+                // Update document title for dynamically loaded blogs
                 if (fetchedBlog?.title) {
-                    document.title = fetchedBlog.title;
+                    document.title = `${fetchedBlog.title} | Kushyanth Pothineni`;
                 }
 
                 // Fetch related blogs (other blogs in the same category or just other blogs)
@@ -50,7 +56,7 @@ export default function BlogPostClient() {
         };
 
         loadBlog();
-    }, [params.slug]);
+    }, [params.slug, initialBlog]);
 
     if (loading) {
         return (

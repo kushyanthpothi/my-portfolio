@@ -10,11 +10,11 @@
     "cleanUrls": true,
     "rewrites": [
       {
-        "source": "/blogs/**",
+        "source": "/blogs/:slug",
         "destination": "/blogs/__fallback.html"
       },
       {
-        "source": "/projects/**",
+        "source": "/projects/:slug",
         "destination": "/projects/__fallback.html"
       }
     ],
