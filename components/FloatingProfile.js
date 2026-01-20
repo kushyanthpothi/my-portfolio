@@ -27,21 +27,29 @@ export default function FloatingProfile({ onAnimationComplete }) {
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
-    // Desktop scroll values
+    // Desktop scroll values - Simple and clean
+    // Y-axis: Stay in Hero, then move down smoothly to About
     const yDesktop = useTransform(scrollY, [0, 1600, 3000], [50, 50, -1300]);
+
+    // X-axis: Minimal horizontal movement
     const xDesktop = useTransform(scrollY, [100, 600, 3000], [0, 400, 300]);
+
+    // Rotation: Single 360° flip at the start only
     const rotateYDesktopRaw = useTransform(scrollY, [100, 800, 1600], [0, 180, 360]);
+
+    // Z-axis tilt: Subtle tilt during flip
     const rotateZDesktop = useTransform(scrollY, [0, 100, 350, 600, 900, 1150, 1400], [0, 0, 0, -5, -5, 0, 5]);
 
-    // Tablet scroll values - 360 flip before About, stop at middle of About, shift right when flipping starts
-    // Complete 360° flip before reaching About section (around scroll 800-1000)
-    // Stop at middle of About section (around scroll 1400)
-    // Shift right when flip starts
+    // Tablet scroll values - Simple and clean
+    // Y-axis: Stay in Hero, then move down smoothly
     const yTablet = useTransform(scrollY, [0, 400, 1400, 2600], [50, 50, 50, -900]);
-    // X Position: Start centered, shift right when flip begins (around scroll 200), move further right
+
+    // X-axis: Minimal horizontal shift
     const xTablet = useTransform(scrollY, [0, 200, 500, 3000], [0, 100, 200, 180]);
-    // 360° rotation completing at middle of About section (around scroll 1400)
+
+    // 360° rotation at start only
     const rotateYTabletRaw = useTransform(scrollY, [200, 900, 1400, 1700], [0, 180, 270, 360]);
+
     // Tilt during flip
     const rotateZTablet = useTransform(scrollY, [0, 400, 600, 800, 1000], [0, -5, -15, -5, 5]);
 
@@ -109,7 +117,7 @@ export default function FloatingProfile({ onAnimationComplete }) {
                     }}
                 >
                     <img
-                        src="https://burst.shopifycdn.com/photos/portrait-of-illuminated-laptop.jpg?exif=0&iptc=0"
+                        src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y29tcHV0ZXJ8ZW58MHx8MHx8fDA%3D"
                         alt="Laptop"
                         className={styles.image}
                     />

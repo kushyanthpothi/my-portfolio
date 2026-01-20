@@ -1,8 +1,9 @@
 'use client';
 import { useRef, useState, useEffect } from 'react';
+import Link from 'next/link';
 import styles from './AboutSection.module.css';
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
-import { Instagram, Github, Linkedin } from 'lucide-react';
+import { Instagram, Github, Linkedin, FileText } from 'lucide-react';
 import ThemeSwitch from '../../components/ThemeSwitch';
 
 // Initial empty states, data fetched from Firestore
@@ -23,6 +24,8 @@ export default function AboutSection() {
     const [experiencesData, setExperiencesData] = useState(experiences);
     const [techStackData, setTechStackData] = useState(realTechStack);
 
+    const [resumeUrl, setResumeUrl] = useState(null);
+
     // Import helper functions dynamically or use them if available in scope
     // Assuming they are imported at the top. I need to add imports first.
 
@@ -30,7 +33,7 @@ export default function AboutSection() {
         const loadData = async () => {
             // Dynamic import to avoid SSR issues if any, or just standard import
             try {
-                const { fetchServices, fetchExperiences, fetchTechStack } = await import('../../lib/firestoreUtils');
+                const { fetchServices, fetchExperiences, fetchTechStack, getSettings } = await import('../../lib/firestoreUtils');
 
                 const fetchedServices = await fetchServices();
                 if (fetchedServices.length > 0) setServicesData(fetchedServices);
@@ -41,6 +44,9 @@ export default function AboutSection() {
                 const fetchedTechStack = await fetchTechStack();
                 if (fetchedTechStack.length > 0) setTechStackData(fetchedTechStack);
 
+                const profileData = await getSettings('profile');
+                if (profileData && profileData.resumeUrl) setResumeUrl(profileData.resumeUrl);
+
             } catch (error) {
                 console.error("Failed to load Firestore data:", error);
                 // Fallback to initial hardcoded data is automatic since state init
@@ -49,6 +55,8 @@ export default function AboutSection() {
 
         loadData();
     }, []);
+
+
 
     useMotionValueEvent(scrollY, "change", (latest) => {
         const servicesEl = servicesRef.current;
@@ -166,6 +174,17 @@ export default function AboutSection() {
                                 <a href="https://www.linkedin.com/in/kushyanth/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                                     <Linkedin className={styles.socialIcon} />
                                 </a>
+                                {resumeUrl && (
+                                    <Link
+                                        href="/resume"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="Resume"
+                                        title="View Resume"
+                                    >
+                                        <FileText className={styles.socialIcon} />
+                                    </Link>
+                                )}
                             </div>
                         </div>
 

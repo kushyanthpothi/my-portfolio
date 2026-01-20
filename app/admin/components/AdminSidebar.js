@@ -9,6 +9,7 @@ export default function AdminSidebar({ activeView, setActiveView, onLogout }) {
         { id: 'projects', label: 'Projects', icon: FiFolder },
         { id: 'blogs', label: 'Blogs', icon: FiFileText },
         { id: 'experiences', label: 'Experiences', icon: FiBriefcase },
+        { id: 'resume', label: 'Resume', icon: FiFileText },
         { id: 'ai-automation', label: 'AI Automation', icon: FiCpu },
     ];
 

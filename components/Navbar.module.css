@@ -3,8 +3,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    padding: 2.5rem 2rem;
-    padding: 20px;
+    padding: clamp(15px, 2.5vh, 20px) clamp(15px, 2vw, 20px);
     display: flex;
     justify-content: center;
     z-index: 100;
@@ -38,12 +37,12 @@
 }
 
 .profileImage {
-    width: 40px;
-    height: 40px;
+    width: clamp(35px, 5vw, 40px);
+    height: clamp(35px, 5vw, 40px);
     border-radius: 50%;
     background-color: #eee;
     overflow: hidden;
-    margin-right: 10px;
+    margin-right: clamp(8px, 1.5vw, 10px);
     flex-shrink: 0;
 }
 
@@ -66,14 +65,14 @@
 /* 3D Cube Rotation Effect */
 .navLink {
     position: relative;
-    padding: 10px 16px;
-    font-size: 14px;
+    padding: clamp(8px, 1.2vw, 10px) clamp(12px, 2vw, 16px);
+    font-size: clamp(13px, 1.8vw, 14px);
     font-weight: 300;
     color: var(--text-primary);
     border-radius: 30px;
     overflow: hidden;
     line-height: 1.6;
-    height: 42px;
+    height: clamp(38px, 5vh, 42px);
     display: flex;
     align-items: center;
     perspective: 120px;
@@ -321,9 +320,9 @@
     /* Consistent rounded corners for expanded state */
     background-color: #111;
     /* Dark background for expanded state */
-    padding: 24px;
+    padding: clamp(20px, 3vw, 24px);
     /* Larger padding when expanded */
-    width: 320px;
+    width: min(320px, 90vw);
     /* Set a fixed width or max-width for the expanded card */
     max-width: 90vw;
 }

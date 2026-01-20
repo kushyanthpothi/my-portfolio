@@ -8,6 +8,7 @@ import ProjectManager from './components/ProjectManager';
 import BlogManager from './components/BlogManager';
 import AIAutoBlogger from './components/AIAutoBlogger.js';
 import ExperienceManager from './components/ExperienceManager';
+import ResumeManager from './components/ResumeManager';
 import Dashboard from './components/Dashboard';
 
 export default function AdminPage() {
@@ -122,6 +123,8 @@ export default function AdminPage() {
                 {activeView === 'experiences' && <ExperienceManager />}
 
                 {activeView === 'ai-automation' && <AIAutoBlogger />}
+
+                {activeView === 'resume' && <ResumeManager />}
             </main>
         </div>
     );

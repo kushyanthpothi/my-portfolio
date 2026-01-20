@@ -32,6 +32,12 @@ export default async function sitemap() {
             changeFrequency: 'weekly',
             priority: 0.9,
         },
+        {
+            url: `${BASE_URL}/resume`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.7,
+        },
     ];
 
     // Dynamic blog pages

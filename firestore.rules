@@ -14,6 +14,7 @@ service cloud.firestore {
     match /analytics/{document=**} { allow read, write: if true; }
 
     // Protected Settings (API Keys) - Admin Only
+    match /settings/profile { allow read: if true; allow write: if request.auth != null; }
     match /settings/{document=**} { allow read, write: if request.auth != null; }
 
     // Default catch-all (Secure)

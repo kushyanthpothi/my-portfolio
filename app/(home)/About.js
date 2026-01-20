@@ -3,9 +3,25 @@ import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './About.module.css';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Instagram, Github, Linkedin } from 'lucide-react';
+import { Instagram, Github, Linkedin, FileText } from 'lucide-react';
+
+import { getSettings } from '@/lib/firestoreUtils';
 
 export default function About() {
+    const [resumeUrl, setResumeUrl] = useState(null);
+
+    useEffect(() => {
+        const loadResume = async () => {
+            const data = await getSettings('profile');
+            if (data && data.resumeUrl) {
+                setResumeUrl(data.resumeUrl);
+            }
+        };
+        loadResume();
+    }, []);
+
+
+
     return (
         <section className={styles.section} id="about">
             <div className={styles.container}>
@@ -67,6 +83,17 @@ export default function About() {
                             <a href="https://www.linkedin.com/in/kushyanth/" target="_blank" rel="noopener noreferrer">
                                 <Linkedin className={styles.icon} />
                             </a>
+                            {resumeUrl && (
+                                <Link
+                                    href="/resume"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="View Resume"
+                                    className={styles.iconLink}
+                                >
+                                    <FileText className={styles.icon} />
+                                </Link>
+                            )}
                         </div>
 
                         <div className={styles.actionContainer}>

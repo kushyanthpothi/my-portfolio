@@ -711,6 +711,33 @@
     color: #666;
 }
 
+/* Upload Box */
+.uploadBox {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.uploadBox:hover {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.05);
+}
+
+.uploadLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
     .dashboardLayout {
@@ -797,6 +824,7 @@
         align-items: center;
         gap: 4px;
     }
+
 
     .sidebarLogout svg {
         width: 18px;

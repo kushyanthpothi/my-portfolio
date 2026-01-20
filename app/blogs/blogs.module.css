@@ -8,9 +8,9 @@
 
 /* Hero Section */
 .heroSection {
-    padding: 160px 5vw 80px;
+    padding: clamp(100px, 20vh, 160px) clamp(1rem, 5vw, 8rem) clamp(40px, 10vh, 80px);
     text-align: center;
-    max-width: 1200px;
+    max-width: min(1200px, 100% - 2rem);
     margin: 0 auto;
 }
 
@@ -36,8 +36,8 @@
 
 /* Featured Blog Section */
 .featuredSection {
-    padding: 0 5vw 80px;
-    max-width: 1400px;
+    padding: 0 clamp(1rem, 5vw, 8rem) clamp(60px, 10vh, 80px);
+    max-width: var(--container-max-width);
     margin: 0 auto;
 }
 
@@ -60,7 +60,7 @@
 .featuredImageWrapper {
     position: relative;
     width: 100%;
-    height: 500px;
+    height: clamp(280px, 50vh, 500px);
     overflow: hidden;
 }
 
@@ -155,8 +155,8 @@
 
 /* Blog Grid Section */
 .gridSection {
-    padding: 0 5vw 100px;
-    max-width: 1400px;
+    padding: 0 clamp(1rem, 5vw, 8rem) clamp(80px, 12vh, 100px);
+    max-width: var(--container-max-width);
     margin: 0 auto;
 }
 
@@ -193,8 +193,8 @@
 
 .blogsGrid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 48px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+    gap: clamp(32px, 5vw, 48px);
 }
 
 /* Blog Card */
@@ -217,7 +217,7 @@
 .blogImageWrapper {
     position: relative;
     width: 100%;
-    height: 280px;
+    height: clamp(220px, 35vh, 280px);
     overflow: hidden;
 }
 
@@ -267,6 +267,7 @@
     line-height: 1.65;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
