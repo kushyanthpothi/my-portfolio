@@ -60,20 +60,22 @@ const BlogCard = ({ blog, index }) => {
             transition={{ duration: 0.5, delay: index * 0.1 }}
         >
             <Link href={`/blogs/${blog.slug}`} className={styles.blogCard} data-cursor-blog>
-                <div className={styles.blogImageWrapper}>
-                    <SmartImage
-                        src={blog.coverImage}
-                        alt={blog.title}
-                        className={styles.blogImage}
-                    />
-                </div>
-                <div className={styles.blogContent}>
-                    <div className={styles.blogMeta}>
-                        <span className={styles.categoryBadge}>{blog.category}</span>
-                        <span className={styles.blogDate}>{blog.date}</span>
+                <div className={styles.blogCardInner}>
+                    <div className={styles.blogImageWrapper}>
+                        <SmartImage
+                            src={blog.coverImage}
+                            alt={blog.title}
+                            className={styles.blogImage}
+                        />
                     </div>
-                    <h3 className={styles.blogTitle}>{blog.title}</h3>
-                    <p className={styles.blogExcerpt}>{blog.excerpt}</p>
+                    <div className={styles.blogContent}>
+                        <div className={styles.blogMeta}>
+                            <span className={styles.categoryBadge}>{blog.category}</span>
+                            <span className={styles.blogDate}>{blog.date}</span>
+                        </div>
+                        <h3 className={styles.blogTitle}>{blog.title}</h3>
+                        <p className={styles.blogExcerpt}>{blog.excerpt}</p>
+                    </div>
                 </div>
             </Link>
         </motion.div>
@@ -89,21 +91,23 @@ const FeaturedBlogCard = ({ blog }) => {
             transition={{ duration: 0.6 }}
         >
             <Link href={`/blogs/${blog.slug}`} className={styles.featuredCard} data-cursor-blog>
-                <div className={styles.featuredImageWrapper}>
-                    <span className={styles.mostViewedBadge}>Most Viewed</span>
-                    <SmartImage
-                        src={blog.coverImage}
-                        alt={blog.title}
-                        className={styles.featuredImage}
-                    />
-                </div>
-                <div className={styles.featuredContent}>
-                    <div className={styles.featuredMeta}>
-                        <span className={styles.categoryBadge}>{blog.category}</span>
-                        <span className={styles.blogDate}>{blog.date}</span>
+                <div className={styles.featuredCardInner}>
+                    <div className={styles.featuredImageWrapper}>
+                        <span className={styles.mostViewedBadge}>Most Viewed</span>
+                        <SmartImage
+                            src={blog.coverImage}
+                            alt={blog.title}
+                            className={styles.featuredImage}
+                        />
                     </div>
-                    <h2 className={styles.featuredTitle}>{blog.title}</h2>
-                    <p className={styles.featuredExcerpt}>{blog.excerpt}</p>
+                    <div className={styles.featuredContent}>
+                        <div className={styles.featuredMeta}>
+                            <span className={styles.categoryBadge}>{blog.category}</span>
+                            <span className={styles.blogDate}>{blog.date}</span>
+                        </div>
+                        <h2 className={styles.featuredTitle}>{blog.title}</h2>
+                        <p className={styles.featuredExcerpt}>{blog.excerpt}</p>
+                    </div>
                 </div>
             </Link>
         </motion.div>
@@ -113,6 +117,7 @@ const FeaturedBlogCard = ({ blog }) => {
 export default function BlogsClient() {
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [visibleCount, setVisibleCount] = useState(9);
 
     useEffect(() => {
         const loadBlogs = async () => {
@@ -132,11 +137,37 @@ export default function BlogsClient() {
 
     // Featured blog (first one or most viewed)
     const featuredBlog = blogs.length > 0 ? blogs[0] : null;
-    // Rest of the blogs
+
+    // Total items to show (including featured)
+    // We want to show 'visibleCount' total items.
+    const gridVisibleCount = visibleCount - (featuredBlog ? 1 : 0);
+
+    // Rest of the blogs, sliced by visibleCount
     const otherBlogs = blogs.slice(1);
+    const displayedOtherBlogs = otherBlogs.slice(0, gridVisibleCount);
+
+    const hasMore = otherBlogs.length > gridVisibleCount;
+
+    const handleViewMore = () => {
+        setVisibleCount(prev => prev + 10);
+    };
+
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            if (containerRef.current) {
+                containerRef.current.style.setProperty("--mouse-client-x", `${e.clientX}px`);
+                containerRef.current.style.setProperty("--mouse-client-y", `${e.clientY}px`);
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
 
     return (
-        <main className={styles.pageContainer}>
+        <main className={styles.pageContainer} ref={containerRef}>
             <Navbar />
 
             {/* Hero Section */}
@@ -177,10 +208,10 @@ export default function BlogsClient() {
                     )}
 
                     {/* Blog Grid Section */}
-                    {otherBlogs.length > 0 && (
+                    {displayedOtherBlogs.length > 0 && (
                         <section className={styles.gridSection}>
                             <div className={styles.blogsGrid}>
-                                {otherBlogs.map((blog, index) => (
+                                {displayedOtherBlogs.map((blog, index) => (
                                     <BlogCard
                                         key={blog.slug}
                                         blog={blog}
@@ -188,6 +219,17 @@ export default function BlogsClient() {
                                     />
                                 ))}
                             </div>
+
+                            {hasMore && (
+                                <div className={styles.viewMoreWrapper}>
+                                    <button
+                                        className={styles.ctaButton}
+                                        onClick={handleViewMore}
+                                    >
+                                        View More Blogs
+                                    </button>
+                                </div>
+                            )}
                         </section>
                     )}
                 </>

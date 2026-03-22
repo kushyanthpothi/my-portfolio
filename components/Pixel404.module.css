@@ -1,0 +1,109 @@
+/* ─── Root wrapper ─────────────────────────────────────── */
+.root {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Horizontal scanline overlay */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(var(--scanline-rgb, 0,0,0), 0.035) 3px,
+    rgba(var(--scanline-rgb, 0,0,0), 0.035) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+  animation: scanPan 8s linear infinite;
+}
+
+@keyframes scanPan {
+  from { background-position: 0 0; }
+  to   { background-position: 0 200px; }
+}
+
+/* ─── Digit row ────────────────────────────────────────── */
+.container {
+  display: flex;
+  gap: clamp(12px, 3vw, 40px);
+  align-items: center;
+  justify-content: center;
+}
+
+.digitWrapper {
+  position: relative;
+}
+
+/* ─── Pixel grid ───────────────────────────────────────── */
+.digitGrid {
+  display: grid;
+  gap: clamp(2px, 0.4vw, 5px);
+}
+
+.pixel {
+  width: clamp(14px, 2.4vw, 30px);
+  height: clamp(14px, 2.4vw, 30px);
+  border-radius: 1px;
+  background-color: var(--pixel-color, var(--text-color, #000));
+  box-shadow: 0 0 0 0 var(--pixel-glow, transparent);
+  position: relative;
+  user-select: none;
+}
+
+/* Left-edge pixels on first "4" pulse slightly */
+.pixelEdge {
+  animation: edgePulse 3s ease-in-out infinite;
+}
+
+@keyframes edgePulse {
+  0%, 100% { opacity: 1; }
+  40%       { opacity: 0.7; }
+  55%       { opacity: 0.3; }
+  70%       { opacity: 0.8; }
+}
+
+.pixelEmpty {
+  width: clamp(14px, 2.4vw, 30px);
+  height: clamp(14px, 2.4vw, 30px);
+}
+
+/* ─── Theme: light ─────────────────────────────────────── */
+:global([data-theme='light']) .pixel {
+  --pixel-color: #000;
+  --pixel-glow: transparent;
+}
+:global([data-theme='light']) .scanlines {
+  --scanline-rgb: 0, 0, 0;
+}
+
+/* ─── Theme: dark ──────────────────────────────────────── */
+:global([data-theme='dark']) .pixel {
+  --pixel-color: #fff;
+  --pixel-glow: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.08);
+}
+:global([data-theme='dark']) .scanlines {
+  --scanline-rgb: 255, 255, 255;
+}
+
+/* ─── Responsive ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .container {
+    gap: clamp(8px, 2.5vw, 20px);
+  }
+}
+
+@media (max-width: 420px) {
+  .pixel,
+  .pixelEmpty {
+    width: clamp(8px, 3vw, 14px);
+    height: clamp(8px, 3vw, 14px);
+  }
+}

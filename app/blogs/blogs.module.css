@@ -45,11 +45,56 @@
     display: block;
     position: relative;
     border-radius: 32px;
-    overflow: hidden;
+    background: rgba(128, 128, 128, 0.2);
+    /* Subtler default border */
+    padding: 1px;
+    /* The border thickness */
     transition: transform 0.4s ease, box-shadow 0.4s ease;
     cursor: pointer;
     text-decoration: none;
     color: inherit;
+    overflow: hidden; /* Clips the translated glow strictly to the border */
+}
+
+.featuredCard::before {
+    background: radial-gradient(
+        circle at var(--mouse-client-x, -999px) var(--mouse-client-y, -999px), 
+        rgba(255, 230, 0, 0.8) 0%, 
+        transparent 350px
+    );
+    background-attachment: fixed;
+    border-radius: inherit;
+    content: "";
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    position: absolute;
+    transition: opacity 500ms;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.pageContainer:hover .featuredCard::before {
+    opacity: 1;
+}
+
+/* Make glow disappear smoothly inside the currently hovered card */
+.pageContainer:hover .featuredCard:hover::before {
+    opacity: 0;
+}
+
+.featuredCardInner {
+    background: var(--bg-primary);
+    border-radius: 31px;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .featuredCard:hover {
@@ -202,11 +247,53 @@
     display: block;
     position: relative;
     border-radius: 24px;
-    overflow: hidden;
-    background: var(--bg-primary);
+    background: rgba(128, 128, 128, 0.2);
+    padding: 1px;
     text-decoration: none;
     color: inherit;
     transition: transform 0.4s ease, box-shadow 0.4s ease;
+    overflow: hidden; /* Clips the translated glow strictly to the border */
+}
+
+.blogCard::before {
+    background: radial-gradient(
+        circle at var(--mouse-client-x, -999px) var(--mouse-client-y, -999px), 
+        rgba(255, 230, 0, 0.8) 0%, 
+        transparent 300px
+    );
+    background-attachment: fixed;
+    border-radius: inherit;
+    content: "";
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    position: absolute;
+    transition: opacity 500ms;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.pageContainer:hover .blogCard::before {
+    opacity: 1;
+}
+
+/* Make glow disappear smoothly inside the currently hovered card */
+.pageContainer:hover .blogCard:hover::before {
+    opacity: 0;
+}
+
+.blogCardInner {
+    background: var(--bg-primary);
+    border-radius: 23px;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .blogCard:hover {
@@ -343,6 +430,52 @@
 
 .blogCard:hover .readMoreArrow {
     transform: translateX(4px);
+}
+
+/* View More Button */
+.viewMoreWrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 5rem;
+    width: 100%;
+}
+
+.ctaButton {
+    background: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 20px 50px;
+    border-radius: 40px;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: color 0.4s ease;
+    font-family: var(--font-heading);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.ctaButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--accent-color);
+    z-index: -1;
+    clip-path: circle(0% at 0% 0%);
+    transition: clip-path 0.5s ease-out;
+}
+
+.ctaButton:hover::before {
+    clip-path: circle(150% at 0% 0%);
+}
+
+.ctaButton:hover {
+    color: #000;
 }
 
 /* Responsive Design */

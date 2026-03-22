@@ -1,53 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, useRef } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ThemeSwitch from '../../components/ThemeSwitch';
 import MouseBubble from '../../components/MouseBubble';
 import ProjectCard from '../../components/ProjectCard';
+import StackCard from '../../components/StackCard';
 import Loading from '../../components/Loading';
 import styles from './projects.module.css';
-
-// Stack Card Component for Featured Projects
-const StackCard = ({ card, index }) => {
-    const topOffset = index * 40 + 40;
-
-    return (
-        <Link href={`/projects/${card.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div
-                className={styles.cardWrapper}
-                style={{
-                    top: `${topOffset}px`,
-                    zIndex: index
-                }}
-            >
-                <div
-                    className={styles.card}
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url(${card.heroImage})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                    data-cursor-hover
-                >
-                    <div className={styles.cardContentWrapper}>
-                        <div className={styles.badgeWrapper}>
-                            <span className={styles.categoryBadge}>{card.category}</span>
-                        </div>
-
-                        <div className={styles.centerContent}>
-                            <h2 className={styles.cardTitle}>{card.title}</h2>
-                            <p className={styles.cardDescription}>{card.summary}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Link>
-    );
-};
-
 
 import { fetchProjects } from '@/lib/firestoreUtils';
 
@@ -77,8 +38,21 @@ export default function ProjectsClient() {
     // More projects (remaining)
     const moreProjects = projects.slice(3);
 
+    const containerRef = useRef(null);
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            if (containerRef.current) {
+                containerRef.current.style.setProperty("--mouse-client-x", `${e.clientX}px`);
+                containerRef.current.style.setProperty("--mouse-client-y", `${e.clientY}px`);
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
     return (
-        <main className={styles.pageContainer}>
+        <main className={styles.pageContainer} ref={containerRef}>
             <Navbar />
             <MouseBubble />
 

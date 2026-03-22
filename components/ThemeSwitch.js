@@ -23,8 +23,44 @@ export default function ThemeSwitch({ className = '', style = {} }) {
         document.documentElement.setAttribute('data-theme', savedTheme);
     }, []);
 
-    const toggleTheme = () => {
+    const toggleTheme = (event) => {
         const newTheme = theme === 'dark' ? 'light' : 'dark';
+
+        // Check if browser supports View Transitions API
+        if (!document.startViewTransition) {
+            applyTheme(newTheme);
+            return;
+        }
+
+        // Get the switch's dimensions and position
+        const rect = event.currentTarget.getBoundingClientRect();
+        
+        // Pass everything needed to calculate the 'inset' clip-path
+        const style = document.documentElement.style;
+        style.setProperty('--transition-top', `${rect.top}px`);
+        style.setProperty('--transition-left', `${rect.left}px`);
+        style.setProperty('--transition-width', `${rect.width}px`);
+        style.setProperty('--transition-height', `${rect.height}px`);
+        style.setProperty('--viewport-width', `${window.innerWidth}px`);
+        style.setProperty('--viewport-height', `${window.innerHeight}px`);
+
+        // Set direction and state
+        document.documentElement.setAttribute('data-theme-direction', `to-${newTheme}`);
+        document.documentElement.setAttribute('data-theme-transitioning', 'true');
+
+        // Start the view transition
+        const transition = document.startViewTransition(() => {
+            applyTheme(newTheme);
+        });
+
+        // Clean up attributes after transition
+        transition.finished.finally(() => {
+            document.documentElement.removeAttribute('data-theme-transitioning');
+            document.documentElement.removeAttribute('data-theme-direction');
+        });
+    };
+
+    const applyTheme = (newTheme) => {
         setTheme(newTheme);
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);

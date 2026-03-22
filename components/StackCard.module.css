@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Antonio:wght@100..700&family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* Card Wrapper (Sticky scroll logic) */
+.cardWrapper {
+    position: -webkit-sticky;
+    position: sticky;
+    margin-bottom: 3rem;
+}
+
+/* Card Visuals */
+.card {
+    position: relative;
+    overflow: hidden;
+    border-radius: clamp(1.5rem, 2vw, 2rem);
+    color: white;
+    min-height: clamp(550px, 75vh, 800px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.5s ease-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cardContentWrapper {
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 10;
+}
+
+/* Category Badge */
+.badgeWrapper {
+    margin-bottom: 1.5rem;
+}
+
+.categoryBadge {
+    background-color: #bef264;
+    color: #1a2e05;
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+}
+
+/* Center Content */
+.centerContent {
+    max-width: 50rem;
+}
+
+/* Typography */
+.cardTitle {
+    font-family: 'Antonio', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 6rem);
+    line-height: 0.9;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+    letter-spacing: 0.02em;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cardDescription {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    max-width: 40rem;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card {
+        min-height: 500px;
+    }
+
+    .cardTitle {
+        font-size: 2.5rem;
+    }
+
+    .cardDescription {
+        font-size: 1rem;
+    }
+
+    .cardContentWrapper {
+        padding: 1.5rem;
+    }
+
+    .cardWrapper {
+        margin-bottom: 2rem;
+    }
+}

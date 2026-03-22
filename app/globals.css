@@ -85,12 +85,90 @@ body {
   color: var(--text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -moz-osx-software-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
   position: relative;
   /* Prevent flash on page load */
   opacity: 1;
   animation: fadeIn 0.2s ease-in;
+}
+
+/* View Transitions API - Rounded Rect Reveal & Contract */
+::view-transition-group(root) {
+  animation: none;
+  /* Suppress default cross-fade */
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Light-to-Dark: New dark screen SPREADS from the switch --- */
+html[data-theme-direction="to-dark"]::view-transition-old(root) {
+  animation: none;
+  z-index: 1;
+}
+
+html[data-theme-direction="to-dark"]::view-transition-new(root) {
+  z-index: 9999;
+  animation: reveal 1s var(--expo-out);
+}
+
+/* --- Dark-to-Light: Old dark screen CONTRACTS back to the switch --- */
+html[data-theme-direction="to-light"]::view-transition-new(root) {
+  animation: none;
+  z-index: 1;
+}
+
+html[data-theme-direction="to-light"]::view-transition-old(root) {
+  z-index: 9999;
+  animation: contract 1s var(--expo-out) forwards;
+}
+
+/* Ensure the switch and knob also move smoothly over the same duration */
+::view-transition-group(theme-switch),
+::view-transition-group(theme-knob) {
+  animation-duration: 1s;
+}
+
+/* Ensure the image pair doesn't have default blending that causes flashes */
+::view-transition-image-pair(root) {
+  isolation: isolate;
+}
+
+[data-theme-transitioning="true"] body {
+  transition: none !important;
+}
+
+@keyframes reveal {
+  from {
+    clip-path: inset(var(--transition-top) calc(var(--viewport-width) - var(--transition-left) - var(--transition-width)) calc(var(--viewport-height) - var(--transition-top) - var(--transition-height)) var(--transition-left) round 100px);
+  }
+
+  to {
+    /* Over-expand to ensure rounded corners are far off-screen at the end */
+    clip-path: inset(-100px -100px -100px -100px round 100px);
+  }
+}
+
+@keyframes contract {
+  from {
+    /* Start from over-expanded state */
+    clip-path: inset(-100px -100px -100px -100px round 100px);
+  }
+
+  to {
+    clip-path: inset(var(--transition-top) calc(var(--viewport-width) - var(--transition-left) - var(--transition-width)) calc(var(--viewport-height) - var(--transition-top) - var(--transition-height)) var(--transition-left) round 100px);
+  }
+}
+
+:root {
+  --expo-out: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 @keyframes fadeIn {

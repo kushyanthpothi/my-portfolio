@@ -11,12 +11,12 @@
 .featuredSection {
     max-width: var(--container-max-width);
     margin: 0 auto;
-    padding: 0 clamp(1rem, 3vw, 1.5rem) clamp(4rem, 8vw, 6rem);
+    padding: clamp(3rem, 1vw, 4rem) clamp(1rem, 3vw, 1.5rem) 0;
 }
 
 .sectionHeader {
     text-align: center;
-    margin-bottom: clamp(3rem, 5vw, 4rem);
+    margin-bottom: 50px;
 }
 
 .mainTitle {
@@ -26,100 +26,29 @@
     color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin: 0 0 clamp(1rem, 2vw, 1.5rem) 0;
+    margin: 0 0 0.75rem 0;
 }
 
 .sectionDescription {
     font-family: 'Inter', sans-serif;
     font-size: clamp(1rem, 1.5vw, 1.125rem);
-    line-height: 1.8;
+    line-height: 1.6;
     color: var(--text-secondary);
     max-width: min(50rem, 90%);
     margin: 0 auto;
 }
 
 
-
-/* Stack Container */
+/* Stack Container — page-level wrapper for StackCard list */
 .stackContainer {
     max-width: var(--container-max-width);
     margin: 0 auto;
-    padding-top: clamp(2rem, 3vw, 2.5rem);
+    padding-top: 0;
     overflow: clip;
 }
 
-.cardWrapper {
-    position: -webkit-sticky;
-    position: sticky;
-    margin-bottom: 3rem;
-}
 
-.card {
-    position: relative;
-    overflow: hidden;
-    border-radius: clamp(1.5rem, 2vw, 2rem);
-    color: white;
-    min-height: clamp(400px, 60vh, 650px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.5s ease-out;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 
-.cardContentWrapper {
-    width: 100%;
-    height: 100%;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    z-index: 10;
-}
-
-.badgeWrapper {
-    margin-bottom: 1.5rem;
-}
-
-.categoryBadge {
-    background-color: #bef264;
-    color: #1a2e05;
-    padding: 0.5rem 1.25rem;
-    border-radius: 9999px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-block;
-}
-
-.centerContent {
-    max-width: 50rem;
-}
-
-.cardTitle {
-    font-family: 'Antonio', sans-serif;
-    font-size: clamp(2.5rem, 6vw, 6rem);
-    line-height: 0.9;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
-    letter-spacing: 0.02em;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.cardDescription {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.125rem;
-    line-height: 1.6;
-    max-width: 40rem;
-    margin: 0 auto;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 500;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
 
 /* More Projects Section */
 .moreProjectsSection {
@@ -193,26 +122,6 @@
 
     .sectionDescription {
         font-size: 1rem;
-    }
-
-    .card {
-        min-height: 400px;
-    }
-
-    .cardTitle {
-        font-size: 2.5rem;
-    }
-
-    .cardDescription {
-        font-size: 1rem;
-    }
-
-    .cardContentWrapper {
-        padding: 1.5rem;
-    }
-
-    .cardWrapper {
-        margin-bottom: 2rem;
     }
 
     .sectionTitle {
