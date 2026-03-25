@@ -36,7 +36,127 @@ function validateImageUrl(url) {
     return true;
 }
 
-// --- CORE FUNCTIONS (Ported from AIAutoBlogger.js) ---
+// --- IMAGE VERIFICATION (Real HTTP Check) ---
+
+async function verifyImageUrl(url) {
+    if (!validateImageUrl(url)) return false;
+
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+        const response = await fetch(url, {
+            method: 'HEAD',
+            signal: controller.signal,
+            headers: { 'User-Agent': 'Mozilla/5.0' }
+        });
+
+        clearTimeout(timeout);
+
+        if (!response.ok) return false;
+
+        const contentType = response.headers.get('content-type') || '';
+        return contentType.startsWith('image/');
+    } catch (err) {
+        console.log(`  [IMG-CHECK] Failed for ${url}: ${err.message}`);
+        return false;
+    }
+}
+
+// --- SEARCH & VERIFY IMAGE via Tavily ---
+
+async function searchAndVerifyImage(topic, category, tavilyKey) {
+    if (!tavilyKey) return null;
+
+    const query = `${topic} ${category || 'technology'}`;
+    console.log(`  → Image Search (Tavily): "${query}"`);
+
+    try {
+        const response = await fetch('https://api.tavily.com/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                api_key: tavilyKey,
+                query: query,
+                search_depth: 'basic',
+                include_images: true,
+                max_results: 3
+            })
+        });
+
+        if (!response.ok) return null;
+
+        const data = await response.json();
+        const images = data.images || [];
+
+        console.log(`  → Verifying ${images.length} candidate image(s)...`);
+
+        for (const imgUrl of images) {
+            if (!validateImageUrl(imgUrl)) continue;
+
+            const isValid = await verifyImageUrl(imgUrl);
+            if (isValid) {
+                console.log(`  [IMG-CHECK] ✓ Valid image found: ${imgUrl}`);
+                return imgUrl;
+            } else {
+                console.log(`  [IMG-CHECK] ✗ Rejected: ${imgUrl}`);
+            }
+        }
+
+        console.log(`  [IMG-CHECK] No valid images found via Tavily search`);
+        return null;
+    } catch (err) {
+        console.log(`  [IMG-SEARCH] Error: ${err.message}`);
+        return null;
+    }
+}
+
+// --- RESOLVE COVER IMAGE (Waterfall) ---
+// Priority: metadata.coverImage → research.imageUrls[] → Tavily image search → placeholder
+
+async function resolveCoverImage(metadata, research, topic, settings) {
+    const tavilyKey = settings.tavilyApiKey || process.env.TAVILY_API_KEY;
+    const category = metadata.category;
+
+    // 1. Try metadata.coverImage
+    if (metadata.coverImage) {
+        console.log(`  [IMG] Checking metadata image...`);
+        const valid = await verifyImageUrl(metadata.coverImage);
+        if (valid) {
+            console.log(`  [IMG] ✓ Metadata image OK`);
+            return metadata.coverImage;
+        }
+        console.log(`  [IMG] ✗ Metadata image invalid or unreachable`);
+    }
+
+    // 2. Try each URL in research.imageUrls
+    const researchImages = research.imageUrls || [];
+    if (researchImages.length > 0) {
+        console.log(`  [IMG] Checking ${researchImages.length} research image(s)...`);
+        for (const url of researchImages) {
+            const valid = await verifyImageUrl(url);
+            if (valid) {
+                console.log(`  [IMG] ✓ Research image OK: ${url}`);
+                return url;
+            }
+            console.log(`  [IMG] ✗ Research image invalid: ${url}`);
+        }
+    }
+
+    // 3. Search for fresh images via Tavily and verify each result
+    if (tavilyKey) {
+        const found = await searchAndVerifyImage(topic, category, tavilyKey);
+        if (found) return found;
+    }
+
+    // 4. Final guaranteed fallback — picsum placeholder is always reachable
+    const placeholder = getPlaceholderImage(category, topic);
+    console.log(`  [IMG] Using placeholder: ${placeholder}`);
+    return placeholder;
+}
+
+
+// --- CORE FUNCTIONS ---
 
 async function getSettings(settingsId) {
     try {
@@ -61,9 +181,7 @@ async function saveSettings(settingsId, data) {
 
 async function addBlog(blogData) {
     try {
-        // Generate slug from title if not provided
         const slug = blogData.slug || blogData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        // Auto-generate date if not provided
         const date = blogData.date || new Date().toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -136,7 +254,6 @@ async function tavilySearch(query, apiKey) {
 
 // --- AI GENERATION ENGINE ---
 async function generateAI(promptText, contextMode, config, extraContext = {}) {
-    // Determine Model & Provider
     const modelName = config.model || "llama-3.3-70b-versatile";
     const isGemini = modelName.toLowerCase().includes('gemini');
 
@@ -146,21 +263,11 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
         if (!apiKey) throw new Error("Missing Gemini API Key (config.apiKey)");
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Clean model name for Google SDK if it's an OpenRouter ID like "google/gemini-..."
         const cleanModel = modelName.replace('google/', '').replace(':free', '');
         const model = genAI.getGenerativeModel({ model: cleanModel });
 
-        // Prepare System Prompt
         const systemPrompt = "You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.";
 
-        // Construct Prompt based on Mode
-        let fullPrompt = "";
-
-        // Helper to perform web search within Gemini if needed (ignoring Tavily for now as Gemini has search, but for consistency we use prompt context)
-        // Note: For now we inject search results into prompt like Groq flow
-
-        // ... (Reusing logic to build messages, but flattening for Gemini) ...
-        // We need to execute the web search part first identical to Groq flow
         const useSearch = ['discover', 'research'].includes(contextMode);
         const today = new Date().toLocaleDateString();
 
@@ -174,8 +281,8 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
             if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
         }
 
-        // Construct the actual user message content
         let userContent = "";
+
         if (contextMode === 'discover') {
             const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
             userContent = `Find exactly 5 trending tech news headlines from TODAY: ${today}.
@@ -213,18 +320,13 @@ Return ONLY valid JSON without markdown:
             userContent = `Write a professional blog article in Markdown.\nMETADATA: ${JSON.stringify(metadata)}\nANALYSIS: ${JSON.stringify(analysis)}\nRESEARCH: ${JSON.stringify(research)}\nReturn ONLY valid JSON:\n{ "content": "# Title\\n\\n..." }`;
         }
 
-        // Execute Gemini
         let retries = 3;
         while (retries > 0) {
             try {
-                const result = await model.generateContent([
-                    systemPrompt, // Passing system prompt as first part, or usage instruction
-                    userContent
-                ]);
+                const result = await model.generateContent([systemPrompt, userContent]);
                 const response = await result.response;
                 let text = response.text();
 
-                // Cleanup JSON
                 let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const firstOpen = jsonStr.indexOf('{');
                 const lastClose = jsonStr.lastIndexOf('}');
@@ -236,7 +338,7 @@ Return ONLY valid JSON without markdown:
                 console.warn(`Gemini Generation Error (Attempt ${4 - retries}):`, error.message);
                 retries--;
                 if (retries === 0) throw error;
-                await new Promise(r => setTimeout(r, 10000)); // Wait 10s before retry
+                await new Promise(r => setTimeout(r, 10000));
             }
         }
     }
@@ -248,14 +350,11 @@ Return ONLY valid JSON without markdown:
         throw new Error("Missing Groq API Key");
     }
     const groq = new Groq({ apiKey });
-    // Use env var for Groq Key consistently in server script, 
-    // though we can fallback to config if passed.
 
     const useSearch = ['discover', 'research'].includes(contextMode);
     const today = new Date().toLocaleDateString();
 
     let searchResults = null;
-    // Prefer Env Var for Tavily, fallback to config
     const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
 
     if (useSearch && tavilyKey) {
@@ -266,7 +365,7 @@ Return ONLY valid JSON without markdown:
     }
 
     let messages = [];
-    let systemPrompt = "You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.";
+    const systemPrompt = "You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.";
 
     if (contextMode === 'discover') {
         const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
@@ -471,14 +570,10 @@ async function main() {
         process.exit(0);
     }
 
-    // Check last run to avoid excessive runs if called multiple times
-    // (Optional: Implement strict checking if you want to prevent duplicates even if script is called manually often)
     const lastRun = settings.lastRun ? new Date(settings.lastRun) : null;
     const now = new Date();
     if (lastRun && lastRun.getDate() === now.getDate() && lastRun.getMonth() === now.getMonth() && lastRun.getFullYear() === now.getFullYear()) {
         console.log("Already ran today. Skipping.");
-        // We can override this with a flag if needed, but for daily cron strictness is good.
-        // Uncomment to enforce: process.exit(0);
     }
 
     console.log(`Loaded Settings. Model: ${settings.model}`);
@@ -488,7 +583,6 @@ async function main() {
         const today = new Date().toLocaleDateString();
         const populatedPrompt = (settings.prompt || "Find 5 trending tech topics for {{date}}. Focus ONLY on: AI tools & innovations, smartphone rumors & launches, tech product innovations, breakthrough technologies, popular tech trends. EXCLUDE: stock market news, financial reports, cryptocurrency prices, company earnings.").replace('{{date}}', today);
 
-        // Load existing blogs for duplicate checking
         const existingBlogs = await fetchExistingBlogs();
         const existingTitles = existingBlogs.map(b => b.title?.toLowerCase().trim());
         console.log(`Loaded ${existingBlogs.length} existing blogs for duplicate checking`);
@@ -497,7 +591,6 @@ async function main() {
         const maxAttempts = 3;
         let attempt = 0;
 
-        // Keep discovering topics until we have 5 unique ones
         while (uniqueTopics.length < 5 && attempt < maxAttempts) {
             attempt++;
             console.log(`\nAttempt ${attempt}: Discovering topics...`);
@@ -512,16 +605,13 @@ async function main() {
 
             console.log(`[SUCCESS] Found: ${newTopics.join(', ')}`);
 
-            // Filter out duplicates
             for (const topic of newTopics) {
                 const topicLower = topic.toLowerCase().trim();
 
-                // Check against existing blogs
                 const isDuplicateInDB = existingTitles.some(title =>
                     title && (title.includes(topicLower.slice(0, 20)) || topicLower.includes(title.slice(0, 20)))
                 );
 
-                // Check against already selected topics in this session
                 const isDuplicateInSession = uniqueTopics.some(t =>
                     t.toLowerCase().includes(topicLower.slice(0, 20)) || topicLower.includes(t.toLowerCase().slice(0, 20))
                 );
@@ -533,14 +623,13 @@ async function main() {
                 } else {
                     uniqueTopics.push(topic);
                     console.log(`  [ADDED] "${topic}" (${uniqueTopics.length}/5)`);
-
                     if (uniqueTopics.length >= 5) break;
                 }
             }
 
             if (uniqueTopics.length < 5) {
                 console.log(`\nNeed ${5 - uniqueTopics.length} more unique topics. Searching again...`);
-                await new Promise(r => setTimeout(r, 2000)); // Small delay before retry
+                await new Promise(r => setTimeout(r, 2000));
             }
         }
 
@@ -552,13 +641,11 @@ async function main() {
 
         let successCount = 0;
 
-        // Process each unique topic
         for (let i = 0; i < uniqueTopics.length; i++) {
             const topic = uniqueTopics[i];
             console.log(`\n[${i + 1}/${uniqueTopics.length}] Processing: "${topic}"`);
 
             try {
-
                 console.log(`  → Researching...`);
                 const research = await generateAI(topic, 'research', settings);
 
@@ -568,16 +655,14 @@ async function main() {
                 console.log(`  → Generating Metadata...`);
                 const metadata = await generateAI(topic, 'write-json', settings, { research, analysis });
 
-                // Image Logic
-                let coverImage = metadata.coverImage;
-                if (research.imageUrls && research.imageUrls.length > 0) {
-                    const validImage = research.imageUrls.find(url => validateImageUrl(url));
-                    if (validImage) coverImage = validImage;
-                }
-                if (!coverImage || !validateImageUrl(coverImage)) {
-                    coverImage = getPlaceholderImage(metadata.category, topic);
-                }
-                metadata.coverImage = coverImage;
+                // ── IMAGE RESOLUTION WATERFALL ──────────────────────────────────
+                // 1. metadata.coverImage  →  real HTTP HEAD check
+                // 2. research.imageUrls[] →  real HTTP HEAD check (each)
+                // 3. Tavily image search  →  real HTTP HEAD check (each result)
+                // 4. picsum placeholder   →  always valid, guaranteed fallback
+                // ────────────────────────────────────────────────────────────────
+                console.log(`  → Resolving cover image...`);
+                metadata.coverImage = await resolveCoverImage(metadata, research, topic, settings);
 
                 console.log(`  → Writing Content...`);
                 const contentData = await generateAI(topic, 'write-content', settings, { research, analysis, metadata });
@@ -596,7 +681,7 @@ async function main() {
                 console.log(`  → Saving to DB...`);
                 const result = await addBlog(blogPost);
                 if (result.success) {
-                    console.log(`  [SUCCESS] Published!`);
+                    console.log(`  [SUCCESS] Published! Cover: ${metadata.coverImage}`);
                     successCount++;
                 } else {
                     console.log(`  [ERROR] DB Save Failed: ${result.error}`);
@@ -606,7 +691,6 @@ async function main() {
                 console.error(`  [ERROR] Topic Failed: ${err.message}`);
             }
 
-            // Small delay between generations
             await new Promise(r => setTimeout(r, 2000));
         }
 
