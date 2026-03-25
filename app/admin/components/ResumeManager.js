@@ -19,14 +19,18 @@ export default function ResumeManager() {
             return null;
         }
 
-        // Allow PDFs stored as base64 data URLs
-        if (url.startsWith('data:application/pdf')) {
-            return url;
+        const trimmedUrl = url.trim();
+
+        // Allow PDFs stored as data URLs with explicit PDF MIME type
+        // This prevents other data: schemes such as data:text/html from being used.
+        const dataPdfRegex = /^data:application\/pdf(;base64)?,/i;
+        if (dataPdfRegex.test(trimmedUrl)) {
+            return trimmedUrl;
         }
 
         // For manually entered URLs, restrict to http/https
         try {
-            const parsed = new URL(url, window.location.origin);
+            const parsed = new URL(trimmedUrl, window.location.origin);
             if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
                 return parsed.toString();
             }
