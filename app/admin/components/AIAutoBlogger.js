@@ -1,733 +1,478 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import styles from '../admin.module.css';
-import { addBlog, saveSettings, getSettings } from '@/lib/firestoreUtils';
-import { FiRefreshCw, FiSave, FiCheckCircle, FiXCircle, FiAlertCircle, FiClock, FiPlay } from 'react-icons/fi';
-import Groq from 'groq-sdk';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { FiPlay, FiCheckCircle, FiClock, FiLoader, FiDatabase, FiSearch, FiFileText } from 'react-icons/fi';
+import { IoSparkles } from 'react-icons/io5';
+import { LuServer, LuCpu, LuTerminal, LuGitBranch, LuBot } from 'react-icons/lu';
 
-// --- Client-Side Helper Functions ---
+const GH = 'https://api.github.com';
+const LOG_INTERVAL = 3000;
 
-function getPlaceholderImage(category, topic = '') {
-    const topicSeed = topic
-        ? topic.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20)
-        : Math.random().toString(36).substring(7);
+const PIPELINE_STEPS = [
+    { id: 'checkout', name: 'Checkout code', icon: LuGitBranch, description: 'Clone repository using actions/checkout@v4' },
+    { id: 'node', name: 'Setup Node.js', icon: LuCpu, description: 'Initialize Node.js 24 with npm caching' },
+    { id: 'install', name: 'Install Dependencies', icon: FiFileText, description: 'Install packages with npm ci (clean install)' },
+    { id: 'discover', name: 'Discover Trending Topics', icon: FiSearch, description: 'AI scans web for trending tech topics via Tavily + Groq' },
+    { id: 'research', name: 'Research & Write', icon: LuBot, description: 'Research -> Analyze -> Generate metadata -> Write content per topic' },
+    { id: 'save', name: 'Persist to Firestore', icon: FiDatabase, description: 'Save lastRun timestamp, confirm articles are live' },
+];
 
-    const categoryKeywords = {
-        'ai': 'technology',
-        'artificial intelligence': 'tech',
-        'mobile': 'phone',
-        'cyber security': 'security',
-        'space': 'space',
-        'startup': 'business',
-        'crypto': 'crypto',
-        'technology': 'digital',
-        'default': 'tech'
-    };
-
-    const keyword = categoryKeywords[category?.toLowerCase()] || categoryKeywords['default'];
-    return `https://picsum.photos/seed/${keyword}${topicSeed}/1280/720`;
+function matchStep(jobName) {
+    const lower = (jobName || '').toLowerCase();
+    if (lower.includes('checkout')) return 0;
+    if (lower.includes('node') || lower.includes('setup')) return 1;
+    if (lower.includes('install') || lower.includes('depend')) return 2;
+    if (lower.includes('blog') || lower.includes('auto') || lower.includes('run')) return 3;
+    return null;
 }
 
-function validateImageUrl(url) {
-    if (!url || typeof url !== 'string') return false;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) return false;
-    const brokenPatterns = ['example.com', 'placeholder', 'undefined', 'null', '.jpg.jpg', 'data:image'];
-    if (brokenPatterns.some(p => url.toLowerCase().includes(p))) return false;
-    return true;
+function inferStepFromLine(line) {
+    const l = line.toLowerCase();
+    if (l.includes('checkout') || l.includes('syncing repository') || l.includes('cloning into')) return 0;
+    if (l.includes('resolving node') || l.includes('node ') && l.includes('found')) return 1;
+    if (l.includes('npm ci') || (l.includes('added') && l.includes('packages')) || l.includes('vulnerabilities')) return 2;
+    if (l.includes('starting ai auto') || l.includes('loaded settings') || (l.includes('loaded') && l.includes('existing blogs'))) return 3;
+    if (l.includes('discovering topics') || l.includes('web search')) return 3;
+    if (l.includes('researching') || l.includes('analyzing')) return 4;
+    if (l.includes('metadata') || l.includes('writing content')) return 4;
+    if (l.includes('saving to db') || l.includes('published') || l.includes('cycle complete')) return 4;
+    if (l.includes('lastrun') || l.includes('settings saved')) return 5;
+    return null;
 }
-
 
 export default function AIAutoBlogger() {
-    const [config, setConfig] = useState({
-        enabled: false,
-        model: 'llama-3.3-70b-versatile',
-        groqApiKey: '',
-        tavilyApiKey: '',
-        scheduleTime: '21:00',
-        prompt: `Find 5 trending tech topics for {{date}}. Focus ONLY on: AI tools & innovations, smartphone rumors & launches, tech product innovations, breakthrough technologies, popular tech trends. EXCLUDE: stock market news, financial reports, cryptocurrency prices, company earnings.`
-    });
-
     const [logs, setLogs] = useState([]);
-    const [status, setStatus] = useState('Idle');
-    const [timerId, setTimerId] = useState(null);
-    const [availableModels, setAvailableModels] = useState([
-        'llama-3.3-70b-versatile',
-        'llama-3.1-70b-versatile',
-        'mixtral-8x7b-32768',
-        'gemma2-9b-it'
-    ]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [status, setStatus] = useState('idle');
+    const [lastRun, setLastRun] = useState(null);
+    const [currentStep, setCurrentStep] = useState(null);
+    const [stepProgress, setStepProgress] = useState(0);
+    const [isRunning, setIsRunning] = useState(false);
+    const terminalRef = useRef(null);
+    const abortRef = useRef(null);
 
-    // Fetch available models from Groq API
-    const fetchModels = async (apiKey) => {
-        if (!apiKey) {
-            addLog('[WARNING] No API key provided to fetch models');
-            return;
-        }
-
-        try {
-            addLog('Fetching available models from Groq...');
-            const response = await fetch('https://api.groq.com/openai/v1/models', {
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) throw new Error(`Groq API error: ${response.statusText}`);
-            const data = await response.json();
-
-            if (data.data && Array.isArray(data.data)) {
-                const models = data.data
-                    .filter(m => m.id && (m.id.includes('llama') || m.id.includes('mixtral') || m.id.includes('gemma')))
-                    .map(m => m.id)
-                    .sort();
-
-                if (models.length > 0) {
-                    setAvailableModels(models);
-                    addLog(`[SUCCESS] Fetched ${models.length} models from Groq`);
-                } else {
-                    addLog('[WARNING] No compatible models found');
-                }
-            }
-        } catch (err) {
-            console.error('Error fetching models:', err);
-            addLog(`[ERROR] Failed to fetch models: ${err.message}`);
-        }
-    };
-
-    useEffect(() => {
-        const loadConfig = async () => {
-            try {
-                const saved = await getSettings('ai_automation');
-                if (saved) {
-                    // Ensure we're using a Groq model, not an old OpenRouter/Gemini model
-                    const validGroqModels = ['llama-3.3-70b-versatile', 'llama-3.1-70b-versatile', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
-                    const model = validGroqModels.includes(saved.model) ? saved.model : 'llama-3.3-70b-versatile';
-
-                    setConfig(prev => ({ ...prev, ...saved, model }));
-                    addLog(`Config loaded from DB. Model: ${model}`);
-
-                    // Fetch models if Groq API key exists
-                    if (saved.groqApiKey) {
-                        fetchModels(saved.groqApiKey);
-                    }
-                }
-            } catch (err) {
-                console.error("Failed to load settings:", err);
-            }
-        };
-        loadConfig();
+    const addLog = useCallback((line) => {
+        if (!line) return;
+        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${line}`]);
     }, []);
 
+    useEffect(() => {
+        terminalRef.current?.scrollTo({ top: terminalRef.current.scrollHeight, behavior: 'smooth' });
+    }, [logs.length]);
 
-    // Removed client-side auto-scheduling in favor of GitHub Actions server-side cron.
+    const handleRunNow = useCallback(async () => {
+        if (isRunning) return;
 
+        const token = process.env.NEXT_PUBLIC_GITHUB_PAT;
+        const owner = process.env.NEXT_PUBLIC_GITHUB_OWNER;
+        const repo = process.env.NEXT_PUBLIC_GITHUB_REPO;
+        const workflow = 'daily-blog.yml';
 
-    const handleSave = async () => {
-        setIsLoading(true);
-        addLog(`Saving config...`);
-        const result = await saveSettings('ai_automation', config);
-        if (result.success) {
-            addLog('[SUCCESS] Configuration saved to database.');
-        } else {
-            addLog('[ERROR] Error saving configuration.');
-        }
-        setIsLoading(false);
-    };
+        setLogs([]);
+        setIsRunning(true);
+        setStatus('running');
+        setCurrentStep(null);
+        setStepProgress(0);
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setConfig(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-    };
+        const abort = new AbortController();
+        abortRef.current = abort;
 
-    const addLog = (msg) => {
-        const timestamp = new Date().toLocaleTimeString();
-        setLogs(prev => [`[${timestamp}] ${msg}`, ...prev].slice(0, 50));
-    };
-
-    // --- TAVILY SEARCH ---
-    const tavilySearch = async (query) => {
-        if (!config.tavilyApiKey) {
-            addLog('[WARNING] No Tavily API key - skipping web search');
-            return null;
-        }
-
-        try {
-            const response = await fetch('https://api.tavily.com/search', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    api_key: config.tavilyApiKey,
-                    query: query,
-                    search_depth: 'basic',
-                    include_answer: true,
-                    include_images: true,
-                    max_results: 5
-                })
+        const api = async (url, opts = {}) => {
+            return fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28',
+                    ...opts.headers,
+                },
+                signal: abort.signal,
             });
-
-            if (!response.ok) throw new Error(`Tavily API error: ${response.statusText}`);
-            const data = await response.json();
-            return {
-                answer: data.answer || '',
-                images: data.images || [],
-                results: (data.results || []).map(r => ({
-                    title: r.title,
-                    url: r.url,
-                    content: r.content
-                }))
-            };
-        } catch (err) {
-            addLog(`[WARNING] Search failed: ${err.message}`);
-            return null;
-        }
-    };
-
-    // --- AI GENERATION WITH GROQ ---
-    const generateAI = async (promptText, contextMode, extraContext = {}) => {
-        if (!config.groqApiKey) throw new Error("Groq API Key is missing");
-
-        const groq = new Groq({ apiKey: config.groqApiKey, dangerouslyAllowBrowser: true });
-        const useSearch = ['discover', 'research'].includes(contextMode);
-        const today = new Date().toLocaleDateString();
-
-        let searchResults = null;
-        if (useSearch && config.tavilyApiKey) {
-            const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
-            addLog(`  → Web Search: "${searchQuery}"`);
-            searchResults = await tavilySearch(searchQuery);
-            if (searchResults) addLog(`  ✓ Found ${searchResults.results?.length || 0} results`);
-        }
-
-        let messages = [];
-        let systemPrompt = "You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.";
-
-        if (contextMode === 'discover') {
-            const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
-            messages = [
-                { role: "system", content: systemPrompt },
-                {
-                    role: "user",
-                    content: `Find exactly 5 trending tech news headlines from TODAY: ${today}.
-
-User Criteria: ${promptText}
-
-FOCUS ON:
-- AI tools, AI innovations, and AI product launches
-- Smartphone rumors, leaks, and official announcements
-- Tech product innovations and breakthrough technologies
-- Popular trending tech topics and viral tech news
-- Software updates and new tech features
-
-EXCLUDE:
-- Stock market news and financial reports
-- Company earnings and revenue reports
-- Cryptocurrency price movements
-- Investment and trading news
-- Market analysis and financial forecasts
-${searchContext}
-
-Return ONLY valid JSON without markdown:
-{ "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }`
-                }
-            ];
-        } else if (contextMode === 'research') {
-            const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
-            messages = [
-                { role: "system", content: systemPrompt },
-                {
-                    role: "user",
-                    content: `Research: "${promptText}"
-Today: ${today}${searchContext}
-
-IMPORTANT: Use the 'images' array from the WEB SEARCH RESULTS to populate the 'imageUrls' field. Select high-quality, relevant images.
-
-Return ONLY valid JSON without markdown:
-{
-    "topic": "${promptText}",
-    "sources": [{ "title": "...", "url": "...", "imageUrl": "..." }],
-    "facts": ["fact1", "fact2", "fact3"],
-    "quotes": ["quote1"],
-    "imageUrls": ["url1", "url2"],
-    "publishedDate": "${today}"
-}`
-                }
-            ];
-        } else if (contextMode === 'analyze') {
-            const research = extraContext.research || {};
-            messages = [
-                { role: "system", content: systemPrompt },
-                {
-                    role: "user",
-                    content: `Analyze research: ${JSON.stringify(research)}
-
-IMPORTANT: Determine the MOST APPROPRIATE category based on the content. Choose ONE from:
-- Artificial Intelligence
-- Cybersecurity  
-- Mobile Technology
-- Space & Science
-- Startups & Business
-- Cryptocurrency
-- Software Development
-- Gaming
-- Hardware
-- Cloud Computing
-- Internet of Things
-- AR/VR
-- Data Science
-- Technology (only if none of the above fit)
-
-Return ONLY valid JSON without markdown:
-{
-    "mainAngle": "article angle",
-    "category": "CHOOSE APPROPRIATE CATEGORY FROM LIST ABOVE",
-    "keyPoints": ["point1", "point2", "point3"],
-    "outline": ["intro", "section1", "section2", "conclusion"],
-    "hook": "opening hook",
-    "tone": "informative"
-}`
-                }
-            ];
-        } else if (contextMode === 'write-json') {
-            const { research = {}, analysis = {} } = extraContext;
-            messages = [
-                { role: "system", content: systemPrompt },
-                {
-                    role: "user",
-                    content: `Create metadata based on the analysis.
-
-ANALYSIS: ${JSON.stringify(analysis)}
-RESEARCH: ${JSON.stringify(research)}
-
-IMPORTANT: Use the exact category from the analysis: "${analysis.category}"
-IMPORTANT: Pick the best image from 'research.imageUrls' for 'coverImage' if available.
-
-Return ONLY valid JSON without markdown:
-{
-    "title": "Compelling, SEO-friendly blog title",
-    "slug": "url-friendly-slug",
-    "excerpt": "Brief 1-2 sentence summary",
-    "category": "${analysis.category}",
-    "coverImage": "https://example.com/image.jpg"
-}`
-                }
-            ];
-        } else if (contextMode === 'write-content') {
-            const { analysis = {}, metadata = {}, research = {} } = extraContext;
-            messages = [
-                { role: "system", content: systemPrompt },
-                {
-                    role: "user",
-                    content: `Write a professional blog article in Markdown format.
-
-METADATA: ${JSON.stringify(metadata)}
-ANALYSIS: ${JSON.stringify(analysis)}
-RESEARCH: ${JSON.stringify(research)}
-
-REQUIRED FORMAT (STRICTLY FOLLOW THIS STRUCTURE):
-
-# ${metadata.title || 'Article Title'}
-
-[Opening paragraph: 3-4 sentences introducing the topic and main announcement/news. Set the context and hook the reader.]
-
-## Introduction to [Topic Context]
-
-[2-3 paragraphs providing background and context. Explain the significance of this news/announcement.]
-
-## Overview of [Main Subject/Product/Technology]
-
-[2-3 paragraphs diving into the details. Describe features, capabilities, specifications, or key aspects.]
-
-## [Relevant Section About Impact/Technology/Features]
-
-[2-3 paragraphs exploring implications, innovations, or additional important aspects.]
-
-## Conclusion on [Topic's Significance/Future/Leadership]
-
-[2-3 paragraphs wrapping up. Discuss broader implications, future outlook, or industry impact.]
-
-REQUIREMENTS:
-- Total length: 600-800 words
-- Use exactly 4 H2 sections with descriptive, topic-specific titles (not generic)
-- Each section should have 2-3 well-developed paragraphs
-- Professional, informative tone
-- Include facts and insights from research
-- Natural flow from introduction to conclusion
-
-Return ONLY valid JSON without markdown code blocks:
-{ "content": "# Title\\n\\nOpening paragraph...\\n\\n## Section 1\\n\\nParagraphs...\\n\\n## Section 2\\n\\nParagraphs..." }`
-                }
-            ];
-        }
-
-        let retries = 3;
-        while (retries > 0) {
-            try {
-                const completion = await groq.chat.completions.create({
-                    model: config.model || "llama-3.3-70b-versatile",
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 8000
-                });
-
-                const text = completion.choices[0].message.content;
-                let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const firstOpen = jsonStr.indexOf('{');
-                const lastClose = jsonStr.lastIndexOf('}');
-                if (firstOpen !== -1 && lastClose !== -1) {
-                    jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
-                }
-
-                return JSON.parse(jsonStr);
-            } catch (err) {
-                console.warn(`Error (Attempt ${4 - retries}):`, err);
-                retries--;
-                if (retries === 0) throw err;
-                await new Promise(r => setTimeout(r, 2000));
-            }
-        }
-    };
-
-    const runGeneration = async () => {
-        setStatus('Running...');
-        addLog('Starting AI generation (Groq + Tavily)...');
-
-        if (!config.groqApiKey) {
-            addLog('[ERROR] Groq API Key missing');
-            setStatus('Error: No API Key');
-            return;
-        }
+        };
 
         try {
-            const today = new Date().toLocaleDateString();
-            const populatedPrompt = config.prompt.replace('{{date}}', today);
-
-            // Load existing blogs to check for duplicates
-            const { fetchBlogs } = await import('@/lib/firestoreUtils');
-            const existingBlogs = await fetchBlogs();
-            const existingTitles = existingBlogs.map(b => b.title?.toLowerCase().trim());
-            addLog(`Loaded ${existingBlogs.length} existing blogs for duplicate checking`);
-
-            let allTopics = [];
-            let uniqueTopics = [];
-            const maxAttempts = 3;
-            let attempt = 0;
-
-            // Keep discovering topics until we have 5 unique ones
-            while (uniqueTopics.length < 5 && attempt < maxAttempts) {
-                attempt++;
-                addLog(`\nAttempt ${attempt}: Discovering topics...`);
-
-                const discoverData = await generateAI(populatedPrompt, 'discover');
-                const newTopics = discoverData.topics || [];
-
-                if (newTopics.length === 0) {
-                    addLog('[WARNING] No topics found in this attempt');
-                    continue;
-                }
-
-                addLog(`[SUCCESS] Found: ${newTopics.join(', ')}`);
-
-                // Filter out duplicates
-                for (const topic of newTopics) {
-                    const topicLower = topic.toLowerCase().trim();
-
-                    // Check against existing blogs
-                    const isDuplicateInDB = existingTitles.some(title =>
-                        title && (title.includes(topicLower.slice(0, 20)) || topicLower.includes(title.slice(0, 20)))
-                    );
-
-                    // Check against already selected topics in this session
-                    const isDuplicateInSession = uniqueTopics.some(t =>
-                        t.toLowerCase().includes(topicLower.slice(0, 20)) || topicLower.includes(t.toLowerCase().slice(0, 20))
-                    );
-
-                    if (isDuplicateInDB) {
-                        addLog(`  [SKIP] "${topic}" - Similar article exists in database`);
-                    } else if (isDuplicateInSession) {
-                        addLog(`  [SKIP] "${topic}" - Already selected in this session`);
-                    } else {
-                        uniqueTopics.push(topic);
-                        addLog(`  [ADDED] "${topic}" (${uniqueTopics.length}/5)`);
-
-                        if (uniqueTopics.length >= 5) break;
-                    }
-                }
-
-                if (uniqueTopics.length < 5) {
-                    addLog(`\nNeed ${5 - uniqueTopics.length} more unique topics. Searching again...`);
-                    await new Promise(r => setTimeout(r, 2000)); // Small delay before retry
-                }
+            if (!token || !owner || !repo) {
+                addLog('ERROR: GitHub credentials not configured');
+                addLog('Add NEXT_PUBLIC_GITHUB_PAT, NEXT_PUBLIC_GITHUB_OWNER, NEXT_PUBLIC_GITHUB_REPO to .env.local');
+                setIsRunning(false);
+                setStatus('error');
+                return;
             }
 
-            if (uniqueTopics.length === 0) {
-                throw new Error("Could not find any unique topics after multiple attempts");
+            // 1. Dispatch workflow
+            await api(`${GH}/repos/${owner}/${repo}/actions/workflows/${workflow}/dispatches`, {
+                method: 'POST',
+                body: JSON.stringify({ ref: 'main' }),
+                headers: { 'Content-Type': 'application/json' },
+            });
+            addLog('Workflow dispatched on GitHub Actions');
+            addLog('');
+
+            // 2. Wait for run
+            addLog('Waiting for workflow run to start...');
+            let run = null;
+            for (let i = 0; i < 15; i++) {
+                const res = await api(`${GH}/repos/${owner}/${repo}/actions/workflows/${workflow}/runs?per_page=1&branch=main`);
+                if (!res.ok) { await new Promise(r => setTimeout(r, 1500)); continue; }
+                const data = await res.json();
+                if (data.workflow_runs?.[0]) {
+                    run = data.workflow_runs[0];
+                    break;
+                }
+                await new Promise(r => setTimeout(r, 1500));
             }
 
-            addLog(`\n✓ Selected ${uniqueTopics.length} unique topics for generation\n`);
+            if (!run) {
+                addLog('ERROR: Workflow run did not appear within 20 seconds');
+                setIsRunning(false);
+                setStatus('error');
+                return;
+            }
 
-            let successCount = 0;
-            for (let i = 0; i < uniqueTopics.length; i++) {
-                const topic = uniqueTopics[i];
-                addLog(`\n[${i + 1}/${uniqueTopics.length}] Processing: "${topic}"`);
+            addLog(`Run #${run.run_number} started (${run.status})`);
+            addLog('');
 
-                try {
+            const runId = run.id;
+            const logCache = new Map();
 
-                    addLog(`  → Researching...`);
-                    const research = await generateAI(topic, 'research');
+            // 3. Poll jobs & fetch logs
+            while (!abort.signal.aborted) {
+                const jobsRes = await api(`${GH}/repos/${owner}/${repo}/actions/runs/${runId}/jobs?per_page=100`);
+                if (!jobsRes.ok) break;
+                const jobsData = await jobsRes.json();
 
-                    addLog(`  → Analyzing...`);
-                    const analysis = await generateAI(topic, 'analyze', { research });
+                let anyInProgress = false;
 
-                    addLog(`  → Generating Metadata...`);
-                    const metadata = await generateAI(topic, 'write-json', { research, analysis });
+                for (const job of (jobsData.jobs || [])) {
+                    addLog(`[${job.status.toUpperCase()}] ${job.name}`);
 
-                    // Extract image from search results first
-                    let coverImage = metadata.coverImage;
-                    if (research.imageUrls && research.imageUrls.length > 0) {
-                        const validImage = research.imageUrls.find(url => validateImageUrl(url));
-                        if (validImage) {
-                            coverImage = validImage;
-                            addLog(`  ✓ Using image from search results`);
-                        }
+                    // Step detection from job name
+                    const stepMatch = matchStep(job.name);
+                    if (stepMatch !== null) {
+                        setCurrentStep(stepMatch);
+                        setStepProgress(0);
                     }
-                    // Try to get image from sources
-                    if ((!coverImage || !validateImageUrl(coverImage)) && research.sources && research.sources.length > 0) {
-                        for (const source of research.sources) {
-                            if (source.imageUrl && validateImageUrl(source.imageUrl)) {
-                                coverImage = source.imageUrl;
-                                addLog(`  ✓ Using image from source: ${source.title}`);
-                                break;
+
+                    // Fetch live logs
+                    if (job.status === 'in_progress' || job.status === 'completed') {
+                        anyInProgress = job.status === 'in_progress';
+                        try {
+                            const logRes = await api(`${GH}/repos/${owner}/${repo}/actions/jobs/${job.id}/logs`);
+                            if (logRes.ok) {
+                                const logText = await logRes.text();
+                                const prevLen = logCache.get(job.id) || 0;
+
+                                if (logText.length > prevLen) {
+                                    const newLines = logText.slice(prevLen).split('\n');
+                                    for (const rawLine of newLines) {
+                                        const line = rawLine.trim();
+                                        if (line) {
+                                            addLog(line);
+                                            const step = inferStepFromLine(line);
+                                            if (step !== null) {
+                                                setCurrentStep(step);
+                                                // Progress within research step
+                                                if (line.includes('Published!')) setStepProgress(100);
+                                                else if (line.match(/\(\d\/5\)/)) {
+                                                    const m = line.match(/\((\d)\/5\)/);
+                                                    if (m) setStepProgress(parseInt(m[1]) * 20);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    logCache.set(job.id, logText.length);
+                                }
                             }
+                        } catch (e) {
+                            addLog(`[WARN] Could not fetch logs for ${job.name}: ${e.message}`);
                         }
                     }
-                    // Fallback to placeholder
-                    if (!coverImage || !validateImageUrl(coverImage)) {
-                        coverImage = getPlaceholderImage(metadata.category, topic);
-                        addLog(`  → Using placeholder image`);
+
+                    // Detect completion
+                    if (job.conclusion === 'success' || job.conclusion === 'failure') {
+                        anyInProgress = false;
                     }
-
-                    metadata.coverImage = coverImage;
-
-                    addLog(`  → Writing Content...`);
-                    const contentData = await generateAI(topic, 'write-content', { research, analysis, metadata });
-
-                    // Ensure content is a string
-                    const content = typeof contentData.content === 'string'
-                        ? contentData.content
-                        : JSON.stringify(contentData.content);
-
-                    const blogPost = {
-                        ...metadata,
-                        content: content,
-                        isAI: true,
-                        tags: ['AI', analysis.category || 'Technology']
-                    };
-
-                    addLog(`  → Saving to DB...`);
-                    const result = await addBlog(blogPost);
-                    if (result.success) {
-                        addLog(`  [SUCCESS] Published!`);
-                        successCount++;
-                    } else {
-                        addLog(`  [ERROR] DB Save Failed: ${result.error}`);
-                    }
-
-                } catch (err) {
-                    addLog(`  [ERROR] Topic Failed: ${err.message}`);
                 }
 
-                if (i < topics.length - 1) {
-                    addLog(`  [WAITING] 3s cool-down...`);
-                    await new Promise(r => setTimeout(r, 3000));
+                // Check if run is completed
+                const runCheck = await api(`${GH}/repos/${owner}/${repo}/actions/runs/${runId}`);
+                if (runCheck.ok) {
+                    const rd = await runCheck.json();
+                    if (rd.status === 'completed') {
+                        anyInProgress = false;
+                        addLog('');
+                        addLog(`Workflow ${rd.conclusion === 'success' ? 'completed successfully' : `ended with ${rd.conclusion}`}`);
+                        break;
+                    }
                 }
+
+                if (!anyInProgress) {
+                    // Double check: are all jobs completed?
+                    const allDone = (jobsData.jobs || []).every(j =>
+                        j.status === 'completed' || j.conclusion === 'success' || j.conclusion === 'failure'
+                    );
+                    if (allDone) break;
+                }
+
+                await new Promise(r => setTimeout(r, LOG_INTERVAL));
             }
 
-            setStatus('Waiting for next cycle');
-            addLog(`\n✅ Cycle complete! Successfully published ${successCount} out of ${uniqueTopics.length} unique articles.`);
-            scheduleNextRun();
+            setCurrentStep(null);
+            setIsRunning(false);
+            setStatus('success');
+            setLastRun(new Date().toISOString());
+            setStepProgress(0);
+            addLog('');
+            addLog('Pipeline finished');
 
-        } catch (error) {
-            console.error(error);
-            addLog(`CRITICAL FAILURE: ${error.message}`);
-            setStatus('System Error');
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            addLog(`ERROR: ${err.message}`);
+            setIsRunning(false);
+            setStatus('error');
         }
+    }, [isRunning, addLog]);
+
+    const getLogColor = (log) => {
+        const l = log.toLowerCase();
+        if (l.includes('published') || l.includes('finished') || l.includes('cycle complete') || l.includes('completed successfully')) return '#34d399';
+        if (l.includes('[error]') || l.includes('error:')) return '#f87171';
+        if (l.includes('[warn') || l.includes('warning')) return '#fbbf24';
+        if (l.includes('[completed]') || l.includes('[success]') || l.includes('pipeline finished')) return '#34d399';
+        if (l.includes('[in_progress]')) return '#60a5fa';
+        if (l.includes('pipeline') || l.includes('dispatched') || l.includes('starting')) return '#fbbf24';
+        if (l.includes('researching') || l.includes('analyzing')) return '#a78bfa';
+        if (l.includes('[queued]')) return '#6b7280';
+        return '#9ca3af';
     };
 
     return (
-        <div className={styles.managerContainer}>
-            <div className={styles.managerHeader}>
-                <h2 className={styles.sectionTitle}>AI Blog Automation</h2>
+        <div style={{ padding: '1.5rem', maxWidth: 1400, margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem',
+            }}>
+                <div>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <IoSparkles style={{ color: '#fbbf24' }} />
+                        AI Blog Generator
+                    </h1>
+                    <p style={{ color: '#6b7280', fontSize: '0.85rem', margin: 0 }}>
+                        Automated pipeline — discovers, researches, and writes 5 tech articles daily via GitHub Actions
+                    </p>
+                </div>
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <span style={{ color: config.enabled ? '#44ff44' : '#666', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <FiCheckCircle style={{ fontSize: '14px' }} />
-                        {config.enabled ? 'Active' : 'Disabled'}
-                    </span>
-                    <label className="switch">
-                        <input type="checkbox" name="enabled" checked={config.enabled} onChange={handleChange} />
-                        <span className="slider"></span>
-                    </label>
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        padding: '0.4rem 0.9rem', borderRadius: '9999px',
+                        background: status === 'running' ? 'rgba(251,191,36,0.1)'
+                            : status === 'success' ? 'rgba(52,211,153,0.1)'
+                            : status === 'error' ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.05)',
+                        border: `1px solid ${
+                            status === 'running' ? 'rgba(251,191,36,0.2)'
+                            : status === 'success' ? 'rgba(52,211,153,0.2)'
+                            : status === 'error' ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.08)'
+                        }`,
+                    }}>
+                        {status === 'running' && <FiLoader className="pipeline-spin" style={{ color: '#fbbf24', fontSize: '14px' }} />}
+                        {status === 'success' && <FiCheckCircle style={{ color: '#34d399', fontSize: '14px' }} />}
+                        {status !== 'running' && status !== 'success' && <FiClock style={{ color: '#6b7280', fontSize: '14px' }} />}
+                        <span style={{
+                            color: status === 'running' ? '#fbbf24' : status === 'success' ? '#34d399'
+                            : status === 'error' ? '#f87171' : '#6b7280',
+                            fontSize: '0.8rem', fontWeight: 500,
+                        }}>
+                            {status === 'running' ? 'Running'
+                                : status === 'success' ? `Done · ${lastRun ? new Date(lastRun).toLocaleTimeString() : ''}`
+                                : status === 'error' ? 'Failed' : 'Ready'}
+                        </span>
+                    </div>
+
+                    <button
+                        onClick={handleRunNow}
+                        disabled={isRunning}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            padding: '0.5rem 1.25rem',
+                            background: isRunning ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                            color: isRunning ? '#6b7280' : '#000',
+                            border: 'none', borderRadius: '10px',
+                            fontWeight: 600, fontSize: '0.85rem',
+                            cursor: isRunning ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s ease',
+                        }}
+                    >
+                        {isRunning ? <FiLoader className="pipeline-spin" style={{ fontSize: '14px' }} /> : <FiPlay style={{ fontSize: '14px' }} />}
+                        {isRunning ? 'Running...' : 'Run Now'}
+                    </button>
                 </div>
             </div>
 
-            <div className={styles.formGrid}>
-                <div className={`${styles.colSpan6} ${styles.formContainer}`}>
-                    <h3 style={{ marginBottom: '1.5rem' }}>Configuration</h3>
-
-                    <div className={styles.inputGroup}>
-                        <label className={styles.label}>Groq AI Model</label>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <select name="model" value={config.model} onChange={handleChange} className={styles.select} style={{ flex: 1 }}>
-                                {availableModels.map(m => (<option key={m} value={m}>{m}</option>))}
-                            </select>
-                            <button
-                                onClick={() => fetchModels(config.groqApiKey)}
-                                className={styles.button}
-                                style={{ marginTop: 0, padding: '0 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '50px' }}
-                                title="Refresh Models from Groq"
-                                disabled={!config.groqApiKey}
-                            >
-                                <FiRefreshCw size={16} />
-                            </button>
+            {/* Two-column layout */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                {/* LEFT */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(251,191,36,0.05), rgba(139,92,246,0.03))',
+                        border: '1px solid rgba(251,191,36,0.12)',
+                        borderRadius: '16px', padding: '1.25rem',
+                    }}>
+                        <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', fontWeight: 600, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <LuServer style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                            Pipeline Config
+                        </h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem 1.5rem' }}>
+                            {[
+                                ['Schedule', 'cron 30 15 * * *'],
+                                ['Runtime', 'Node 24 / ubuntu-latest'],
+                                ['AI Model', 'llama-3.3-70b (Groq)'],
+                                ['Search', 'Tavily API (basic)'],
+                                ['Database', 'Firebase Firestore'],
+                                ['Output', '5 articles / day'],
+                            ].map(([k, v]) => (
+                                <div key={k} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                                    <span style={{ color: '#6b7280', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{k}</span>
+                                    <span style={{ color: '#e5e7eb', fontSize: '0.82rem', fontFamily: 'monospace' }}>{v}</span>
+                                </div>
+                            ))}
                         </div>
-                        <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.5rem' }}>
-                            ⚡ Free: 14,400 requests/day | Ultra-fast inference
-                        </p>
-                    </div>
-
-                    <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
-                        <label className={styles.label}>Groq API Key (Required)</label>
-                        <input
-                            name="groqApiKey"
-                            type="password"
-                            value={config.groqApiKey}
-                            onChange={handleChange}
-                            className={styles.input}
-                            placeholder={config.groqApiKey ? "********" : "gsk_..."}
-                        />
-                        <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.5rem' }}>
-                            Get free key at <a href="https://console.groq.com/keys" target="_blank" style={{ color: '#ffd700' }}>Groq Console</a>
-                        </p>
-                    </div>
-
-                    <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
-                        <label className={styles.label}>Tavily Search API Key (Optional)</label>
-                        <input
-                            name="tavilyApiKey"
-                            type="password"
-                            value={config.tavilyApiKey}
-                            onChange={handleChange}
-                            className={styles.input}
-                            placeholder={config.tavilyApiKey ? "********" : "tvly-..."}
-                        />
-                        <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '0.5rem' }}>
-                            Free: 1,000 queries/month at <a href="https://tavily.com" target="_blank" style={{ color: '#ffd700' }}>Tavily</a> (No credit card required!)
-                        </p>
-                    </div>
-
-                    <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
-                        <label className={styles.label}>Schedule Time (Daily)</label>
-                        <input name="scheduleTime" type="time" value={config.scheduleTime} onChange={handleChange} className={styles.input} />
-                    </div>
-
-                    <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
-                        <label className={styles.label}>Automation Prompt</label>
-                        <textarea
-                            name="prompt"
-                            value={config.prompt}
-                            onChange={handleChange}
-                            className={styles.textarea}
-                            style={{ height: '150px' }}
-                        />
-                    </div>
-
-                    <div style={{ marginTop: '2rem' }}>
-                        <button onClick={handleSave} className={styles.button} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} disabled={isLoading}>
-                            <FiSave size={16} />
-                            {isLoading ? 'Saving...' : 'Save Configuration'}
-                        </button>
-                    </div>
-                </div>
-
-                <div className={`${styles.colSpan6} ${styles.formContainer}`}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                        <h3>Live Activity</h3>
-                        <button onClick={runGeneration} className={styles.button} style={{ margin: 0, padding: '0.5rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <FiPlay size={14} />
-                            Run Now
-                        </button>
                     </div>
 
                     <div style={{
-                        background: 'rgba(0,0,0,0.3)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '12px',
-                        padding: '1rem',
-                        height: '400px',
-                        overflowY: 'auto',
-                        fontFamily: 'monospace',
-                        fontSize: '0.9rem',
-                        color: '#aaa'
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '16px', padding: '1.25rem',
+                        flex: 1,
                     }}>
+                        <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', fontWeight: 600, color: '#9ca3af' }}>
+                            Pipeline Steps
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            {PIPELINE_STEPS.map((step, i) => {
+                                const Icon = step.icon;
+                                const isActive = currentStep === i;
+                                const isPast = currentStep !== null && i < currentStep;
+                                const done = isPast || (status === 'success' && currentStep === null);
+
+                                return (
+                                    <div key={step.id} style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                        padding: '0.65rem 0.85rem',
+                                        borderRadius: '10px',
+                                        background: isActive ? 'rgba(251,191,36,0.06)' : 'transparent',
+                                        border: `1px solid ${
+                                            isActive ? 'rgba(251,191,36,0.15)'
+                                            : done ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.04)'
+                                        }`,
+                                        transition: 'all 0.25s ease',
+                                    }}>
+                                        <div style={{
+                                            width: '28px', height: '28px', borderRadius: '8px', display: 'flex',
+                                            alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                            background: done ? 'rgba(52,211,153,0.12)' : isActive ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.05)',
+                                        }}>
+                                            {done
+                                                ? <FiCheckCircle style={{ color: '#34d399', fontSize: '14px' }} />
+                                                : isActive
+                                                ? <FiLoader className="pipeline-spin" style={{ color: '#fbbf24', fontSize: '14px' }} />
+                                                : <Icon style={{ color: '#6b7280', fontSize: '14px' }} />
+                                            }
+                                        </div>
+
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{
+                                                color: done ? '#34d399' : isActive ? '#fbbf24' : '#9ca3af',
+                                                fontSize: '0.82rem', fontWeight: 500,
+                                            }}>
+                                                {step.name}
+                                            </div>
+                                            <div style={{ color: '#4b5563', fontSize: '0.72rem' }}>
+                                                {step.description}
+                                            </div>
+                                        </div>
+
+                                        {isActive && (
+                                            <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                                                <div style={{ height: '100%', width: `${stepProgress}%`, background: '#fbbf24', borderRadius: '2px', transition: 'width 0.3s ease' }} />
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT: Terminal */}
+                <div style={{
+                    background: '#0c0c0c',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'sticky',
+                    top: '1.5rem',
+                    height: 'fit-content',
+                }}>
+                    <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '0.75rem 1rem',
+                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        background: 'rgba(255,255,255,0.02)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }} />
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#febc2e' }} />
+                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }} />
+                            </div>
+                            <span style={{ color: '#6b7280', fontSize: '0.78rem', marginLeft: '0.5rem' }}>GitHub Actions · daily-blog.yml</span>
+                        </div>
+                        <LuTerminal style={{ color: '#4b5563', fontSize: '16px' }} />
+                    </div>
+
+                    <div
+                        ref={terminalRef}
+                        style={{
+                            padding: '1rem 1.25rem',
+                            height: 'calc(100vh - 280px)',
+                            minHeight: '420px',
+                            overflowY: 'auto',
+                            fontFamily: '"SF Mono", "JetBrains Mono", "Fira Code", monospace',
+                            fontSize: '0.73rem',
+                            lineHeight: '1.7',
+                            color: '#d1d5db',
+                        }}
+                    >
                         {logs.length === 0 ? (
-                            <div style={{ textAlign: 'center', marginTop: '40%' }}>Ready to start...</div>
+                            <div style={{ textAlign: 'center', paddingTop: '40%', color: '#374151' }}>
+                                <LuTerminal style={{ fontSize: '2.5rem', marginBottom: '0.75rem', display: 'block', margin: '0 auto 0.75rem' }} />
+                                <div style={{ fontSize: '0.85rem' }}>Click <strong style={{ color: '#6b7280' }}>"Run Now"</strong> to trigger the pipeline</div>
+                                <div style={{ fontSize: '0.72rem', marginTop: '0.25rem', color: '#1f2937' }}>or wait for the 21:00 daily cron</div>
+                            </div>
                         ) : (
                             logs.map((log, i) => (
-                                <div key={i} style={{ marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                                <div key={i} style={{
+                                    color: getLogColor(log),
+                                    borderBottom: '1px solid rgba(255,255,255,0.02)',
+                                    paddingBottom: '0.2rem',
+                                }}>
                                     {log}
                                 </div>
                             ))
                         )}
                     </div>
-
-                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: '#888', fontSize: '0.85rem' }}>Status:</span>
-                        <span style={{ fontWeight: 'bold', color: '#ffd700' }}>{status}</span>
-                    </div>
                 </div>
             </div>
 
-            <style jsx>{`
-                .switch {
-                    position: relative;
-                    display: inline-block;
-                    width: 60px;
-                    height: 32px;
+            <style jsx global>{`
+                .pipeline-spin {
+                    animation: pipeline-spin 1s linear infinite;
                 }
-                .switch input { opacity: 0; width: 0; height: 0; }
-                .slider {
-                    position: absolute;
-                    cursor: pointer;
-                    top: 0; left: 0; right: 0; bottom: 0;
-                    background-color: #2a2a2a;
-                    transition: .4s;
-                    border-radius: 34px;
-                    border: 1px solid #444;
-                    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-                }
-                .slider:before {
-                    position: absolute;
-                    content: "";
-                    height: 24px;
-                    width: 24px;
-                    left: 3px;
-                    bottom: 3px;
-                    background-color: #888;
-                    transition: .4s;
-                    border-radius: 50%;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                }
-                input:checked + .slider {
-                    background-color: #ffd700;
-                    border-color: #ffd700;
-                    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-                }
-                input:checked + .slider:before {
-                    transform: translateX(28px);
-                    background-color: #000;
-                    box-shadow: none;
+                @keyframes pipeline-spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
                 }
             `}</style>
         </div>

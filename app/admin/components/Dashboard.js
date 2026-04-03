@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import styles from '../admin.module.css';
 import Loading from '@/components/Loading';
-import { fetchProjects, fetchBlogs, getVisitorStats } from '@/lib/firestoreUtils';
-import { FiFolder, FiFileText, FiCpu, FiUsers, FiBarChart2, FiArrowUpRight, FiCalendar, FiClock } from 'react-icons/fi';
+import { fetchProjects, fetchBlogs, getVisitorStats, deleteProject, deleteBlog } from '@/lib/firestoreUtils';
+import { FiFolder, FiFileText, FiCpu, FiUsers, FiBarChart2, FiCalendar, FiClock, FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi';
 
-export default function Dashboard() {
+export default function Dashboard({ setActiveView }) {
     const [stats, setStats] = useState({
         totalProjects: 0,
         totalBlogs: 0,
@@ -47,6 +47,20 @@ export default function Dashboard() {
             console.error('Error loading stats:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteBlog = async (slug) => {
+        if (confirm('Are you sure you want to delete this blog post?')) {
+            const result = await deleteBlog(slug);
+            if (result.success) loadStats();
+        }
+    };
+
+    const handleDeleteProject = async (slug) => {
+        if (confirm('Are you sure you want to delete this project?')) {
+            const result = await deleteProject(slug);
+            if (result.success) loadStats();
         }
     };
 
@@ -286,6 +300,25 @@ export default function Dashboard() {
                         }}>
                             <FiCalendar /> Latest Blogs
                         </h3>
+                        <button
+                            onClick={() => setActiveView('blogs')}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.06)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '100px',
+                                padding: '8px 20px',
+                                color: '#fff',
+                                fontSize: '0.85rem',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            View All <FiArrowRight size={14} />
+                        </button>
                     </div>
 
                     {stats.recentBlogs.length === 0 ? (
@@ -297,72 +330,198 @@ export default function Dashboard() {
                             overflowX: 'auto',
                             paddingBottom: '1rem',
                             scrollBehavior: 'smooth',
-                            scrollbarWidth: 'none' // Firefox
+                            scrollbarWidth: 'none'
                         }}>
-                            <style jsx>{`
+                            <style jsx global>{`
                                 div::-webkit-scrollbar { display: none; }
+                                .blog-card {
+                                    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+                                }
+                                .blog-card:hover {
+                                    transform: translateY(-6px);
+                                    border-color: rgba(255, 215, 0, 0.2) !important;
+                                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 215, 0, 0.1);
+                                }
+                                .blog-card:hover .blog-card-image {
+                                    transform: scale(1.05);
+                                }
+                                .blog-card-image {
+                                    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                                }
+                                .card-actions-overlay {
+                                    opacity: 0;
+                                    transition: opacity 0.3s ease;
+                                }
+                                .blog-card:hover .card-actions-overlay {
+                                    opacity: 1 !important;
+                                }
                             `}</style>
                             {stats.recentBlogs.map((blog) => (
-                                <div key={blog.slug} style={{
-                                    flex: '0 0 320px', // Extra Width
-                                    background: 'rgba(255, 255, 255, 0.03)',
-                                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                                    borderRadius: '20px',
-                                    padding: '1rem',
+                                <div key={blog.slug} className="blog-card" style={{
+                                    flex: '0 0 340px',
+                                    height: '380px',
+                                    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
+                                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                                    borderRadius: '24px',
+                                    overflow: 'hidden',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '1rem',
-                                    backdropFilter: 'blur(5px)'
+                                    backdropFilter: 'blur(10px)',
+                                    position: 'relative'
                                 }}>
+                                    {/* Image Section */}
                                     <div style={{
                                         width: '100%',
-                                        aspectRatio: '16/10', // Modern ratio
-                                        borderRadius: '16px',
-                                        background: `url(${blog.coverImage}) center/cover`,
-                                        position: 'relative',
-                                        overflow: 'hidden'
+                                        height: '200px',
+                                        overflow: 'hidden',
+                                        position: 'relative'
                                     }}>
+                                        <div
+                                            className="blog-card-image"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                background: `url(${blog.coverImage}) center/cover`,
+                                                backgroundColor: '#1a1a2e'
+                                            }}
+                                        />
+                                        {/* Bottom Fade */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            height: '100px',
+                                            background: 'radial-gradient(ellipse at center bottom, rgba(10, 10, 15, 0.8) 0%, transparent 70%)'
+                                        }} />
+                                        {/* Hover Edit/Delete Overlay */}
+                                        <div className="card-actions-overlay" style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            background: 'rgba(0, 0, 0, 0.5)',
+                                            backdropFilter: 'blur(4px)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '12px',
+                                            zIndex: 10
+                                        }}>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setActiveView('blogs'); }}
+                                                style={{
+                                                    background: 'rgba(255, 255, 255, 0.15)',
+                                                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                                                    borderRadius: '50%',
+                                                    width: '44px',
+                                                    height: '44px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    backdropFilter: 'blur(8px)',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                title="Edit"
+                                            >
+                                                <FiEdit2 size={18} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteBlog(blog.slug); }}
+                                                style={{
+                                                    background: 'rgba(255, 68, 68, 0.2)',
+                                                    border: '1px solid rgba(255, 68, 68, 0.3)',
+                                                    borderRadius: '50%',
+                                                    width: '44px',
+                                                    height: '44px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#ff4444',
+                                                    cursor: 'pointer',
+                                                    backdropFilter: 'blur(8px)',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                title="Delete"
+                                            >
+                                                <FiTrash2 size={18} />
+                                            </button>
+                                        </div>
+                                        {/* AI Badge */}
                                         {blog.isAI && (
                                             <div style={{
                                                 position: 'absolute',
                                                 top: '12px',
                                                 right: '12px',
-                                                background: 'rgba(0, 0, 0, 0.6)',
-                                                backdropFilter: 'blur(4px)',
+                                                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05))',
+                                                backdropFilter: 'blur(8px)',
                                                 color: '#FFD700',
-                                                padding: '4px 12px',
+                                                padding: '6px 14px',
                                                 borderRadius: '100px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                border: '1px solid rgba(255, 215, 0, 0.3)',
+                                                fontSize: '0.7rem',
+                                                fontWeight: '700',
+                                                border: '1px solid rgba(255, 215, 0, 0.25)',
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: '4px'
+                                                gap: '5px',
+                                                letterSpacing: '0.05em',
+                                                textTransform: 'uppercase',
+                                                zIndex: 11
                                             }}>
-                                                <FiCpu size={12} /> AI
+                                                <FiCpu size={13} /> AI
+                                            </div>
+                                        )}
+                                        {/* Category Badge */}
+                                        {blog.category && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '12px',
+                                                left: '12px',
+                                                background: 'rgba(255, 255, 255, 0.1)',
+                                                backdropFilter: 'blur(8px)',
+                                                color: '#fff',
+                                                padding: '5px 12px',
+                                                borderRadius: '100px',
+                                                fontSize: '0.7rem',
+                                                fontWeight: '600',
+                                                letterSpacing: '0.03em',
+                                                textTransform: 'uppercase',
+                                                zIndex: 11
+                                            }}>
+                                                {blog.category}
                                             </div>
                                         )}
                                     </div>
-                                    <div style={{ padding: '0 0.5rem' }}>
+                                    {/* Content Section */}
+                                    <div style={{
+                                        padding: '1.25rem 1.25rem 1rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.6rem',
+                                        flex: 1
+                                    }}>
                                         <h4 style={{
                                             color: '#fff',
-                                            fontSize: '1.1rem',
+                                            fontSize: '1rem',
                                             fontWeight: '600',
-                                            whiteSpace: 'nowrap',
+                                            lineHeight: '1.4',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
                                             overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            marginBottom: '0.5rem'
+                                            margin: 0
                                         }}>
                                             {blog.title}
                                         </h4>
                                         <div style={{
                                             display: 'flex',
-                                            justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            color: '#9CA3AF',
-                                            fontSize: '0.85rem'
+                                            gap: '0.5rem',
+                                            color: '#6B7280',
+                                            fontSize: '0.8rem',
+                                            marginTop: 'auto'
                                         }}>
-                                            <span>{blog.category}</span>
+                                            <FiCalendar size={13} />
                                             <span>{blog.date}</span>
                                         </div>
                                     </div>
@@ -390,6 +549,25 @@ export default function Dashboard() {
                         }}>
                             <FiClock /> Latest Projects
                         </h3>
+                        <button
+                            onClick={() => setActiveView('projects')}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.06)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '100px',
+                                padding: '8px 20px',
+                                color: '#fff',
+                                fontSize: '0.85rem',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            View All <FiArrowRight size={14} />
+                        </button>
                     </div>
 
                     {stats.recentProjects.length === 0 ? (
@@ -400,46 +578,165 @@ export default function Dashboard() {
                             gap: '1.5rem',
                             overflowX: 'auto',
                             paddingBottom: '1rem',
-                            scrollBehavior: 'smooth'
+                            scrollBehavior: 'smooth',
+                            scrollbarWidth: 'none'
                         }}>
+                            <style jsx global>{`
+                                .project-card {
+                                    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+                                }
+                                .project-card:hover {
+                                    transform: translateY(-6px);
+                                    border-color: rgba(255, 215, 0, 0.2) !important;
+                                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 215, 0, 0.1);
+                                }
+                                .project-card:hover .project-card-image {
+                                    transform: scale(1.05);
+                                }
+                                .project-card-image {
+                                    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                                }
+                                .project-actions-overlay {
+                                    opacity: 0;
+                                    transition: opacity 0.3s ease;
+                                }
+                                .project-card:hover .project-actions-overlay {
+                                    opacity: 1 !important;
+                                }
+                            `}</style>
                             {stats.recentProjects.map((project) => (
-                                <div key={project.slug} style={{
-                                    flex: '0 0 320px', // Extra Width
-                                    background: 'rgba(255, 255, 255, 0.03)',
-                                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                                    borderRadius: '20px',
-                                    padding: '1rem',
+                                <div key={project.slug} className="project-card" style={{
+                                    flex: '0 0 340px',
+                                    height: '380px',
+                                    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
+                                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                                    borderRadius: '24px',
+                                    overflow: 'hidden',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '1rem',
-                                    backdropFilter: 'blur(5px)'
+                                    backdropFilter: 'blur(10px)',
+                                    position: 'relative'
                                 }}>
+                                    {/* Image Section */}
                                     <div style={{
                                         width: '100%',
-                                        aspectRatio: '16/10',
-                                        borderRadius: '16px',
-                                        background: `url(${project.heroImage}) center/cover`
-                                    }} />
-                                    <div style={{ padding: '0 0.5rem' }}>
+                                        height: '200px',
+                                        overflow: 'hidden',
+                                        position: 'relative'
+                                    }}>
+                                        <div
+                                            className="project-card-image"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                background: `url(${project.heroImage}) center/cover`,
+                                                backgroundColor: '#1a1a2e'
+                                            }}
+                                        />
+                                        {/* Hover Edit/Delete Overlay */}
+                                        <div className="project-actions-overlay" style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            background: 'rgba(0, 0, 0, 0.5)',
+                                            backdropFilter: 'blur(4px)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '12px',
+                                            zIndex: 10
+                                        }}>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setActiveView('projects'); }}
+                                                style={{
+                                                    background: 'rgba(255, 255, 255, 0.15)',
+                                                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                                                    borderRadius: '50%',
+                                                    width: '44px',
+                                                    height: '44px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#fff',
+                                                    cursor: 'pointer',
+                                                    backdropFilter: 'blur(8px)',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                title="Edit"
+                                            >
+                                                <FiEdit2 size={18} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.slug); }}
+                                                style={{
+                                                    background: 'rgba(255, 68, 68, 0.2)',
+                                                    border: '1px solid rgba(255, 68, 68, 0.3)',
+                                                    borderRadius: '50%',
+                                                    width: '44px',
+                                                    height: '44px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#ff4444',
+                                                    cursor: 'pointer',
+                                                    backdropFilter: 'blur(8px)',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                title="Delete"
+                                            >
+                                                <FiTrash2 size={18} />
+                                            </button>
+                                        </div>
+                                        {/* Category Badge */}
+                                        {project.category && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '12px',
+                                                left: '12px',
+                                                background: 'rgba(255, 255, 255, 0.1)',
+                                                backdropFilter: 'blur(8px)',
+                                                color: '#fff',
+                                                padding: '5px 12px',
+                                                borderRadius: '100px',
+                                                fontSize: '0.7rem',
+                                                fontWeight: '600',
+                                                letterSpacing: '0.03em',
+                                                textTransform: 'uppercase',
+                                                zIndex: 11
+                                            }}>
+                                                {project.category}
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Content Section */}
+                                    <div style={{
+                                        padding: '1.25rem 1.25rem 1rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.6rem',
+                                        flex: 1
+                                    }}>
                                         <h4 style={{
                                             color: '#fff',
-                                            fontSize: '1.1rem',
+                                            fontSize: '1rem',
                                             fontWeight: '600',
-                                            whiteSpace: 'nowrap',
+                                            lineHeight: '1.4',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
                                             overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            marginBottom: '0.5rem'
+                                            margin: 0
                                         }}>
                                             {project.title}
                                         </h4>
                                         <div style={{
                                             display: 'flex',
-                                            justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            color: '#9CA3AF',
-                                            fontSize: '0.85rem'
+                                            gap: '0.5rem',
+                                            color: '#6B7280',
+                                            fontSize: '0.8rem',
+                                            marginTop: 'auto'
                                         }}>
-                                            <span>{project.category}</span>
+                                            <FiCalendar size={13} />
                                             <span>{project.year}</span>
                                         </div>
                                     </div>

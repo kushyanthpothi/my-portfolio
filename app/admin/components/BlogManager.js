@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import styles from '../admin.module.css';
 import { addBlog, fetchBlogs, deleteBlog } from '@/lib/firestoreUtils';
-import { FiEdit2, FiTrash2, FiCpu } from 'react-icons/fi';
+import { FiCpu } from 'react-icons/fi';
+import { ContentCard } from './ContentCard';
 
 export default function BlogManager() {
-    const [view, setView] = useState('list'); // 'list', 'edit', 'create'
+    const [view, setView] = useState('list');
     const [blogs, setBlogs] = useState([]);
     const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
@@ -53,13 +54,11 @@ export default function BlogManager() {
 
         if (confirm('Are you sure you want to delete this blog post?')) {
             setStatusMessage({ type: 'info', text: 'Deleting blog...' });
-            console.log('Attempting to delete blog with slug:', slug);
-
             try {
                 const result = await deleteBlog(slug);
                 if (result.success) {
                     setStatusMessage({ type: 'success', text: 'Blog deleted successfully.' });
-                    await loadBlogs(); // Reload the list
+                    await loadBlogs();
                 } else {
                     console.error('Delete failed:', result.error);
                     setStatusMessage({ type: 'error', text: `Failed to delete blog: ${result.error?.message || 'Unknown error'}` });
@@ -123,19 +122,20 @@ export default function BlogManager() {
                         {blogs.filter(b => !b.isAI && (!b.tags || !b.tags.includes('AI'))).length === 0 && (
                             <div style={{ padding: '1rem', color: '#666' }}>No standard blogs found.</div>
                         )}
-                        {blogs.filter(b => !b.isAI && (!b.tags || !b.tags.includes('AI'))).map((b) => (
-                            <div key={b.slug} className={styles.listItem}>
-                                <div className={styles.itemImage} style={{ backgroundImage: `url(${b.coverImage})` }}></div>
-                                <div className={styles.itemInfo}>
-                                    <h3>{b.title}</h3>
-                                    <span className={styles.itemMeta}>{b.category} • {new Date(b.date).toLocaleDateString()}</span>
-                                </div>
-                                <div className={styles.itemActions}>
-                                    <button onClick={() => handleEditClick(b)} className={styles.iconButton} title="Edit"><FiEdit2 size={16} /></button>
-                                    <button onClick={() => handleDeleteClick(b.slug)} className={styles.iconButton} style={{ color: '#ff4444' }} title="Delete"><FiTrash2 size={16} /></button>
-                                </div>
-                            </div>
-                        ))}
+                        {blogs
+                            .filter(b => !b.isAI && (!b.tags || !b.tags.includes('AI')))
+                            .map((b) => (
+                                <ContentCard
+                                    key={b.slug}
+                                    imageUrl={b.coverImage}
+                                    badge={b.category}
+                                    title={b.title}
+                                    metaDate={new Date(b.date).toLocaleDateString()}
+                                    onEdit={() => handleEditClick(b)}
+                                    onDelete={() => handleDeleteClick(b.slug)}
+                                />
+                            ))
+                        }
                     </div>
 
                     {/* AI Blogs Section */}
@@ -147,19 +147,21 @@ export default function BlogManager() {
                             {blogs.filter(b => b.isAI || (b.tags && b.tags.includes('AI'))).length === 0 && (
                                 <div style={{ padding: '1rem', color: '#666' }}>No AI generated blogs found.</div>
                             )}
-                            {blogs.filter(b => b.isAI || (b.tags && b.tags.includes('AI'))).map((b) => (
-                                <div key={b.slug} className={styles.listItem} style={{ borderLeft: '3px solid #ffd700' }}>
-                                    <div className={styles.itemImage} style={{ backgroundImage: `url(${b.coverImage})` }}></div>
-                                    <div className={styles.itemInfo}>
-                                        <h3>{b.title}</h3>
-                                        <span className={styles.itemMeta}>AI Generated • {new Date(b.date).toLocaleDateString()}</span>
-                                    </div>
-                                    <div className={styles.itemActions}>
-                                        <button onClick={() => handleEditClick(b)} className={styles.iconButton} title="Edit"><FiEdit2 size={16} /></button>
-                                        <button onClick={() => handleDeleteClick(b.slug)} className={styles.iconButton} style={{ color: '#ff4444' }} title="Delete"><FiTrash2 size={16} /></button>
-                                    </div>
-                                </div>
-                            ))}
+                            {blogs
+                                .filter(b => b.isAI || (b.tags && b.tags.includes('AI')))
+                                .map((b) => (
+                                    <ContentCard
+                                        key={b.slug}
+                                        imageUrl={b.coverImage}
+                                        isAI
+                                        title={b.title}
+                                        metaDate={new Date(b.date).toLocaleDateString()}
+                                        metaLabel="AI Generated"
+                                        onEdit={() => handleEditClick(b)}
+                                        onDelete={() => handleDeleteClick(b.slug)}
+                                    />
+                                ))
+                            }
                         </div>
                     </div>
                 </>

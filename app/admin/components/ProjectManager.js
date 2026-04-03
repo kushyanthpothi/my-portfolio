@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from '../admin.module.css';
 import { addProject, fetchProjects, deleteProject } from '@/lib/firestoreUtils';
-import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { ContentCard } from './ContentCard';
 
 export default function ProjectManager() {
     const [view, setView] = useState('list'); // 'list', 'edit', 'create'
@@ -151,17 +151,15 @@ export default function ProjectManager() {
 
                     <div className={styles.listGrid}>
                         {projects.map((p) => (
-                            <div key={p.slug} className={styles.listItem}>
-                                <div className={styles.itemImage} style={{ backgroundImage: `url(${p.heroImage})` }}></div>
-                                <div className={styles.itemInfo}>
-                                    <h3>{p.title}</h3>
-                                    <span className={styles.itemMeta}>{p.category} • {p.year}</span>
-                                </div>
-                                <div className={styles.itemActions}>
-                                    <button onClick={() => handleEditClick(p)} className={styles.iconButton} title="Edit"><FiEdit2 size={16} /></button>
-                                    <button onClick={() => handleDeleteClick(p.slug)} className={styles.iconButton} style={{ color: '#ff4444' }} title="Delete"><FiTrash2 size={16} /></button>
-                                </div>
-                            </div>
+                            <ContentCard
+                                key={p.slug}
+                                imageUrl={p.heroImage}
+                                badge={p.category}
+                                title={p.title}
+                                metaDate={p.year}
+                                onEdit={() => handleEditClick(p)}
+                                onDelete={() => handleDeleteClick(p.slug)}
+                            />
                         ))}
                     </div>
                 </>

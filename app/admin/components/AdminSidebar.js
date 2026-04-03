@@ -1,17 +1,25 @@
 'use client';
 
+import { usePathname, useRouter } from 'next/navigation';
 import styles from '../admin.module.css';
 import { FiLayout, FiFolder, FiFileText, FiBriefcase, FiCpu, FiLogOut } from 'react-icons/fi';
 
-export default function AdminSidebar({ activeView, setActiveView, onLogout }) {
-    const menuItems = [
-        { id: 'dashboard', label: 'Overview', icon: FiLayout },
-        { id: 'projects', label: 'Projects', icon: FiFolder },
-        { id: 'blogs', label: 'Blogs', icon: FiFileText },
-        { id: 'experiences', label: 'Experiences', icon: FiBriefcase },
-        { id: 'resume', label: 'Resume', icon: FiFileText },
-        { id: 'ai-automation', label: 'AI Automation', icon: FiCpu },
-    ];
+const menuItems = [
+    { path: '/admin', label: 'Overview', icon: FiLayout },
+    { path: '/admin/projects', label: 'Projects', icon: FiFolder },
+    { path: '/admin/blogs', label: 'Blogs', icon: FiFileText },
+    { path: '/admin/experiences', label: 'Experiences', icon: FiBriefcase },
+    { path: '/admin/ai-automation', label: 'AI Automation', icon: FiCpu },
+];
+
+export default function AdminSidebar({ onLogout }) {
+    const pathname = usePathname();
+    const router = useRouter();
+
+    const isActive = (path) => {
+        if (path === '/admin') return pathname === '/admin';
+        return pathname === path || pathname.startsWith(path + '/');
+    };
 
     return (
         <aside className={styles.sidebar}>
@@ -24,9 +32,9 @@ export default function AdminSidebar({ activeView, setActiveView, onLogout }) {
                     const IconComponent = item.icon;
                     return (
                         <button
-                            key={item.id}
-                            className={`${styles.sidebarItem} ${activeView === item.id ? styles.sidebarItemActive : ''}`}
-                            onClick={() => setActiveView(item.id)}
+                            key={item.path}
+                            className={`${styles.sidebarItem} ${isActive(item.path) ? styles.sidebarItemActive : ''}`}
+                            onClick={() => router.push(item.path)}
                         >
                             <span className={styles.itemIcon}><IconComponent size={18} /></span>
                             <span className={styles.itemLabel}>{item.label}</span>
