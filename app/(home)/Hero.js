@@ -9,6 +9,7 @@ export default function Hero({ startAnimation = true }) {
     const container = useRef(null);
     const [theme, setTheme] = useState('dark');
     const [isMobile, setIsMobile] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     const { scrollYProgress } = useScroll({
         target: container,
@@ -18,6 +19,7 @@ export default function Hero({ startAnimation = true }) {
     const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
 
     useEffect(() => {
+        setMounted(true);
         // Initialize theme from localStorage
         const savedTheme = localStorage.getItem('theme') || 'dark';
         setTheme(savedTheme);
@@ -104,16 +106,20 @@ export default function Hero({ startAnimation = true }) {
                         animate={startAnimation ? { rotateY: 0, opacity: 1 } : { rotateY: 180, opacity: 0 }}
                         transition={{ duration: 1.5, ease: [0.34, 1.56, 0.64, 1] }}
                     >
-                        <div className={styles.imageContainer} suppressHydrationWarning>
-                            <img
-                                src="https://i.ibb.co/d0PPzCfB/Gemini-memoji-1-1.png"
-                                alt="Kushyanth Pothineni"
-                                className={styles.heroImage}
-                            />
-                            {isMobile && (
-                                <div className={styles.hiBadge}>
-                                    Hi
-                                </div>
+                        <div className={styles.imageContainer}>
+                            {mounted && (
+                                <>
+                                    <img
+                                        src="https://i.ibb.co/d0PPzCfB/Gemini-memoji-1-1.png"
+                                        alt="Kushyanth Pothineni"
+                                        className={styles.heroImage}
+                                    />
+                                    {isMobile && (
+                                        <div className={styles.hiBadge}>
+                                            Hi
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
 

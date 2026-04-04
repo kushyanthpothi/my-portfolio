@@ -1,8 +1,14 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { verifyAuth } from '@/lib/authMiddleware';
 
 export async function POST(req) {
     try {
+        const authResult = await verifyAuth(req);
+        if (authResult.error) {
+            return Response.json({ success: false, error: authResult.error }, { status: authResult.status });
+        }
+
         const { apiKey } = await req.json();
 
         if (!apiKey) {

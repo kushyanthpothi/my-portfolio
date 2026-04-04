@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from '../admin.module.css';
 import Loading from '@/components/Loading';
 import { fetchProjects, fetchBlogs, getVisitorStats, deleteProject, deleteBlog } from '@/lib/firestoreUtils';
 import { FiFolder, FiFileText, FiCpu, FiUsers, FiBarChart2, FiCalendar, FiClock, FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi';
 
-export default function Dashboard({ setActiveView }) {
+export default function Dashboard() {
+    const router = useRouter();
     const [stats, setStats] = useState({
         totalProjects: 0,
         totalBlogs: 0,
@@ -301,7 +303,7 @@ export default function Dashboard({ setActiveView }) {
                             <FiCalendar /> Latest Blogs
                         </h3>
                         <button
-                            onClick={() => setActiveView('blogs')}
+                            onClick={() => router.push('/admin/blogs')}
                             style={{
                                 background: 'rgba(255, 255, 255, 0.06)',
                                 border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -550,7 +552,7 @@ export default function Dashboard({ setActiveView }) {
                             <FiClock /> Latest Projects
                         </h3>
                         <button
-                            onClick={() => setActiveView('projects')}
+                            onClick={() => router.push('/admin/projects')}
                             style={{
                                 background: 'rgba(255, 255, 255, 0.06)',
                                 border: '1px solid rgba(255, 255, 255, 0.1)',

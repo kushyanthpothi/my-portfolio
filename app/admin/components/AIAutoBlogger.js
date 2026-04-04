@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { FiPlay, FiCheckCircle, FiClock, FiLoader, FiDatabase, FiSearch, FiFileText, FiExternalLink, FiAlertCircle } from 'react-icons/fi';
 import { IoSparkles } from 'react-icons/io5';
 import { LuServer, LuCpu, LuGitBranch, LuBot } from 'react-icons/lu';
+import { auth } from '@/lib/firebase';
 
 const GH = 'https://api.github.com';
 
@@ -25,58 +26,63 @@ export default function AIAutoBlogger() {
     const handleRunNow = useCallback(async () => {
         if (status === 'triggering') return;
 
-        const token    = process.env.NEXT_PUBLIC_GITHUB_PAT;
-        const owner    = process.env.NEXT_PUBLIC_GITHUB_OWNER;
-        const repo     = process.env.NEXT_PUBLIC_GITHUB_REPO;
         const workflow = 'daily-blog.yml';
-
-        if (!token || !owner || !repo) {
-            setErrorMsg('GitHub credentials not configured. Add NEXT_PUBLIC_GITHUB_PAT, NEXT_PUBLIC_GITHUB_OWNER, NEXT_PUBLIC_GITHUB_REPO to .env.local');
-            setStatus('error');
-            return;
-        }
 
         setStatus('triggering');
         setRunUrl(null);
         setRunNumber(null);
         setErrorMsg('');
 
+        let idToken = '';
+        try {
+            if (auth.currentUser) {
+                idToken = await auth.currentUser.getIdToken();
+            }
+        } catch (e) {
+            console.error('Failed to get auth token', e);
+        }
+
         const headers = {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
+            Authorization: `Bearer ${idToken}`,
+            'Content-Type': 'application/json'
         };
 
         try {
-            // 1. Dispatch the workflow
-            const dispatchRes = await fetch(
-                `${GH}/repos/${owner}/${repo}/actions/workflows/${workflow}/dispatches`,
-                {
-                    method: 'POST',
-                    headers: { ...headers, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ref: 'main' }),
-                }
-            );
+            // 1. Dispatch the workflow via our secure server route
+            const dispatchRes = await fetch('/api/github/dispatch', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ workflow, ref: 'main' }),
+            });
 
-            if (!dispatchRes.ok && dispatchRes.status !== 204) {
-                const body = await dispatchRes.text().catch(() => '');
-                throw new Error(`Dispatch failed (${dispatchRes.status}): ${body}`);
+            const dispatchData = await dispatchRes.json();
+            if (!dispatchRes.ok || !dispatchData.success) {
+                throw new Error(`Dispatch failed: ${dispatchData.error}`);
             }
 
-            // 2. Poll until the new run appears (GitHub takes a few seconds to queue it)
+            // 2. Poll until the new run appears via our secure server route
             await new Promise(r => setTimeout(r, 4000));
 
             let run = null;
+            let repoOwner = '';
+            let repoName = '';
+            
             for (let i = 0; i < 20; i++) {
                 for (const st of ['queued', 'in_progress', '']) {
-                    const qs  = st ? `&status=${st}` : '';
-                    const res = await fetch(
-                        `${GH}/repos/${owner}/${repo}/actions/workflows/${workflow}/runs?per_page=5${qs}`,
-                        { headers }
-                    );
+                    const qs = st ? `&status=${st}` : '';
+                    const res = await fetch(`/api/github/runs?workflow=${workflow}${qs}`, { headers });
+                    
                     if (!res.ok) continue;
-                    const { workflow_runs } = await res.json();
+                    
+                    const data = await res.json();
+                    if (!data.success) continue;
+                    
+                    repoOwner = data.owner;
+                    repoName = data.repo;
+                    
+                    const { workflow_runs } = data;
                     if (!workflow_runs?.length) continue;
+                    
                     const latest = workflow_runs[0];
                     // Accept runs created within the last 2 minutes
                     if (Date.now() - new Date(latest.created_at).getTime() < 120_000) {
@@ -94,7 +100,7 @@ export default function AIAutoBlogger() {
                 setStatus('success');
             } else {
                 // Dispatch succeeded but couldn't find the run in time — still okay
-                setRunUrl(`https://github.com/${owner}/${repo}/actions`);
+                setRunUrl(repoOwner && repoName ? `https://github.com/${repoOwner}/${repoName}/actions` : '#');
                 setRunNumber(null);
                 setStatus('success');
             }

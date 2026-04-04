@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import styles from '../admin.module.css';
 import { addBlog, fetchBlogs, deleteBlog } from '@/lib/firestoreUtils';
-import { FiCpu } from 'react-icons/fi';
+import { FiCpu, FiCalendar, FiSearch, FiPlus } from 'react-icons/fi';
 import { ContentCard } from './ContentCard';
 
 export default function BlogManager() {
     const [view, setView] = useState('list');
     const [blogs, setBlogs] = useState([]);
     const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
+    const [searchQuery, setSearchQuery] = useState('');
 
     const initialFormState = {
         title: '',
@@ -60,11 +61,9 @@ export default function BlogManager() {
                     setStatusMessage({ type: 'success', text: 'Blog deleted successfully.' });
                     await loadBlogs();
                 } else {
-                    console.error('Delete failed:', result.error);
                     setStatusMessage({ type: 'error', text: `Failed to delete blog: ${result.error?.message || 'Unknown error'}` });
                 }
             } catch (error) {
-                console.error('Delete error:', error);
                 setStatusMessage({ type: 'error', text: `Error deleting blog: ${error.message}` });
             }
         }
@@ -94,37 +93,77 @@ export default function BlogManager() {
                 setStatusMessage({ type: 'error', text: 'Operation failed.' });
             }
         } catch (error) {
-            console.error(error);
             setStatusMessage({ type: 'error', text: 'Error occurred.' });
         }
     };
+
+    const filteredBlogs = blogs.filter(blog => {
+        const query = searchQuery.toLowerCase();
+        return blog.title?.toLowerCase().includes(query) ||
+            blog.category?.toLowerCase().includes(query) ||
+            blog.excerpt?.toLowerCase().includes(query);
+    });
+
+    const standardBlogs = filteredBlogs.filter(b => !b.isAI && (!b.tags || !b.tags.includes('AI')));
+    const aiBlogs = filteredBlogs.filter(b => b.isAI || (b.tags && b.tags.includes('AI')));
 
     return (
         <div className={styles.managerContainer}>
             {view === 'list' && (
                 <>
-                    <div className={styles.managerHeader}>
-                        <h2 className={styles.sectionTitle}>Blogs</h2>
-                        <button onClick={handleCreateClick} className={styles.createButton}>+ New Blog</button>
+                    {/* Modern Header with Search */}
+                    <div className={styles.modernPageHeader}>
+                        <div>
+                            <h2 className={styles.sectionTitle}>Blog Posts</h2>
+                            <p className={styles.pageSubtitle}>Manage and organize your blog content</p>
+                        </div>
+                        <button onClick={handleCreateClick} className={styles.modernCreateBtn}>
+                            <FiPlus size={16} />
+                            New Blog
+                        </button>
+                    </div>
+
+                    {/* Search + Status */}
+                    <div className={styles.modernControls}>
+                        <div className={styles.searchInput}>
+                            <FiSearch size={16} />
+                            <input
+                                type="text"
+                                placeholder="Search blogs..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <div className={styles.blogStats}>
+                            <span className={styles.statBadge}>
+                                {standardBlogs.length} Standard
+                            </span>
+                            <span className={`${styles.statBadge} ${styles.aiStatBadge}`}>
+                                {aiBlogs.length} AI Generated
+                            </span>
+                        </div>
                     </div>
 
                     {statusMessage.text && (
-                        <div className={statusMessage.type === 'success' ? styles.successMessage : (statusMessage.type === 'error' ? styles.errorMessage : styles.infoMessage)} style={{ marginBottom: '1rem' }}>
+                        <div className={`${statusMessage.type === 'success' ? styles.successMessage : styles.errorMessage}`}>
                             {statusMessage.text}
                         </div>
                     )}
 
-                    {/* Standard Blogs Section */}
-                    <h3 style={{ margin: '2rem 0 1rem', color: '#ccc', borderBottom: '1px solid #333', paddingBottom: '0.5rem' }}>
-                        Standard Content (Human Written)
-                    </h3>
-                    <div className={styles.listGrid}>
-                        {blogs.filter(b => !b.isAI && (!b.tags || !b.tags.includes('AI'))).length === 0 && (
-                            <div style={{ padding: '1rem', color: '#666' }}>No standard blogs found.</div>
-                        )}
-                        {blogs
-                            .filter(b => !b.isAI && (!b.tags || !b.tags.includes('AI')))
-                            .map((b) => (
+                    {/* Blog Cards Grid - Standard */}
+                    <div className={styles.sectionHeader}>
+                        <h3 className={styles.sectionLabel}>Standard Content</h3>
+                        <span className={styles.sectionCount}>{standardBlogs.length}</span>
+                    </div>
+
+                    {standardBlogs.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <FiCalendar size={32} />
+                            <p>No standard blogs found.</p>
+                        </div>
+                    ) : (
+                        <div className={styles.listGrid}>
+                            {standardBlogs.map((b) => (
                                 <ContentCard
                                     key={b.slug}
                                     imageUrl={b.coverImage}
@@ -134,44 +173,54 @@ export default function BlogManager() {
                                     onEdit={() => handleEditClick(b)}
                                     onDelete={() => handleDeleteClick(b.slug)}
                                 />
-                            ))
-                        }
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Blog Cards - AI Generated */}
+                    <div className={styles.sectionHeader}>
+                        <h3 className={`${styles.sectionLabel} ${styles.sectionLabelAI}`}>AI Generated Content</h3>
+                        <span className={styles.sectionCount}>{aiBlogs.length}</span>
                     </div>
 
-                    {/* AI Blogs Section */}
-                    <div style={{ marginTop: '3rem' }}>
-                        <h3 style={{ margin: '0 0 1rem', color: '#ffd700', borderBottom: '1px solid #333', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <FiCpu size={18} /> AI Generated Content
-                        </h3>
-                        <div className={styles.listGrid}>
-                            {blogs.filter(b => b.isAI || (b.tags && b.tags.includes('AI'))).length === 0 && (
-                                <div style={{ padding: '1rem', color: '#666' }}>No AI generated blogs found.</div>
-                            )}
-                            {blogs
-                                .filter(b => b.isAI || (b.tags && b.tags.includes('AI')))
-                                .map((b) => (
-                                    <ContentCard
-                                        key={b.slug}
-                                        imageUrl={b.coverImage}
-                                        isAI
-                                        title={b.title}
-                                        metaDate={new Date(b.date).toLocaleDateString()}
-                                        metaLabel="AI Generated"
-                                        onEdit={() => handleEditClick(b)}
-                                        onDelete={() => handleDeleteClick(b.slug)}
-                                    />
-                                ))
-                            }
+                    {aiBlogs.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <FiCpu size={32} />
+                            <p>No AI generated blogs found.</p>
                         </div>
-                    </div>
+                    ) : (
+                        <div className={styles.listGrid}>
+                            {aiBlogs.map((b) => (
+                                <ContentCard
+                                    key={b.slug}
+                                    imageUrl={b.coverImage}
+                                    isAI
+                                    title={b.title}
+                                    metaDate={new Date(b.date).toLocaleDateString()}
+                                    metaLabel="AI Generated"
+                                    onEdit={() => handleEditClick(b)}
+                                    onDelete={() => handleDeleteClick(b.slug)}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </>
             )}
 
             {(view === 'create' || view === 'edit') && (
-                <div className={styles.formContainer}>
-                    <div className={styles.formHeader}>
-                        <button onClick={handleCancel} className={styles.backButton}>← Back</button>
-                        <h2>{view === 'create' ? 'New Blog' : 'Edit Blog'}</h2>
+                <div className={styles.modernFormContainer}>
+                    <div className={styles.modernFormHeader}>
+                        <button onClick={handleCancel} className={styles.modernBackBtn}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg>
+                            Back
+                        </button>
+                        <div className={styles.modernFormTitle}>
+                            <div className={styles.modernFormIcon} />
+                            <h2>{view === 'create' ? 'Create New Blog' : 'Edit Blog'}</h2>
+                        </div>
+                        <div className={styles.modernFormPlaceholder} />
                     </div>
 
                     {statusMessage.text && (
@@ -182,47 +231,48 @@ export default function BlogManager() {
 
                     <form onSubmit={handleSubmit} className={styles.formGrid}>
                         <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Title *</label>
-                            <input name="title" value={formData.title || ''} onChange={handleChange} className={styles.input} required />
+                            <label className={styles.label}>Title</label>
+                            <input name="title" value={formData.title || ''} onChange={handleChange} className={styles.input} placeholder="Enter blog title" required />
                         </div>
 
                         <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Slug *</label>
-                            <input name="slug" value={formData.slug || ''} onChange={handleChange} className={styles.input} disabled={view === 'edit'} placeholder="Auto-generated if empty" />
+                            <label className={styles.label}>Slug</label>
+                            <input name="slug" value={formData.slug || ''} onChange={handleChange} className={`${styles.input} ${styles.inputDisabled}`} disabled={view === 'edit'} placeholder="Auto-generated if empty" />
                         </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Category *</label>
-                            <input name="category" value={formData.category || ''} onChange={handleChange} className={styles.input} required />
+                        <div className={`${styles.inputGroup} ${styles.colSpan4}`}>
+                            <label className={styles.label}>Category</label>
+                            <input name="category" value={formData.category || ''} onChange={handleChange} className={styles.input} placeholder="e.g. Technology" required />
                         </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan12}`}>
-                            <label className={styles.label}>Cover Image URL *</label>
-                            <input name="coverImage" value={formData.coverImage || ''} onChange={handleChange} className={styles.input} required />
+                        <div className={`${styles.inputGroup} ${styles.colSpan8}`}>
+                            <label className={styles.label}>Cover Image URL</label>
+                            <input name="coverImage" value={formData.coverImage || ''} onChange={handleChange} className={styles.input} placeholder="Paste an image URL here" required />
                         </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan12}`}>
-                            <label className={styles.label}>Excerpt *</label>
-                            <textarea name="excerpt" value={formData.excerpt || ''} onChange={handleChange} className={styles.textarea} required />
+                        <div className={styles.colSpan12}>
+                            <label className={styles.label}>Excerpt</label>
+                            <textarea name="excerpt" value={formData.excerpt || ''} onChange={handleChange} className={styles.textarea} placeholder="Short summary for SEO and preview..." required style={{ minHeight: '120px' }} />
                         </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan12}`}>
-                            <label className={styles.label}>Content (Markdown) *</label>
-                            <div className={styles.helperText} style={{ marginBottom: '0.5rem' }}>
-                                Supports: **bold**, *italic*, `code`, # Headers, - Lists, [links](url)
+                        <div className={styles.colSpan12}>
+                            <label className={styles.label}>Content</label>
+                            <div className={styles.helperText}>
+                                Supports: <code>**bold**</code>, <code>*italic*</code>, <code>code</code>, <code># Headers</code>, <code>- Lists</code>, <code>[links](url)</code>
                             </div>
                             <textarea
                                 name="content"
                                 value={formData.content || ''}
                                 onChange={handleChange}
                                 className={styles.textarea}
-                                style={{ minHeight: '600px', fontFamily: 'monospace' }}
+                                style={{ minHeight: '500px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' }}
+                                placeholder="Write your blog post in markdown format here..."
                                 required
                             />
                         </div>
 
                         <div className={styles.colSpan12}>
-                            <button type="submit" className={styles.button} style={{ width: '100%' }}>
+                            <button type="submit" className={styles.submitButton}>
                                 {view === 'create' ? 'Publish Blog' : 'Save Changes'}
                             </button>
                         </div>

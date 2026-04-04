@@ -10,8 +10,14 @@ service cloud.firestore {
     match /techStack/{document=**} { allow read: if true; allow write: if request.auth != null; }
     match /tech_stack/{document=**} { allow read: if true; allow write: if request.auth != null; }
 
-    // Analytics (Read/Write: Public)
-    match /analytics/{document=**} { allow read, write: if true; }
+    // Analytics (Read: Public, Write: Restricted to valid analytics events)
+    match /analytics/{dateDoc} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['date', 'count'])
+        && request.resource.data.count is int
+        && request.resource.data.count >= 0;
+      allow delete: if request.auth != null;
+    }
 
     // Protected Settings (API Keys) - Admin Only
     match /settings/profile { allow read: if true; allow write: if request.auth != null; }

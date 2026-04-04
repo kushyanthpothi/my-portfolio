@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { verifyAuth } from '@/lib/authMiddleware';
 import { addBlog, fetchBlogs, getSettings } from '@/lib/firestoreUtils';
 
 // Helper function to validate image URL
@@ -67,6 +68,11 @@ function getPlaceholderImage(category, topic = '') {
 
 export async function POST(req) {
     try {
+        const authResult = await verifyAuth(req);
+        if (authResult.error) {
+            return Response.json({ success: false, error: authResult.error }, { status: authResult.status });
+        }
+
         let { apiKey, model: modelName, prompt, mode = 'write', context } = await req.json();
 
         // 1. If no API key provided in request, try to fetch from DB
