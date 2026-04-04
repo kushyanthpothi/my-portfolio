@@ -18,102 +18,58 @@ const PIPELINE_STEPS = [
 ];
 
 export default function AIAutoBlogger() {
-    const [status, setStatus]     = useState('idle');   // idle | triggering | success | error
-    const [runUrl, setRunUrl]     = useState(null);
+    const [taskStatus, setTaskStatus] = useState(null); // 'triggering' | 'completed' | 'error'
+    const [runUrl, setRunUrl] = useState(null);
     const [runNumber, setRunNumber] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
 
     const handleRunNow = useCallback(async () => {
-        if (status === 'triggering') return;
+        if (taskStatus === 'triggering') return;
 
-        const workflow = 'daily-blog.yml';
-
-        setStatus('triggering');
-        setRunUrl(null);
-        setRunNumber(null);
+        setTaskStatus('triggering');
         setErrorMsg('');
 
-        let idToken = '';
         try {
-            if (auth.currentUser) {
-                idToken = await auth.currentUser.getIdToken();
-            }
-        } catch (e) {
-            console.error('Failed to get auth token', e);
-        }
+            const user = auth.currentUser;
+            if (!user) throw new Error('Authorization required. Please log in again.');
 
-        const headers = {
-            Authorization: `Bearer ${idToken}`,
-            'Content-Type': 'application/json'
-        };
+            // 1. Get the Firebase ID Token for secure backend verification
+            const idToken = await user.getIdToken(true);
 
-        try {
-            // 1. Dispatch the workflow via our secure server route
-            const dispatchRes = await fetch('/api/github/dispatch', {
+            // 2. Call the Google Apps Script Proxy
+            const gasUrl = process.env.NEXT_PUBLIC_GAS_PROXY_URL;
+            if (!gasUrl) throw new Error('Proxy configuration missing (NEXT_PUBLIC_GAS_PROXY_URL)');
+
+            const response = await fetch(gasUrl, {
                 method: 'POST',
-                headers,
-                body: JSON.stringify({ workflow, ref: 'main' }),
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    idToken,
+                    workflow: 'daily-blog.yml'
+                })
             });
 
-            const dispatchData = await dispatchRes.json();
-            if (!dispatchRes.ok || !dispatchData.success) {
-                throw new Error(`Dispatch failed: ${dispatchData.error}`);
+            const result = await response.json();
+
+            if (!response.ok || result.error) {
+                throw new Error(result.error || 'Failed to dispatch workflow.');
             }
 
-            // 2. Poll until the new run appears via our secure server route
-            await new Promise(r => setTimeout(r, 4000));
+            setTaskStatus('completed');
+            // Since workflow_dispatch is async, we link to the general workflow runs page
+            const workflowUrl = `https://github.com/kushyanthpothi/my-portfolio/actions/workflows/daily-blog.yml`;
+            setRunUrl(result.runUrl || workflowUrl);
+            setRunNumber(result.runNumber || null);
 
-            let run = null;
-            let repoOwner = '';
-            let repoName = '';
-            
-            for (let i = 0; i < 20; i++) {
-                for (const st of ['queued', 'in_progress', '']) {
-                    const res = await fetch(`/api/github/runs`, { 
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({ workflow, status: st })
-                    });
-                    
-                    if (!res.ok) continue;
-                    
-                    const data = await res.json();
-                    if (!data.success) continue;
-                    
-                    repoOwner = data.owner;
-                    repoName = data.repo;
-                    
-                    const { workflow_runs } = data;
-                    if (!workflow_runs?.length) continue;
-                    
-                    const latest = workflow_runs[0];
-                    // Accept runs created within the last 2 minutes
-                    if (Date.now() - new Date(latest.created_at).getTime() < 120_000) {
-                        run = latest;
-                        break;
-                    }
-                }
-                if (run) break;
-                await new Promise(r => setTimeout(r, 2000));
-            }
-
-            if (run) {
-                setRunUrl(run.html_url);
-                setRunNumber(run.run_number);
-                setStatus('success');
-            } else {
-                // Dispatch succeeded but couldn't find the run in time — still okay
-                setRunUrl(repoOwner && repoName ? `https://github.com/${repoOwner}/${repoName}/actions` : '#');
-                setRunNumber(null);
-                setStatus('success');
-            }
         } catch (err) {
+            console.error('Trigger Error:', err);
+            setTaskStatus('error');
             setErrorMsg(err.message);
-            setStatus('error');
         }
-    }, [status]);
+    }, [taskStatus]);
 
-    const isTriggering = status === 'triggering';
+    const isTriggering = taskStatus === 'triggering';
 
     return (
         <div style={{ padding: '1.5rem', maxWidth: 1400, margin: '0 auto' }}>
@@ -227,7 +183,7 @@ export default function AIAutoBlogger() {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     minHeight: '320px', gap: '1.25rem', textAlign: 'center',
                 }}>
-                    {status === 'idle' && (
+                    {(!taskStatus || taskStatus === 'completed') && (
                         <>
                             <div style={{
                                 width: '64px', height: '64px', borderRadius: '20px',
@@ -237,16 +193,19 @@ export default function AIAutoBlogger() {
                                 <FiClock style={{ fontSize: '28px', color: '#4b5563' }} />
                             </div>
                             <div>
-                                <div style={{ color: '#6b7280', fontSize: '0.95rem', fontWeight: 500 }}>Ready to run</div>
+                                <div style={{ color: '#6b7280', fontSize: '0.95rem', fontWeight: 500 }}>
+                                    {taskStatus === 'completed' ? 'Build Finished' : 'Ready to run'}
+                                </div>
                                 <div style={{ color: '#374151', fontSize: '0.8rem', marginTop: '0.4rem' }}>
-                                    Click <strong style={{ color: '#6b7280' }}>"Run Now"</strong> to trigger the pipeline,<br />
-                                    or wait for the daily cron at 21:00 UTC.
+                                    {taskStatus === 'completed' 
+                                        ? 'The last run completed successfully.' 
+                                        : 'Click "Run Now" to queue a task for the background worker.'}
                                 </div>
                             </div>
                         </>
                     )}
 
-                    {status === 'triggering' && (
+                    {(taskStatus === 'pending' || taskStatus === 'processing') && (
                         <>
                             <div style={{
                                 width: '64px', height: '64px', borderRadius: '20px',
@@ -256,15 +215,19 @@ export default function AIAutoBlogger() {
                                 <FiLoader className="pipeline-spin" style={{ fontSize: '28px', color: '#fbbf24' }} />
                             </div>
                             <div>
-                                <div style={{ color: '#fbbf24', fontSize: '0.95rem', fontWeight: 600 }}>Triggering workflow…</div>
+                                <div style={{ color: '#fbbf24', fontSize: '0.95rem', fontWeight: 600 }}>
+                                    {taskStatus === 'pending' ? 'Task Queued' : 'Worker Processing…'}
+                                </div>
                                 <div style={{ color: '#6b7280', fontSize: '0.8rem', marginTop: '0.4rem' }}>
-                                    Dispatching to GitHub Actions and waiting for the runner to pick it up.
+                                    {taskStatus === 'pending' 
+                                        ? 'Waiting for background worker to pick up the task (max 5 mins).' 
+                                        : 'Worker is currently triggering the GitHub Action.'}
                                 </div>
                             </div>
                         </>
                     )}
 
-                    {status === 'success' && (
+                    {taskStatus === 'completed' && (
                         <>
                             <div style={{
                                 width: '64px', height: '64px', borderRadius: '20px',
@@ -275,12 +238,12 @@ export default function AIAutoBlogger() {
                             </div>
                             <div>
                                 <div style={{ color: '#34d399', fontSize: '1rem', fontWeight: 700 }}>
-                                    Triggered Successfully!
+                                    Success!
                                 </div>
                                 <div style={{ color: '#6b7280', fontSize: '0.82rem', marginTop: '0.4rem' }}>
                                     {runNumber
-                                        ? `Run #${runNumber} is now queued on GitHub Actions.`
-                                        : 'Workflow dispatched to GitHub Actions.'}
+                                        ? `Run #${runNumber} has been triggered.`
+                                        : 'Workflow dispatched successfully.'}
                                 </div>
                             </div>
                             <a
@@ -318,7 +281,7 @@ export default function AIAutoBlogger() {
                         </>
                     )}
 
-                    {status === 'error' && (
+                    {taskStatus === 'error' && (
                         <>
                             <div style={{
                                 width: '64px', height: '64px', borderRadius: '20px',
@@ -349,6 +312,7 @@ export default function AIAutoBlogger() {
                             </button>
                         </>
                     )}
+
                 </div>
             </div>
 

@@ -23,7 +23,13 @@ service cloud.firestore {
     match /settings/profile { allow read: if true; allow write: if request.auth != null; }
     match /settings/{document=**} { allow read, write: if request.auth != null; }
 
+    // Admin Tasks (Worker Queue) - Admin Only
+    match /admin_tasks/{taskId} {
+      allow read, write: if request.auth != null;
+    }
+
     // Default catch-all (Secure)
     match /{document=**} { allow read, write: if request.auth != null; }
+
   }
 }

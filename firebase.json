@@ -29,6 +29,7 @@
         "destination": "/projects/__fallback.html"
       }
     ],
+
     "ignore": [
       "firebase.json",
       "**/.*",
