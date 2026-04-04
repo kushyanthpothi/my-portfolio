@@ -69,8 +69,11 @@ export default function AIAutoBlogger() {
             
             for (let i = 0; i < 20; i++) {
                 for (const st of ['queued', 'in_progress', '']) {
-                    const qs = st ? `&status=${st}` : '';
-                    const res = await fetch(`/api/github/runs?workflow=${workflow}${qs}`, { headers });
+                    const res = await fetch(`/api/github/runs`, { 
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({ workflow, status: st })
+                    });
                     
                     if (!res.ok) continue;
                     

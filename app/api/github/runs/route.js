@@ -2,16 +2,16 @@ import { verifyAuth } from '@/lib/authMiddleware';
 
 const GH = 'https://api.github.com';
 
-export async function GET(req) {
+export async function POST(req) {
     try {
         const authResult = await verifyAuth(req);
         if (authResult.error) {
             return Response.json({ success: false, error: authResult.error }, { status: authResult.status });
         }
 
-        const url = new URL(req.url);
-        const workflow = url.searchParams.get('workflow');
-        const status = url.searchParams.get('status') || '';
+        const body = await req.json();
+        const workflow = body.workflow;
+        const status = body.status || '';
         
         if (!workflow) {
             return Response.json({ success: false, error: 'Missing workflow parameter' }, { status: 400 });
