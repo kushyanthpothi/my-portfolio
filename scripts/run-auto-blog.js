@@ -451,6 +451,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
     const DEFAULT_MODEL = 'openai/gpt-oss-120b:free';
     let retries = 3;
+    let lastError = new Error('Unknown API error');
 
     while (retries > 0) {
         try {
@@ -485,12 +486,62 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
             return parseJSON(content);
         } catch (err) {
-            console.warn(`Error (Attempt ${4 - retries}):`, err.message);
+            console.warn(`OpenRouter Error (Attempt ${4 - retries}):`, err.message);
+            lastError = err;
             retries--;
-            if (retries === 0) throw err;
-            await new Promise(r => setTimeout(r, 2000));
+            if (retries > 0) await new Promise(r => setTimeout(r, 2000));
         }
     }
+
+    // --- GROQ FALLBACK HANDLER ---
+    let groqKey = process.env.GROQ_API_KEY || config.groqApiKey;
+    if (groqKey) groqKey = groqKey.replace(/['"]/g, '').trim();
+
+    if (groqKey) {
+        console.log(`  [FALLBACK] OpenRouter exhausted or failed. Attempting Groq API...`);
+        let groqRetries = 2;
+        while (groqRetries > 0) {
+            try {
+                const payload = {
+                    model: 'llama-3.3-70b-versatile',
+                    messages,
+                    temperature: 0.7,
+                    max_tokens: 8000,
+                    response_format: { type: 'json_object' }
+                };
+
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${groqKey}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errBody = await response.text();
+                    throw new Error(`Groq API error: ${response.status} ${errBody}`);
+                }
+
+                const data = await response.json();
+                const content = data?.choices?.[0]?.message?.content;
+                
+                if (!content) {
+                    throw new Error('Received missing or empty content from Groq');
+                }
+                
+                return parseJSON(content);
+            } catch (err) {
+                console.warn(`Groq Error (Attempt ${3 - groqRetries}):`, err.message);
+                lastError = err;
+                groqRetries--;
+                if (groqRetries > 0) await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+    }
+
+    throw lastError;
 }
 
 // --- MAIN EXECUTION ---
