@@ -1,8 +1,5 @@
-// --- CONFIGURATION ---
-// Note: Admin SDK credentials are handled via lib/admin.js
 const { db } = require('../lib/admin');
 
-// --- IMAGE HELPERS ---
 
 function getPlaceholderImage(category, topic = '') {
     const topicSeed = topic
@@ -190,24 +187,31 @@ async function fetchExistingBlogs() {
 
 // --- TAVILY SEARCH ---
 
-async function tavilySearch(query, apiKey) {
+async function tavilySearch(query, apiKey, isNews = false) {
     if (!apiKey) {
         console.log('[WARNING] No Tavily API key — skipping web search');
         return null;
     }
 
     try {
+        const payload = {
+            api_key: apiKey,
+            query,
+            search_depth: 'advanced', // upgraded from basic to fetch more reliable results
+            include_answer: true,
+            include_images: true,
+            max_results: 5
+        };
+
+        if (isNews) {
+            payload.topic = 'news';
+            payload.days = 2; // only fetch news from the last couple of days
+        }
+
         const response = await fetch('https://api.tavily.com/search', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                api_key: apiKey,
-                query,
-                search_depth: 'basic',
-                include_answer: true,
-                include_images: true,
-                max_results: 5
-            })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) throw new Error(`Tavily API error: ${response.statusText}`);
@@ -238,27 +242,26 @@ function buildMessages(contextMode, promptText, searchResults, extraContext = {}
         const searchCtx = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
         return [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: `Find exactly 5 trending tech news headlines from TODAY: ${today}.
+            {
+                role: 'user', content: `You are an expert news curator. We need exactly 5 highly-trending tech headlines from the last 24-48 hours. 
 
 User Criteria: ${promptText}
 
 FOCUS ON:
-- AI tools, AI innovations, and AI product launches
-- Smartphone rumors, leaks, and official announcements
-- Tech product innovations and breakthrough technologies
-- Popular trending tech topics and viral tech news
-- Software updates and new tech features
+- Breaking news: recent AI tools, newly launched tech, new smartphone leaks, software breakthroughs.
+- Be highly specific (e.g. "OpenAI announces [X]" instead of "AI Innovations").
 
 EXCLUDE:
-- Stock market news and financial reports
-- Company earnings and revenue reports
-- Cryptocurrency price movements
-- Investment and trading news
-- Market analysis and financial forecasts
+- Financial markets, earnings calls, or trading.
+- Cryptocurrencies
+- Stale, historical data or general tutorials.
+
 ${searchCtx}
 
+CRITICAL: You MUST extract the 5 topics strictly from the WEB SEARCH RESULTS provided above. Do not invent topics older than a few days.
+
 Return ONLY valid JSON without markdown:
-{ "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }` }
+{ "topics": ["Specific Headline 1", "Headline 2", "Headline 3", "Headline 4", "Headline 5"] }` }
         ];
     }
 
@@ -266,7 +269,8 @@ Return ONLY valid JSON without markdown:
         const searchCtx = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
         return [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: `Research: "${promptText}"
+            {
+                role: 'user', content: `Research: "${promptText}"
 Today: ${today}${searchCtx}
 
 IMPORTANT: Use the 'images' array from the WEB SEARCH RESULTS to populate the 'imageUrls' field. Select high-quality, relevant images.
@@ -287,7 +291,8 @@ Return ONLY valid JSON without markdown:
         const research = extraContext.research || {};
         return [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: `Analyze research: ${JSON.stringify(research)}
+            {
+                role: 'user', content: `Analyze research: ${JSON.stringify(research)}
 
 IMPORTANT: Determine the MOST APPROPRIATE category based on the content. Choose ONE from:
 - Artificial Intelligence
@@ -321,7 +326,8 @@ Return ONLY valid JSON without markdown:
         const { research = {}, analysis = {} } = extraContext;
         return [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: `Create metadata based on the analysis.
+            {
+                role: 'user', content: `Create metadata based on the analysis.
 
 ANALYSIS: ${JSON.stringify(analysis)}
 RESEARCH: ${JSON.stringify(research)}
@@ -344,7 +350,8 @@ Return ONLY valid JSON without markdown:
         const { analysis = {}, metadata = {}, research = {} } = extraContext;
         return [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: `Write a professional blog article in Markdown format.
+            {
+                role: 'user', content: `Write a professional blog article in Markdown format.
 
 METADATA: ${JSON.stringify(metadata)}
 ANALYSIS: ${JSON.stringify(analysis)}
@@ -391,20 +398,35 @@ Return ONLY valid JSON without markdown code blocks:
 // --- AI GENERATION ENGINE ---
 
 function parseJSON(text) {
-    let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const firstOpen = jsonStr.indexOf('{');
-    const lastClose = jsonStr.lastIndexOf('}');
-    if (firstOpen !== -1 && lastClose !== -1) {
-        jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
+    if (!text || typeof text !== 'string') {
+        throw new Error('API returned empty or non-string response');
     }
-    return JSON.parse(jsonStr);
+
+    // Completely strip <think>...</think> blocks generated by reasoning models
+    let jsonStr = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    // Strip markdown code block formatting
+    jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+    const openBrace = jsonStr.indexOf('{');
+    const closeBrace = jsonStr.lastIndexOf('}');
+
+    if (openBrace !== -1 && closeBrace !== -1 && closeBrace > openBrace) {
+        jsonStr = jsonStr.substring(openBrace, closeBrace + 1);
+        try {
+            return JSON.parse(jsonStr);
+        } catch (err) {
+            throw new Error(`Failed to parse extracted JSON: ${err.message}`);
+        }
+    }
+
+    throw new Error('No JSON object found in the AI response.');
 }
 
 async function generateAI(promptText, contextMode, config, extraContext = {}) {
     // --- OPENROUTER HANDLER ---
     let apiKey = process.env.OPENROUTER_API_KEY || config.openrouterApiKey;
     if (apiKey) apiKey = apiKey.replace(/['"]/g, '').trim();
-    
+
     if (!apiKey) {
         console.error('Missing OpenRouter API Key.');
         throw new Error('Missing OpenRouter API Key');
@@ -417,9 +439,11 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
     const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
 
     if (useSearch && tavilyKey) {
-        const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
+        const isNews = contextMode === 'discover';
+        const searchQuery = isNews ? `trending tech news ${today}` : promptText;
         console.log(`  → Web Search: "${searchQuery}"`);
-        searchResults = await tavilySearch(searchQuery, tavilyKey);
+        // Pass isNews to limit to the last 2 days of news
+        searchResults = await tavilySearch(searchQuery, tavilyKey, isNews);
         if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
     }
 
@@ -430,19 +454,21 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
     while (retries > 0) {
         try {
+            const payload = {
+                model: config.model || DEFAULT_MODEL,
+                messages,
+                temperature: 0.7,
+                max_tokens: 8000,
+                response_format: { type: 'json_object' } // Natively hint OpenRouter to enforce JSON output
+            };
+
             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`
                 },
-                body: JSON.stringify({
-                    model: config.model || DEFAULT_MODEL,
-                    messages,
-                    temperature: 0.7,
-                    max_tokens: 8000,
-                    reasoning: { enabled: true }
-                })
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
@@ -451,7 +477,13 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
             }
 
             const data = await response.json();
-            return parseJSON(data.choices[0].message.content);
+            const content = data?.choices?.[0]?.message?.content;
+
+            if (!content) {
+                throw new Error('Received missing or empty content from AI provider');
+            }
+
+            return parseJSON(content);
         } catch (err) {
             console.warn(`Error (Attempt ${4 - retries}):`, err.message);
             retries--;
