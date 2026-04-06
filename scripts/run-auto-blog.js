@@ -401,50 +401,10 @@ function parseJSON(text) {
 }
 
 async function generateAI(promptText, contextMode, config, extraContext = {}) {
-    const isGemini = (config.model || '').toLowerCase().includes('gemini');
-
-    // --- GEMINI HANDLER ---
-    if (isGemini) {
-        const GoogleGenerativeAI = require('@google/generative-ai').GoogleGenerativeAI;
-        const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
-        if (!apiKey) throw new Error('Missing Gemini API Key (config.apiKey)');
-
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const cleanModel = config.model.replace('google/', '').replace(':free', '');
-        const model = genAI.getGenerativeModel({ model: cleanModel });
-
-        const useSearch = ['discover', 'research'].includes(contextMode);
-        const today = new Date().toLocaleDateString();
-        let searchResults = null;
-        const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
-
-        if (useSearch && tavilyKey) {
-            const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
-            console.log(`  → Web Search (Tavily): "${searchQuery}"`);
-            searchResults = await tavilySearch(searchQuery, tavilyKey);
-            if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
-        }
-
-        const userContent = buildMessages(contextMode, promptText, searchResults, extraContext)
-            .find(m => m.role === 'user')?.content || '';
-
-        let retries = 3;
-        while (retries > 0) {
-            try {
-                const result = await model.generateContent([SYSTEM_PROMPT, userContent]);
-                const response = await result.response;
-                return parseJSON(response.text());
-            } catch (err) {
-                console.warn(`Gemini Generation Error (Attempt ${4 - retries}):`, err.message);
-                retries--;
-                if (retries === 0) throw err;
-                await new Promise(r => setTimeout(r, 10000));
-            }
-        }
-    }
-
-    // --- OPENROUTER HANDLER (Default) ---
-    const apiKey = config.openrouterApiKey || process.env.OPENROUTER_API_KEY;
+    // --- OPENROUTER HANDLER ---
+    let apiKey = process.env.OPENROUTER_API_KEY || config.openrouterApiKey;
+    if (apiKey) apiKey = apiKey.replace(/['"]/g, '').trim();
+    
     if (!apiKey) {
         console.error('Missing OpenRouter API Key.');
         throw new Error('Missing OpenRouter API Key');
@@ -527,7 +487,8 @@ async function main() {
     console.log(`Loaded Settings. Model: ${settings.model || 'default (OpenRouter)'}`);
 
     // Diagnostic: verify OpenRouter key
-    const effectiveKey = settings.openrouterApiKey || process.env.OPENROUTER_API_KEY;
+    let effectiveKey = process.env.OPENROUTER_API_KEY || settings.openrouterApiKey;
+    if (effectiveKey) effectiveKey = effectiveKey.replace(/['"]/g, '').trim();
     console.log(`[DIAG] OPENROUTER_API_KEY: ${effectiveKey ? `found, length=${effectiveKey.length}, prefix="${effectiveKey.slice(0, 10)}..."` : 'MISSING'}`);
 
     // 2. Perform Generation
