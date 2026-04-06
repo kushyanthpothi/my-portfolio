@@ -27,6 +27,8 @@ jobs:
         run: npm ci
 
       - name: Debug OpenRouter Key
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           echo "Key length: ${#OPENROUTER_API_KEY}"
           echo "Key starts with: ${OPENROUTER_API_KEY:0:10}..."

@@ -1,10 +1,8 @@
 // --- CONFIGURATION ---
 // Note: Admin SDK credentials are handled via lib/admin.js
 const { db } = require('../lib/admin');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-
-// --- HELPER FUNCTIONS ---
+// --- IMAGE HELPERS ---
 
 function getPlaceholderImage(category, topic = '') {
     const topicSeed = topic
@@ -16,6 +14,7 @@ function getPlaceholderImage(category, topic = '') {
         'artificial intelligence': 'tech',
         'mobile': 'phone',
         'cyber security': 'security',
+        'cybersecurity': 'security',
         'space': 'space',
         'startup': 'business',
         'crypto': 'crypto',
@@ -31,29 +30,22 @@ function validateImageUrl(url) {
     if (!url || typeof url !== 'string') return false;
     if (!url.startsWith('http://') && !url.startsWith('https://')) return false;
     const brokenPatterns = ['example.com', 'placeholder', 'undefined', 'null', '.jpg.jpg', 'data:image'];
-    if (brokenPatterns.some(p => url.toLowerCase().includes(p))) return false;
-    return true;
+    return !brokenPatterns.some(p => url.toLowerCase().includes(p));
 }
-
-// --- IMAGE VERIFICATION (Real HTTP Check) ---
 
 async function verifyImageUrl(url) {
     if (!validateImageUrl(url)) return false;
 
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
-
+        const timeout = setTimeout(() => controller.abort(), 5000);
         const response = await fetch(url, {
             method: 'HEAD',
             signal: controller.signal,
             headers: { 'User-Agent': 'Mozilla/5.0' }
         });
-
         clearTimeout(timeout);
-
         if (!response.ok) return false;
-
         const contentType = response.headers.get('content-type') || '';
         return contentType.startsWith('image/');
     } catch (err) {
@@ -61,8 +53,6 @@ async function verifyImageUrl(url) {
         return false;
     }
 }
-
-// --- SEARCH & VERIFY IMAGE via Tavily ---
 
 async function searchAndVerifyImage(topic, category, tavilyKey) {
     if (!tavilyKey) return null;
@@ -76,7 +66,7 @@ async function searchAndVerifyImage(topic, category, tavilyKey) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 api_key: tavilyKey,
-                query: query,
+                query,
                 search_depth: 'basic',
                 include_images: true,
                 max_results: 3
@@ -87,19 +77,15 @@ async function searchAndVerifyImage(topic, category, tavilyKey) {
 
         const data = await response.json();
         const images = data.images || [];
-
         console.log(`  → Verifying ${images.length} candidate image(s)...`);
 
         for (const imgUrl of images) {
             if (!validateImageUrl(imgUrl)) continue;
-
-            const isValid = await verifyImageUrl(imgUrl);
-            if (isValid) {
+            if (await verifyImageUrl(imgUrl)) {
                 console.log(`  [IMG-CHECK] ✓ Valid image found: ${imgUrl}`);
                 return imgUrl;
-            } else {
-                console.log(`  [IMG-CHECK] ✗ Rejected: ${imgUrl}`);
             }
+            console.log(`  [IMG-CHECK] ✗ Rejected: ${imgUrl}`);
         }
 
         console.log(`  [IMG-CHECK] No valid images found via Tavily search`);
@@ -110,31 +96,27 @@ async function searchAndVerifyImage(topic, category, tavilyKey) {
     }
 }
 
-// --- RESOLVE COVER IMAGE (Waterfall) ---
 // Priority: metadata.coverImage → research.imageUrls[] → Tavily image search → placeholder
-
 async function resolveCoverImage(metadata, research, topic, settings) {
     const tavilyKey = settings.tavilyApiKey || process.env.TAVILY_API_KEY;
     const category = metadata.category;
 
-    // 1. Try metadata.coverImage
+    // 1. metadata.coverImage
     if (metadata.coverImage) {
         console.log(`  [IMG] Checking metadata image...`);
-        const valid = await verifyImageUrl(metadata.coverImage);
-        if (valid) {
+        if (await verifyImageUrl(metadata.coverImage)) {
             console.log(`  [IMG] ✓ Metadata image OK`);
             return metadata.coverImage;
         }
         console.log(`  [IMG] ✗ Metadata image invalid or unreachable`);
     }
 
-    // 2. Try each URL in research.imageUrls
+    // 2. research.imageUrls[]
     const researchImages = research.imageUrls || [];
     if (researchImages.length > 0) {
         console.log(`  [IMG] Checking ${researchImages.length} research image(s)...`);
         for (const url of researchImages) {
-            const valid = await verifyImageUrl(url);
-            if (valid) {
+            if (await verifyImageUrl(url)) {
                 console.log(`  [IMG] ✓ Research image OK: ${url}`);
                 return url;
             }
@@ -142,81 +124,75 @@ async function resolveCoverImage(metadata, research, topic, settings) {
         }
     }
 
-    // 3. Search for fresh images via Tavily and verify each result
+    // 3. Tavily image search
     if (tavilyKey) {
         const found = await searchAndVerifyImage(topic, category, tavilyKey);
         if (found) return found;
     }
 
-    // 4. Final guaranteed fallback — picsum placeholder is always reachable
+    // 4. Picsum placeholder (guaranteed fallback)
     const placeholder = getPlaceholderImage(category, topic);
     console.log(`  [IMG] Using placeholder: ${placeholder}`);
     return placeholder;
 }
 
+// --- FIRESTORE CRUD ---
 
-// --- CORE FUNCTIONS ---
-
-async function getSettings(settingsId) {
+async function getSettings(id) {
     try {
-        const docRef = db.collection("settings").doc(settingsId);
-        const docSnap = await docRef.get();
-        return docSnap.exists ? docSnap.data() : null;
-    } catch (error) {
-        console.error("Error fetching settings:", error);
+        const snap = await db.collection('settings').doc(id).get();
+        return snap.exists ? snap.data() : null;
+    } catch (err) {
+        console.error('Error fetching settings:', err);
         return null;
     }
 }
 
-async function saveSettings(settingsId, data) {
+async function saveSettings(id, data) {
     try {
-        await db.collection("settings").doc(settingsId).set(data, { merge: true });
+        await db.collection('settings').doc(id).set(data, { merge: true });
         return { success: true };
-    } catch (error) {
-        console.error("Error saving settings:", error);
-        return { success: false, error };
+    } catch (err) {
+        console.error('Error saving settings:', err);
+        return { success: false, error: err };
     }
 }
 
 async function addBlog(blogData) {
     try {
-        const slug = blogData.slug || blogData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        const slug = blogData.slug ||
+            blogData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
         const date = blogData.date || new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+            year: 'numeric', month: 'long', day: 'numeric'
         });
 
-        await db.collection("blogs").doc(slug).set({
+        await db.collection('blogs').doc(slug).set({
             ...blogData,
-            date: date,
+            date,
             createdAt: new Date().toISOString()
         });
         return { success: true, id: slug };
-    } catch (error) {
-        console.error("Error adding blog:", error);
-        return { success: false, error };
+    } catch (err) {
+        console.error('Error adding blog:', err);
+        return { success: false, error: err };
     }
 }
 
 async function fetchExistingBlogs() {
     try {
-        const querySnapshot = await db.collection("blogs").get();
-        const blogs = [];
-        querySnapshot.forEach((doc) => {
-            blogs.push({ ...doc.data(), slug: doc.id });
-        });
-        return blogs;
-    } catch (error) {
-        console.error("Error fetching blogs:", error);
+        const snap = await db.collection('blogs').get();
+        return snap.docs.map(d => ({ ...d.data(), slug: d.id }));
+    } catch (err) {
+        console.error('Error fetching blogs:', err);
         return [];
     }
 }
 
-// --- TAVILY SEARCH (Server Side) ---
+// --- TAVILY SEARCH ---
+
 async function tavilySearch(query, apiKey) {
     if (!apiKey) {
-        console.log('[WARNING] No Tavily API key - skipping web search');
+        console.log('[WARNING] No Tavily API key — skipping web search');
         return null;
     }
 
@@ -226,7 +202,7 @@ async function tavilySearch(query, apiKey) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 api_key: apiKey,
-                query: query,
+                query,
                 search_depth: 'basic',
                 include_answer: true,
                 include_images: true,
@@ -251,127 +227,18 @@ async function tavilySearch(query, apiKey) {
     }
 }
 
-// --- AI GENERATION ENGINE ---
-async function generateAI(promptText, contextMode, config, extraContext = {}) {
-    const modelName = config.model || "llama-3.3-70b-versatile";
-    const isGemini = modelName.toLowerCase().includes('gemini');
+// --- PROMPT GENERATION (shared between OpenRouter and Gemini paths) ---
 
-    // --- GEMINI HANDLER ---
-    if (isGemini) {
-        const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
-        if (!apiKey) throw new Error("Missing Gemini API Key (config.apiKey)");
+const SYSTEM_PROMPT = 'You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.';
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const cleanModel = modelName.replace('google/', '').replace(':free', '');
-        const model = genAI.getGenerativeModel({ model: cleanModel });
-
-        const systemPrompt = "You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.";
-
-        const useSearch = ['discover', 'research'].includes(contextMode);
-        const today = new Date().toLocaleDateString();
-
-        let searchResults = null;
-        const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
-
-        if (useSearch && tavilyKey) {
-            const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
-            console.log(`  → Web Search (Tavily): "${searchQuery}"`);
-            searchResults = await tavilySearch(searchQuery, tavilyKey);
-            if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
-        }
-
-        let userContent = "";
-
-        if (contextMode === 'discover') {
-            const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
-            userContent = `Find exactly 5 trending tech news headlines from TODAY: ${today}.
-
-User Criteria: ${promptText}
-
-FOCUS ON:
-- AI tools, AI innovations, and AI product launches
-- Smartphone rumors, leaks, and official announcements
-- Tech product innovations and breakthrough technologies
-- Popular trending tech topics and viral tech news
-- Software updates and new tech features
-
-EXCLUDE:
-- Stock market news and financial reports
-- Company earnings and revenue reports
-- Cryptocurrency price movements
-- Investment and trading news
-- Market analysis and financial forecasts
-${searchContext}
-
-Return ONLY valid JSON without markdown:
-{ "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }`;
-        } else if (contextMode === 'research') {
-            const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
-            userContent = `Research: "${promptText}"\nToday: ${today}${searchContext}\nIMPORTANT: Use the 'images' array from the WEB SEARCH RESULTS to populate the 'imageUrls' field.\nReturn ONLY valid JSON without markdown:\n{ "topic": "${promptText}", "sources": [{ "title": "...", "url": "...", "imageUrl": "..." }], "facts": [], "quotes": [], "imageUrls": [], "publishedDate": "${today}" }`;
-        } else if (contextMode === 'analyze') {
-            const research = extraContext.research || {};
-            userContent = `Analyze research: ${JSON.stringify(research)}\nDetermine MOST APPROPRIATE category.\nReturn ONLY valid JSON without markdown:\n{ "mainAngle": "...", "category": "...", "keyPoints": [], "outline": [], "hook": "...", "tone": "..." }`;
-        } else if (contextMode === 'write-json') {
-            const { research = {}, analysis = {} } = extraContext;
-            userContent = `Create metadata.\nANALYSIS: ${JSON.stringify(analysis)}\nRESEARCH: ${JSON.stringify(research)}\nReturn ONLY valid JSON:\n{ "title": "...", "slug": "...", "excerpt": "...", "category": "...", "coverImage": "..." }`;
-        } else if (contextMode === 'write-content') {
-            const { analysis = {}, metadata = {}, research = {} } = extraContext;
-            userContent = `Write a professional blog article in Markdown.\nMETADATA: ${JSON.stringify(metadata)}\nANALYSIS: ${JSON.stringify(analysis)}\nRESEARCH: ${JSON.stringify(research)}\nReturn ONLY valid JSON:\n{ "content": "# Title\\n\\n..." }`;
-        }
-
-        let retries = 3;
-        while (retries > 0) {
-            try {
-                const result = await model.generateContent([systemPrompt, userContent]);
-                const response = await result.response;
-                let text = response.text();
-
-                let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const firstOpen = jsonStr.indexOf('{');
-                const lastClose = jsonStr.lastIndexOf('}');
-                if (firstOpen !== -1 && lastClose !== -1) {
-                    jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
-                }
-                return JSON.parse(jsonStr);
-            } catch (error) {
-                console.warn(`Gemini Generation Error (Attempt ${4 - retries}):`, error.message);
-                retries--;
-                if (retries === 0) throw error;
-                await new Promise(r => setTimeout(r, 10000));
-            }
-        }
-    }
-
-    // --- OPENROUTER HANDLER (Fallback) ---
-    const apiKey = config.openrouterApiKey || process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-        console.error("Missing OpenRouter API Key.");
-        throw new Error("Missing OpenRouter API Key");
-    }
-
-    const useSearch = ['discover', 'research'].includes(contextMode);
+function buildMessages(contextMode, promptText, searchResults, extraContext = {}) {
     const today = new Date().toLocaleDateString();
 
-    let searchResults = null;
-    const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
-
-    if (useSearch && tavilyKey) {
-        const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
-        console.log(`  → Web Search: "${searchQuery}"`);
-        searchResults = await tavilySearch(searchQuery, tavilyKey);
-        if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
-    }
-
-    let messages = [];
-    const systemPrompt = "You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.";
-
     if (contextMode === 'discover') {
-        const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
-        messages = [
-            { role: "system", content: systemPrompt },
-            {
-                role: "user",
-                content: `Find exactly 5 trending tech news headlines from TODAY: ${today}.
+        const searchCtx = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
+        return [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: `Find exactly 5 trending tech news headlines from TODAY: ${today}.
 
 User Criteria: ${promptText}
 
@@ -388,20 +255,19 @@ EXCLUDE:
 - Cryptocurrency price movements
 - Investment and trading news
 - Market analysis and financial forecasts
-${searchContext}
+${searchCtx}
 
 Return ONLY valid JSON without markdown:
-{ "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }`
-            }
+{ "topics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"] }` }
         ];
-    } else if (contextMode === 'research') {
-        const searchContext = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
-        messages = [
-            { role: "system", content: systemPrompt },
-            {
-                role: "user",
-                content: `Research: "${promptText}"
-Today: ${today}${searchContext}
+    }
+
+    if (contextMode === 'research') {
+        const searchCtx = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
+        return [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: `Research: "${promptText}"
+Today: ${today}${searchCtx}
 
 IMPORTANT: Use the 'images' array from the WEB SEARCH RESULTS to populate the 'imageUrls' field. Select high-quality, relevant images.
 
@@ -413,20 +279,19 @@ Return ONLY valid JSON without markdown:
     "quotes": ["quote1"],
     "imageUrls": ["url1", "url2"],
     "publishedDate": "${today}"
-}`
-            }
+}` }
         ];
-    } else if (contextMode === 'analyze') {
+    }
+
+    if (contextMode === 'analyze') {
         const research = extraContext.research || {};
-        messages = [
-            { role: "system", content: systemPrompt },
-            {
-                role: "user",
-                content: `Analyze research: ${JSON.stringify(research)}
+        return [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: `Analyze research: ${JSON.stringify(research)}
 
 IMPORTANT: Determine the MOST APPROPRIATE category based on the content. Choose ONE from:
 - Artificial Intelligence
-- Cybersecurity  
+- Cybersecurity
 - Mobile Technology
 - Space & Science
 - Startups & Business
@@ -448,16 +313,15 @@ Return ONLY valid JSON without markdown:
     "outline": ["intro", "section1", "section2", "conclusion"],
     "hook": "opening hook",
     "tone": "informative"
-}`
-            }
+}` }
         ];
-    } else if (contextMode === 'write-json') {
+    }
+
+    if (contextMode === 'write-json') {
         const { research = {}, analysis = {} } = extraContext;
-        messages = [
-            { role: "system", content: systemPrompt },
-            {
-                role: "user",
-                content: `Create metadata based on the analysis.
+        return [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: `Create metadata based on the analysis.
 
 ANALYSIS: ${JSON.stringify(analysis)}
 RESEARCH: ${JSON.stringify(research)}
@@ -472,16 +336,15 @@ Return ONLY valid JSON without markdown:
     "excerpt": "Brief 1-2 sentence summary",
     "category": "${analysis.category}",
     "coverImage": "https://example.com/image.jpg"
-}`
-            }
+}` }
         ];
-    } else if (contextMode === 'write-content') {
+    }
+
+    if (contextMode === 'write-content') {
         const { analysis = {}, metadata = {}, research = {} } = extraContext;
-        messages = [
-            { role: "system", content: systemPrompt },
-            {
-                role: "user",
-                content: `Write a professional blog article in Markdown format.
+        return [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: `Write a professional blog article in Markdown format.
 
 METADATA: ${JSON.stringify(metadata)}
 ANALYSIS: ${JSON.stringify(analysis)}
@@ -518,12 +381,93 @@ REQUIREMENTS:
 - Natural flow from introduction to conclusion
 
 Return ONLY valid JSON without markdown code blocks:
-{ "content": "# Title\\n\\nOpening paragraph...\\n\\n## Section 1\\n\\nParagraphs...\\n\\n## Section 2\\n\\nParagraphs..." }`
-            }
+{ "content": "# Title\\n\\nOpening paragraph...\\n\\n## Section 1\\n\\nParagraphs...\\n\\n## Section 2\\n\\nParagraphs..." }` }
         ];
     }
 
+    return [];
+}
+
+// --- AI GENERATION ENGINE ---
+
+function parseJSON(text) {
+    let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const firstOpen = jsonStr.indexOf('{');
+    const lastClose = jsonStr.lastIndexOf('}');
+    if (firstOpen !== -1 && lastClose !== -1) {
+        jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
+    }
+    return JSON.parse(jsonStr);
+}
+
+async function generateAI(promptText, contextMode, config, extraContext = {}) {
+    const isGemini = (config.model || '').toLowerCase().includes('gemini');
+
+    // --- GEMINI HANDLER ---
+    if (isGemini) {
+        const GoogleGenerativeAI = require('@google/generative-ai').GoogleGenerativeAI;
+        const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
+        if (!apiKey) throw new Error('Missing Gemini API Key (config.apiKey)');
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const cleanModel = config.model.replace('google/', '').replace(':free', '');
+        const model = genAI.getGenerativeModel({ model: cleanModel });
+
+        const useSearch = ['discover', 'research'].includes(contextMode);
+        const today = new Date().toLocaleDateString();
+        let searchResults = null;
+        const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
+
+        if (useSearch && tavilyKey) {
+            const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
+            console.log(`  → Web Search (Tavily): "${searchQuery}"`);
+            searchResults = await tavilySearch(searchQuery, tavilyKey);
+            if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
+        }
+
+        const userContent = buildMessages(contextMode, promptText, searchResults, extraContext)
+            .find(m => m.role === 'user')?.content || '';
+
+        let retries = 3;
+        while (retries > 0) {
+            try {
+                const result = await model.generateContent([SYSTEM_PROMPT, userContent]);
+                const response = await result.response;
+                return parseJSON(response.text());
+            } catch (err) {
+                console.warn(`Gemini Generation Error (Attempt ${4 - retries}):`, err.message);
+                retries--;
+                if (retries === 0) throw err;
+                await new Promise(r => setTimeout(r, 10000));
+            }
+        }
+    }
+
+    // --- OPENROUTER HANDLER (Default) ---
+    const apiKey = config.openrouterApiKey || process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+        console.error('Missing OpenRouter API Key.');
+        throw new Error('Missing OpenRouter API Key');
+    }
+
+    const useSearch = ['discover', 'research'].includes(contextMode);
+    const today = new Date().toLocaleDateString();
+
+    let searchResults = null;
+    const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
+
+    if (useSearch && tavilyKey) {
+        const searchQuery = contextMode === 'discover' ? `trending tech news ${today}` : promptText;
+        console.log(`  → Web Search: "${searchQuery}"`);
+        searchResults = await tavilySearch(searchQuery, tavilyKey);
+        if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
+    }
+
+    const messages = buildMessages(contextMode, promptText, searchResults, extraContext);
+
+    const DEFAULT_MODEL = 'openai/gpt-oss-120b:free';
     let retries = 3;
+
     while (retries > 0) {
         try {
             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -533,8 +477,8 @@ Return ONLY valid JSON without markdown code blocks:
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: config.model || "openai/gpt-oss-120b:free",
-                    messages: messages,
+                    model: config.model || DEFAULT_MODEL,
+                    messages,
                     temperature: 0.7,
                     max_tokens: 8000,
                     reasoning: { enabled: true }
@@ -547,17 +491,9 @@ Return ONLY valid JSON without markdown code blocks:
             }
 
             const data = await response.json();
-            const text = data.choices[0].message.content;
-            let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            const firstOpen = jsonStr.indexOf('{');
-            const lastClose = jsonStr.lastIndexOf('}');
-            if (firstOpen !== -1 && lastClose !== -1) {
-                jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
-            }
-
-            return JSON.parse(jsonStr);
+            return parseJSON(data.choices[0].message.content);
         } catch (err) {
-            console.warn(`Error (Attempt ${4 - retries}):`, err);
+            console.warn(`Error (Attempt ${4 - retries}):`, err.message);
             retries--;
             if (retries === 0) throw err;
             await new Promise(r => setTimeout(r, 2000));
@@ -565,10 +501,10 @@ Return ONLY valid JSON without markdown code blocks:
     }
 }
 
-
 // --- MAIN EXECUTION ---
+
 async function main() {
-    console.log("Starting AI Auto Blog Script...");
+    console.log('Starting AI Auto Blog Script...');
 
     // 1. Load Settings
     const settings = await getSettings('ai_automation');
@@ -578,22 +514,28 @@ async function main() {
     }
 
     if (!settings.enabled) {
-        console.log("AI Automation is DISABLED in settings. Exiting.");
+        console.log('AI Automation is DISABLED in settings. Exiting.');
         process.exit(0);
     }
 
     const lastRun = settings.lastRun ? new Date(settings.lastRun) : null;
     const now = new Date();
-    if (lastRun && lastRun.getDate() === now.getDate() && lastRun.getMonth() === now.getMonth() && lastRun.getFullYear() === now.getFullYear()) {
-        console.log("Already ran today. Skipping.");
+    if (lastRun && lastRun.toDateString() === now.toDateString()) {
+        console.log('Already ran today. Skipping.');
     }
 
-    console.log(`Loaded Settings. Model: ${settings.model}`);
+    console.log(`Loaded Settings. Model: ${settings.model || 'default (OpenRouter)'}`);
+
+    // Diagnostic: verify OpenRouter key
+    const effectiveKey = settings.openrouterApiKey || process.env.OPENROUTER_API_KEY;
+    console.log(`[DIAG] OPENROUTER_API_KEY: ${effectiveKey ? `found, length=${effectiveKey.length}, prefix="${effectiveKey.slice(0, 10)}..."` : 'MISSING'}`);
 
     // 2. Perform Generation
     try {
         const today = new Date().toLocaleDateString();
-        const populatedPrompt = (settings.prompt || "Find 5 trending tech topics for {{date}}. Focus ONLY on: AI tools & innovations, smartphone rumors & launches, tech product innovations, breakthrough technologies, popular tech trends. EXCLUDE: stock market news, financial reports, cryptocurrency prices, company earnings.").replace('{{date}}', today);
+        const populatedPrompt = (settings.prompt ||
+            'Find 5 trending tech topics for {{date}}. Focus ONLY on: AI tools & innovations, smartphone rumors & launches, tech product innovations, breakthrough technologies, popular tech trends. EXCLUDE: stock market news, financial reports, cryptocurrency prices, company earnings.'
+        ).replace('{{date}}', today);
 
         const existingBlogs = await fetchExistingBlogs();
         const existingTitles = existingBlogs.map(b => b.title?.toLowerCase().trim());
@@ -601,10 +543,8 @@ async function main() {
 
         let uniqueTopics = [];
         const maxAttempts = 3;
-        let attempt = 0;
 
-        while (uniqueTopics.length < 5 && attempt < maxAttempts) {
-            attempt++;
+        for (let attempt = 1; attempt <= maxAttempts && uniqueTopics.length < 5; attempt++) {
             console.log(`\nAttempt ${attempt}: Discovering topics...`);
 
             const discoverData = await generateAI(populatedPrompt, 'discover', settings);
@@ -619,19 +559,13 @@ async function main() {
 
             for (const topic of newTopics) {
                 const topicLower = topic.toLowerCase().trim();
-
-                const isDuplicateInDB = existingTitles.some(title =>
-                    title && (title.includes(topicLower.slice(0, 20)) || topicLower.includes(title.slice(0, 20)))
-                );
-
-                const isDuplicateInSession = uniqueTopics.some(t =>
-                    t.toLowerCase().includes(topicLower.slice(0, 20)) || topicLower.includes(t.toLowerCase().slice(0, 20))
-                );
+                const isDuplicateInDB = existingTitles.some(t => t && (t.includes(topicLower.slice(0, 20)) || topicLower.includes(t.slice(0, 20))));
+                const isDuplicateInSession = uniqueTopics.some(t => t.toLowerCase().includes(topicLower.slice(0, 20)) || topicLower.includes(t.toLowerCase().slice(0, 20)));
 
                 if (isDuplicateInDB) {
-                    console.log(`  [SKIP] "${topic}" - Similar article exists in database`);
+                    console.log(`  [SKIP] "${topic}" — Similar article exists in database`);
                 } else if (isDuplicateInSession) {
-                    console.log(`  [SKIP] "${topic}" - Already selected in this session`);
+                    console.log(`  [SKIP] "${topic}" — Already selected in this session`);
                 } else {
                     uniqueTopics.push(topic);
                     console.log(`  [ADDED] "${topic}" (${uniqueTopics.length}/5)`);
@@ -646,7 +580,7 @@ async function main() {
         }
 
         if (uniqueTopics.length === 0) {
-            throw new Error("Could not find any unique topics after multiple attempts");
+            throw new Error('Could not find any unique topics after multiple attempts');
         }
 
         console.log(`\n✓ Selected ${uniqueTopics.length} unique topics for generation\n`);
@@ -658,39 +592,31 @@ async function main() {
             console.log(`\n[${i + 1}/${uniqueTopics.length}] Processing: "${topic}"`);
 
             try {
-                console.log(`  → Researching...`);
+                console.log('  → Researching...');
                 const research = await generateAI(topic, 'research', settings);
 
-                console.log(`  → Analyzing...`);
+                console.log('  → Analyzing...');
                 const analysis = await generateAI(topic, 'analyze', settings, { research });
 
-                console.log(`  → Generating Metadata...`);
+                console.log('  → Generating Metadata...');
                 const metadata = await generateAI(topic, 'write-json', settings, { research, analysis });
 
-                // ── IMAGE RESOLUTION WATERFALL ──────────────────────────────────
-                // 1. metadata.coverImage  →  real HTTP HEAD check
-                // 2. research.imageUrls[] →  real HTTP HEAD check (each)
-                // 3. Tavily image search  →  real HTTP HEAD check (each result)
-                // 4. picsum placeholder   →  always valid, guaranteed fallback
-                // ────────────────────────────────────────────────────────────────
-                console.log(`  → Resolving cover image...`);
                 metadata.coverImage = await resolveCoverImage(metadata, research, topic, settings);
 
-                console.log(`  → Writing Content...`);
+                console.log('  → Writing Content...');
                 const contentData = await generateAI(topic, 'write-content', settings, { research, analysis, metadata });
-
                 const content = typeof contentData.content === 'string'
                     ? contentData.content
                     : JSON.stringify(contentData.content);
 
                 const blogPost = {
                     ...metadata,
-                    content: content,
+                    content,
                     isAI: true,
                     tags: ['AI', analysis.category || 'Technology']
                 };
 
-                console.log(`  → Saving to DB...`);
+                console.log('  → Saving to DB...');
                 const result = await addBlog(blogPost);
                 if (result.success) {
                     console.log(`  [SUCCESS] Published! Cover: ${metadata.coverImage}`);
@@ -698,7 +624,6 @@ async function main() {
                 } else {
                     console.log(`  [ERROR] DB Save Failed: ${result.error}`);
                 }
-
             } catch (err) {
                 console.error(`  [ERROR] Topic Failed: ${err.message}`);
             }
@@ -711,7 +636,7 @@ async function main() {
         console.log(`\n✅ Cycle complete! Successfully published ${successCount} out of ${uniqueTopics.length} unique articles.`);
 
     } catch (error) {
-        console.error("CRITICAL FAILURE:", error);
+        console.error('CRITICAL FAILURE:', error);
         process.exit(1);
     }
 }
