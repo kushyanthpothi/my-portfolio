@@ -26,6 +26,16 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Debug OpenRouter Key
+        run: |
+          echo "Key length: ${#OPENROUTER_API_KEY}"
+          echo "Key starts with: ${OPENROUTER_API_KEY:0:10}..."
+          curl -sf https://openrouter.ai/api/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+            -d '{"model":"openai/gpt-oss-120b:free","messages":[{"role":"user","content":"hi"}],"max_tokens":10}' \
+            || echo "CURL FAILED with exit code $?"
+
       - name: Run Automation Script
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
