@@ -12,7 +12,7 @@ const PIPELINE_STEPS = [
     { id: 'checkout',  name: 'Checkout code',           icon: LuGitBranch, description: 'Clone repository using actions/checkout@v4' },
     { id: 'node',      name: 'Setup Node.js',            icon: LuCpu,       description: 'Initialize Node.js 24 with npm caching' },
     { id: 'install',   name: 'Install Dependencies',     icon: FiFileText,  description: 'Install packages with npm ci (clean install)' },
-    { id: 'discover',  name: 'Discover Trending Topics', icon: FiSearch,    description: 'AI scans web for trending tech topics via Tavily + Groq' },
+    { id: 'discover',  name: 'Discover Trending Topics', icon: FiSearch,    description: 'AI scans web for trending tech topics via Tavily + OpenRouter' },
     { id: 'research',  name: 'Research & Write',         icon: LuBot,       description: 'Research → Analyze → Generate metadata → Write content per topic' },
     { id: 'save',      name: 'Persist to Firestore',     icon: FiDatabase,  description: 'Save lastRun timestamp, confirm articles are live' },
 ];
@@ -126,7 +126,7 @@ export default function AIAutoBlogger() {
                             {[
                                 ['Schedule', 'cron 30 15 * * *'],
                                 ['Runtime',  'Node 24 / ubuntu-latest'],
-                                ['AI Model', 'llama-3.3-70b (Groq)'],
+                                ['AI Model', 'gpt-oss-120b (OpenRouter)'],
                                 ['Search',   'Tavily API (basic)'],
                                 ['Database', 'Firebase Firestore'],
                                 ['Output',   '5 articles / day'],

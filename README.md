@@ -23,7 +23,7 @@ Kushyanth Portfolio is a high-performance web application built with **Next.js 1
 
 - **🚀 Modern Architecture**: Engineered with Next.js 16.1.1 App Router and React 19.2.3.
 - **📝 Content Management**: Dynamic blog and project system powered by Firestore with real-time updates.
-- **🤖 AI Integration**: Automated blog drafting using Google Gemini AI, with multi-modal support for OpenAI and Groq.
+- **🤖 AI Integration**: Automated blog drafting using Google Gemini AI, with multi-modal support for OpenAI and OpenRouter.
 - **🛠️ Professional Admin Panel**: Secure CMS at `/admin` for centralized content and analytics management.
 - **🎨 Visual Excellence**: Premium UI featuring glassmorphism, fluid gradients, and silky-smooth animations.
 - **🌓 Adaptive Theming**: Intelligent Dark/Light mode synchronization with system preferences and persistent storage.
@@ -49,7 +49,7 @@ Kushyanth Portfolio is a high-performance web application built with **Next.js 1
 - **Functions**: Firebase Cloud Functions (Server-side Logic)
 
 ### AI & Automation
-- **Providers**: Google Gemini, OpenAI, Groq
+- **Providers**: Google Gemini, OpenAI, OpenRouter
 - **Utilities**: EmailJS for contact delivery
 
 ---

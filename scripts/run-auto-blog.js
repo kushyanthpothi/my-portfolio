@@ -1,7 +1,6 @@
 // --- CONFIGURATION ---
 // Note: Admin SDK credentials are handled via lib/admin.js
 const { db } = require('../lib/admin');
-const Groq = require("groq-sdk");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 
@@ -343,13 +342,12 @@ Return ONLY valid JSON without markdown:
         }
     }
 
-    // --- GROQ HANDLER (Fallback) ---
-    const apiKey = config.groqApiKey || process.env.GROQ_API_KEY;
+    // --- OPENROUTER HANDLER (Fallback) ---
+    const apiKey = config.openrouterApiKey || process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-        console.error("Missing Groq API Key.");
-        throw new Error("Missing Groq API Key");
+        console.error("Missing OpenRouter API Key.");
+        throw new Error("Missing OpenRouter API Key");
     }
-    const groq = new Groq({ apiKey });
 
     const useSearch = ['discover', 'research'].includes(contextMode);
     const today = new Date().toLocaleDateString();
@@ -528,14 +526,28 @@ Return ONLY valid JSON without markdown code blocks:
     let retries = 3;
     while (retries > 0) {
         try {
-            const completion = await groq.chat.completions.create({
-                model: config.model || "llama-3.3-70b-versatile",
-                messages: messages,
-                temperature: 0.7,
-                max_tokens: 8000
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: config.model || "openai/gpt-oss-120b:free",
+                    messages: messages,
+                    temperature: 0.7,
+                    max_tokens: 8000,
+                    reasoning: { enabled: true }
+                })
             });
 
-            const text = completion.choices[0].message.content;
+            if (!response.ok) {
+                const errBody = await response.text();
+                throw new Error(`OpenRouter API error: ${response.status} ${errBody}`);
+            }
+
+            const data = await response.json();
+            const text = data.choices[0].message.content;
             let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
             const firstOpen = jsonStr.indexOf('{');
             const lastClose = jsonStr.lastIndexOf('}');
