@@ -572,7 +572,9 @@ async function main() {
     // Diagnostic: verify OpenRouter key
     let effectiveKey = process.env.OPENROUTER_API_KEY || settings.openrouterApiKey;
     if (effectiveKey) effectiveKey = effectiveKey.replace(/['"]/g, '').trim();
-    console.log(`[DIAG] OPENROUTER_API_KEY: ${effectiveKey ? `found, length=${effectiveKey.length}, prefix="${effectiveKey.slice(0, 10)}..."` : 'MISSING'}`);
+    const hasOpenRouterKey = !!effectiveKey;
+    const openRouterKeySource = process.env.OPENROUTER_API_KEY ? 'ENV' : (settings.openrouterApiKey ? 'settings' : 'none');
+    console.log(`[DIAG] OPENROUTER_API_KEY: ${hasOpenRouterKey ? `found (source=${openRouterKeySource})` : 'MISSING'}`);
 
     // 2. Perform Generation
     try {
