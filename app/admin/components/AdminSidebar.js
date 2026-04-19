@@ -24,7 +24,14 @@ export default function AdminSidebar({ onLogout }) {
     return (
         <aside className={styles.sidebar}>
             <div className={styles.sidebarHeader}>
-                <div className={styles.sidebarLogo}>ADMIN</div>
+                {/* Profile Image (using placeholder or static for now, customizable later) */}
+                <img
+                    src="https://i.ibb.co/G39RwbX6/Profile-Photo-small.jpg"
+                    alt="Admin Profile"
+                    className={styles.sidebarProfileImg}
+                />
+                <div className={styles.sidebarName}>Kushyanth Pothineni</div>
+                <div className={styles.sidebarHandle}>@kushyanthpothineni</div>
             </div>
 
             <nav className={styles.sidebarNav}>

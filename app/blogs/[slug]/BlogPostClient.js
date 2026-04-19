@@ -9,7 +9,7 @@ import ThemeSwitch from '../../../components/ThemeSwitch';
 import styles from './blogPost.module.css';
 import { motion } from 'framer-motion';
 
-export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs = [] }) {
+export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs = [], isPreview = false }) {
     const params = useParams();
     const [blog, setBlog] = useState(initialBlog);
     const [relatedBlogs, setRelatedBlogs] = useState(initialRelatedBlogs);
@@ -60,8 +60,8 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
 
     if (loading) {
         return (
-            <main className={styles.pageContainer}>
-                <Navbar />
+            <main className={`${styles.pageContainer} ${isPreview ? styles.previewContainer : ''}`}>
+                {!isPreview && <Navbar />}
                 <div className={styles.loadingContainer}>
                     <div className={styles.loadingSpinner}></div>
                     <span className={styles.loadingText}>Loading article...</span>
@@ -72,8 +72,8 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
 
     if (!blog) {
         return (
-            <main className={styles.pageContainer}>
-                <Navbar />
+            <main className={`${styles.pageContainer} ${isPreview ? styles.previewContainer : ''}`}>
+                {!isPreview && <Navbar />}
                 <div className={styles.errorContainer}>
                     <h1 className={styles.errorTitle}>ARTICLE NOT FOUND</h1>
                     <p className={styles.errorText}>The article you're looking for doesn't exist.</p>
@@ -155,9 +155,13 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
     // Parse content into sections
     const renderContent = (content) => {
         // Safety check: ensure content is a string
-        if (!content || typeof content !== 'string') {
+        if (typeof content !== 'string') {
             console.error('Invalid content type:', typeof content);
             return <p className={styles.contentParagraph}>Content unavailable</p>;
+        }
+
+        if (!content.trim()) {
+            return <p className={styles.contentParagraph} style={{ opacity: 0.6 }}>Write your blog content here...</p>;
         }
 
         const sections = content.split('\n\n');
@@ -238,8 +242,8 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
     };
 
     return (
-        <main className={styles.pageContainer}>
-            <Navbar />
+        <main className={`${styles.pageContainer} ${isPreview ? styles.previewContainer : ''}`}>
+            {!isPreview && <Navbar />}
 
             <article className={styles.article}>
                 {/* Article Header - Portavia Style */}
@@ -250,28 +254,32 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
                     transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
                 >
                     <div className={styles.metaRow}>
-                        <span className={styles.categoryBadge}>{blog.category}</span>
-                        <span className={styles.articleDate}>{blog.date}</span>
+                        <span className={styles.categoryBadge}>{blog.category || 'Category'}</span>
+                        <span className={styles.articleDate}>{blog.date || 'Date'}</span>
                     </div>
 
-                    <h1 className={styles.articleTitle}>{blog.title}</h1>
+                    <h1 className={styles.articleTitle}>{blog.title || 'Untitled Blog Post'}</h1>
 
-                    <p className={styles.articleExcerpt}>{blog.excerpt}</p>
+                    <p className={styles.articleExcerpt} style={!blog.excerpt ? { opacity: 0.6 } : {}}>
+                        {blog.excerpt || 'Write a short excerpt summarizing your blog post here...'}
+                    </p>
                 </motion.header>
 
                 {/* Featured Image - Full Width with Rounded Corners */}
-                <motion.div
-                    className={styles.featuredImageWrapper}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
-                >
-                    <img
-                        src={blog.coverImage}
-                        alt={blog.title}
-                        className={styles.featuredImage}
-                    />
-                </motion.div>
+                {blog.coverImage && (
+                    <motion.div
+                        className={styles.featuredImageWrapper}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.7, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
+                    >
+                        <img
+                            src={blog.coverImage}
+                            alt={blog.title}
+                            className={styles.featuredImage}
+                        />
+                    </motion.div>
+                )}
 
                 {/* Article Content */}
                 <motion.div
@@ -285,7 +293,7 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
             </article>
 
             {/* Related Posts Section - Portavia Style */}
-            {relatedBlogs.length > 0 && (
+            {!isPreview && relatedBlogs.length > 0 && (
                 <section className={styles.relatedSection}>
                     <div className={styles.relatedHeader}>
                         <h2 className={styles.relatedTitle}>MORE POSTS</h2>
@@ -321,8 +329,8 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
                 </section>
             )}
 
-            <Footer />
-            <ThemeSwitch />
+            {!isPreview && <Footer />}
+            {!isPreview && <ThemeSwitch />}
         </main>
     );
 }

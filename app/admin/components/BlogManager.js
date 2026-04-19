@@ -1,16 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from '../admin.module.css';
 import { addBlog, fetchBlogs, deleteBlog } from '@/lib/firestoreUtils';
-import { FiCpu, FiCalendar, FiSearch, FiPlus } from 'react-icons/fi';
+import { FiCpu, FiCalendar, FiSearch, FiPlus, FiEye, FiEyeOff, FiExternalLink } from 'react-icons/fi';
+import { IoSparkles } from 'react-icons/io5';
 import { ContentCard } from './ContentCard';
+import { useAuth } from '@/lib/AuthContext';
+import BlogPostClient from '../../blogs/[slug]/BlogPostClient';
+import MarkdownEditor from './MarkdownEditor';
 
 export default function BlogManager() {
     const [view, setView] = useState('list');
     const [blogs, setBlogs] = useState([]);
     const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
     const [searchQuery, setSearchQuery] = useState('');
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
+    const [linkInput, setLinkInput] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
+    const { user } = useAuth();
 
     const initialFormState = {
         title: '',
@@ -26,6 +36,19 @@ export default function BlogManager() {
         loadBlogs();
     }, []);
 
+    // BroadcastChannel for reliable cross-tab live preview
+    const previewChannel = useRef(null);
+    useEffect(() => {
+        previewChannel.current = new BroadcastChannel('livePreview_blog');
+        return () => previewChannel.current?.close();
+    }, []);
+
+    useEffect(() => {
+        if ((view === 'create' || view === 'edit') && previewChannel.current) {
+            previewChannel.current.postMessage(formData);
+        }
+    }, [formData, view]);
+
     const loadBlogs = async () => {
         try {
             const data = await fetchBlogs();
@@ -36,9 +59,7 @@ export default function BlogManager() {
     };
 
     const handleCreateClick = () => {
-        setFormData(initialFormState);
-        setView('create');
-        setStatusMessage({ type: '', text: '' });
+        setIsCreationModalOpen(true);
     };
 
     const handleEditClick = (blog) => {
@@ -73,6 +94,7 @@ export default function BlogManager() {
         setView('list');
         setFormData(initialFormState);
         setStatusMessage({ type: '', text: '' });
+        setActiveTab('editor');
     };
 
     const handleChange = (e) => {
@@ -97,6 +119,48 @@ export default function BlogManager() {
         }
     };
 
+    const handleGenerateFromLinks = async (e) => {
+        e.preventDefault();
+        const links = linkInput.split('\n').map(l => l.trim()).filter(l => l.startsWith('http'));
+        
+        if (links.length === 0) {
+            setStatusMessage({ type: 'error', text: 'Please enter at least one valid link.' });
+            return;
+        }
+
+        setIsGenerating(true);
+        setStatusMessage({ type: 'info', text: 'Scraping content and synthesizing blog post...' });
+
+        try {
+            const token = await user.getIdToken();
+            const response = await fetch('/api/generate-blog-from-links', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ links })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setStatusMessage({ type: 'success', text: 'Blog generated successfully! You can now edit it.' });
+                setFormData(result.data);
+                setView('create');
+                setIsAiModalOpen(false);
+                setLinkInput('');
+            } else {
+                setStatusMessage({ type: 'error', text: result.error || 'Failed to generate blog.' });
+            }
+        } catch (error) {
+            console.error('Generation Error:', error);
+            setStatusMessage({ type: 'error', text: error.message });
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     const filteredBlogs = blogs.filter(blog => {
         const query = searchQuery.toLowerCase();
         return blog.title?.toLowerCase().includes(query) ||
@@ -117,10 +181,12 @@ export default function BlogManager() {
                             <h2 className={styles.sectionTitle}>Blog Posts</h2>
                             <p className={styles.pageSubtitle}>Manage and organize your blog content</p>
                         </div>
-                        <button onClick={handleCreateClick} className={styles.modernCreateBtn}>
-                            <FiPlus size={16} />
-                            New Blog
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button onClick={handleCreateClick} className={styles.modernCreateBtn}>
+                                <FiPlus size={16} />
+                                New Blog
+                            </button>
+                        </div>
                     </div>
 
                     {/* Search + Status */}
@@ -208,75 +274,208 @@ export default function BlogManager() {
             )}
 
             {(view === 'create' || view === 'edit') && (
-                <div className={styles.modernFormContainer}>
-                    <div className={styles.modernFormHeader}>
+                <div className={styles.editorPage}>
+                    {/* Editor Topbar */}
+                    <div className={styles.editorTopbar}>
                         <button onClick={handleCancel} className={styles.modernBackBtn}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <path d="M15 18l-6-6 6-6" />
                             </svg>
                             Back
                         </button>
-                        <div className={styles.modernFormTitle}>
-                            <div className={styles.modernFormIcon} />
-                            <h2>{view === 'create' ? 'Create New Blog' : 'Edit Blog'}</h2>
+
+                        <div className={styles.editorTabGroup}>
+                            <button
+                                className={`${styles.editorTab} ${activeTab === 'editor' ? styles.editorTabActive : ''}`}
+                                onClick={() => setActiveTab('editor')}
+                            >
+                                <FiEyeOff size={14} />
+                                Editor
+                            </button>
+                            <button
+                                className={`${styles.editorTab} ${activeTab === 'preview' ? styles.editorTabActive : ''}`}
+                                onClick={() => setActiveTab('preview')}
+                            >
+                                <FiEye size={14} />
+                                Preview
+                            </button>
                         </div>
-                        <div className={styles.modernFormPlaceholder} />
+
+                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                            <button
+                                type="button"
+                                className={styles.livePreviewBtn}
+                                onClick={() => {
+                                    const encoded = btoa(encodeURIComponent(JSON.stringify(formData)));
+                                    window.open(`/admin/preview/blog?data=${encoded}`, '_blank');
+                                }}
+                                title="Open full-page preview"
+                            >
+                                <FiExternalLink size={14} />
+                                Live Preview
+                            </button>
+                        </div>
                     </div>
 
                     {statusMessage.text && (
-                        <div className={statusMessage.type === 'success' ? styles.successMessage : styles.errorMessage}>
+                        <div className={statusMessage.type === 'success' ? styles.successMessage : styles.errorMessage} style={{ margin: '0 0 1.5rem 0' }}>
                             {statusMessage.text}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className={styles.formGrid}>
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Title</label>
-                            <input name="title" value={formData.title || ''} onChange={handleChange} className={styles.input} placeholder="Enter blog title" required />
-                        </div>
+                    <div className={styles.editorBody}>
+                        {/* === EDITOR TAB === */}
+                        {activeTab === 'editor' && (
+                            <form onSubmit={handleSubmit} className={styles.editorFormWrapper}>
+                                {/* Title + Slug */}
+                                <div className={styles.editorFieldRow}>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Title <span style={{color:'#e63946'}}>*</span></label>
+                                        <input name="title" value={formData.title || ''} onChange={handleChange} className={styles.editorInput} placeholder="Enter a compelling blog title..." required />
+                                    </div>
+                                    <div className={styles.editorFieldGroup} style={{ maxWidth: '260px' }}>
+                                        <label className={styles.editorLabel}>Slug</label>
+                                        <input name="slug" value={formData.slug || ''} onChange={handleChange} className={`${styles.editorInput} ${view === 'edit' ? styles.editorInputDisabled : ''}`} disabled={view === 'edit'} placeholder="auto-generated" />
+                                    </div>
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Slug</label>
-                            <input name="slug" value={formData.slug || ''} onChange={handleChange} className={`${styles.input} ${styles.inputDisabled}`} disabled={view === 'edit'} placeholder="Auto-generated if empty" />
-                        </div>
+                                {/* Category + Cover Image */}
+                                <div className={styles.editorFieldRow}>
+                                    <div className={styles.editorFieldGroup} style={{ maxWidth: '220px' }}>
+                                        <label className={styles.editorLabel}>Category <span style={{color:'#e63946'}}>*</span></label>
+                                        <input name="category" value={formData.category || ''} onChange={handleChange} className={styles.editorInput} placeholder="e.g. Technology" required />
+                                    </div>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Cover Image URL <span style={{color:'#e63946'}}>*</span></label>
+                                        <div className={styles.editorImageInputRow}>
+                                            <input name="coverImage" value={formData.coverImage || ''} onChange={handleChange} className={styles.editorInput} placeholder="https://..." required />
+                                            {formData.coverImage && (
+                                                <img src={formData.coverImage} alt="thumb" className={styles.editorImageThumb} onError={e => e.target.style.display='none'} />
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan4}`}>
-                            <label className={styles.label}>Category</label>
-                            <input name="category" value={formData.category || ''} onChange={handleChange} className={styles.input} placeholder="e.g. Technology" required />
-                        </div>
+                                {/* Excerpt */}
+                                <div className={styles.editorFieldGroup}>
+                                    <label className={styles.editorLabel}>Excerpt / Summary <span style={{color:'#e63946'}}>*</span></label>
+                                    <textarea name="excerpt" value={formData.excerpt || ''} onChange={handleChange} className={styles.editorTextarea} placeholder="Short description shown in blog listing and SEO..." required style={{ minHeight: '100px' }} />
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan8}`}>
-                            <label className={styles.label}>Cover Image URL</label>
-                            <input name="coverImage" value={formData.coverImage || ''} onChange={handleChange} className={styles.input} placeholder="Paste an image URL here" required />
-                        </div>
+                                {/* Content */}
+                                <div className={styles.editorFieldGroup}>
+                                    <label className={styles.editorLabel}>Content <span style={{color:'#e63946'}}>*</span></label>
+                                    <MarkdownEditor
+                                        value={formData.content || ''}
+                                        onChange={handleChange}
+                                        placeholder="Write your blog post in markdown..."
+                                        required
+                                    />
+                                </div>
 
-                        <div className={styles.colSpan12}>
-                            <label className={styles.label}>Excerpt</label>
-                            <textarea name="excerpt" value={formData.excerpt || ''} onChange={handleChange} className={styles.textarea} placeholder="Short summary for SEO and preview..." required style={{ minHeight: '120px' }} />
-                        </div>
+                                {/* Submit */}
+                                <div className={styles.editorSubmitRow}>
+                                    <button type="button" className={styles.editorCancelBtn} onClick={handleCancel}>Cancel</button>
+                                    <button type="submit" className={styles.editorSubmitBtn}>
+                                        {view === 'create' ? '✦ Publish Blog' : '✦ Save Changes'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
 
-                        <div className={styles.colSpan12}>
-                            <label className={styles.label}>Content</label>
-                            <div className={styles.helperText}>
-                                Supports: <code>**bold**</code>, <code>*italic*</code>, <code>code</code>, <code># Headers</code>, <code>- Lists</code>, <code>[links](url)</code>
+                        {/* === PREVIEW TAB === */}
+                        {activeTab === 'preview' && (
+                            <div className={styles.fullWidthPreview}>
+                                <BlogPostClient initialBlog={formData} isPreview={true} />
                             </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* AI Generation Modal */}
+            {isAiModalOpen && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalTitle}>Generate Blog from Links</div>
+                        <p className={styles.modalSubtitle}>Enter one or more URLs (one per line). AI will synthesize them into a single blog post.</p>
+                        
+                        <form onSubmit={handleGenerateFromLinks}>
                             <textarea
-                                name="content"
-                                value={formData.content || ''}
-                                onChange={handleChange}
                                 className={styles.textarea}
-                                style={{ minHeight: '500px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' }}
-                                placeholder="Write your blog post in markdown format here..."
+                                style={{ minHeight: '200px', marginBottom: '1rem' }}
+                                placeholder="https://techcrunch.com/article1&#10;https://theverge.com/article2"
+                                value={linkInput}
+                                onChange={(e) => setLinkInput(e.target.value)}
+                                disabled={isGenerating}
                                 required
                             />
-                        </div>
+                            
+                            <div className={styles.modalActions}>
+                                <button 
+                                    type="button" 
+                                    className={styles.modalCancelBtn}
+                                    onClick={() => setIsAiModalOpen(false)}
+                                    disabled={isGenerating}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    className={styles.sparkleBtn}
+                                    disabled={isGenerating}
+                                >
+                                    {isGenerating ? (
+                                        <>Generating...</>
+                                    ) : (
+                                        <>
+                                            <IoSparkles size={16} />
+                                            Generate
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
-                        <div className={styles.colSpan12}>
-                            <button type="submit" className={styles.submitButton}>
-                                {view === 'create' ? 'Publish Blog' : 'Save Changes'}
+            {/* Creation Method Modal */}
+            {isCreationModalOpen && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalTitle}>Create New Blog</div>
+                        <p className={styles.modalSubtitle}>How would you like to create your new blog post?</p>
+                        
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                            <button 
+                                className={styles.modernCreateBtn}
+                                style={{ flex: 1, justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
+                                onClick={() => {
+                                    setIsCreationModalOpen(false);
+                                    setFormData(initialFormState);
+                                    setView('create');
+                                    setStatusMessage({ type: '', text: '' });
+                                }}
+                            >
+                                Manual Creation
+                            </button>
+                            <button 
+                                className={styles.sparkleBtn}
+                                style={{ flex: 1, justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
+                                onClick={() => {
+                                    setIsCreationModalOpen(false);
+                                    setIsAiModalOpen(true);
+                                }}
+                            >
+                                <IoSparkles size={18} />
+                                AI Generate
                             </button>
                         </div>
-                    </form>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                            <button className={styles.modalCancelBtn} onClick={() => setIsCreationModalOpen(false)}>Cancel</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

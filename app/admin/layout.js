@@ -171,6 +171,12 @@ function AdminContent({ children }) {
         );
     }
 
+    const isPreviewPage = pathname.includes('/preview');
+
+    if (isPreviewPage) {
+        return <>{children}</>;
+    }
+
     return (
         <div className={styles.dashboardLayout}>
             <AdminSidebar pathname={pathname} onLogout={handleLogout} />

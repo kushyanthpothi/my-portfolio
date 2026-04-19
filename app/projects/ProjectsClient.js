@@ -22,7 +22,13 @@ export default function ProjectsClient() {
             try {
                 const fetchedProjects = await fetchProjects();
                 if (fetchedProjects) {
-                    setProjects(fetchedProjects);
+                    const sortedProjects = [...fetchedProjects].sort((a, b) => {
+                        if (a.createdAt && b.createdAt) {
+                            return new Date(b.createdAt) - new Date(a.createdAt);
+                        }
+                        return (b.id || 0) - (a.id || 0);
+                    });
+                    setProjects(sortedProjects);
                 }
             } catch (error) {
                 console.error("Failed to load projects:", error);
@@ -73,7 +79,7 @@ export default function ProjectsClient() {
                     <div className={styles.stackContainer}>
                         {featuredProjects.map((project, index) => (
                             <StackCard
-                                key={project.id || index}
+                                key={project.slug || `${project.id}-feat-${index}`}
                                 card={project}
                                 index={index}
                             />
@@ -90,8 +96,8 @@ export default function ProjectsClient() {
                     </div>
 
                     <div className={styles.projectsGrid}>
-                        {moreProjects.map((project) => (
-                            <ProjectCard key={project.id} project={project} />
+                        {moreProjects.map((project, index) => (
+                            <ProjectCard key={project.id || `more-${index}`} project={project} />
                         ))}
                     </div>
                 </section>

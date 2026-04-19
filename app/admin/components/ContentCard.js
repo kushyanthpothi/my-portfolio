@@ -10,8 +10,8 @@ function CardCSS() {
             }
             .content-card:hover {
                 transform: translateY(-6px);
-                border-color: rgba(255, 215, 0, 0.2) !important;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 215, 0, 0.1);
+                border-color: rgba(255, 215, 0, 0.4) !important;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 215, 0, 0.1);
             }
             .content-card:hover .card-image {
                 transform: scale(1.05);
@@ -42,8 +42,7 @@ function Badge({ children, position = 'top-right', variant = 'default' }) {
             border: '1px solid rgba(255, 215, 0, 0.25)',
         },
         'category': {
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(8px)',
+            background: '#1a2035',
             color: '#fff',
         },
     };
@@ -91,13 +90,12 @@ export function ContentCard({
             <div className="content-card" style={{
                 ...(cardWidth ? { flex: `0 0 ${cardWidth}` } : { width: '100%' }),
                 height: cardHeight,
-                background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
+                background: '#161b22', /* Solid color for performance, matching Dashboard */
+                border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '24px',
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                backdropFilter: 'blur(10px)',
                 position: 'relative',
             }}>
                 {/* Image Section */}
@@ -118,8 +116,7 @@ export function ContentCard({
                     {/* Hover Edit/Delete Overlay */}
                     <div className="card-actions-overlay" style={{
                         position: 'absolute', inset: 0,
-                        background: 'rgba(0, 0, 0, 0.5)',
-                        backdropFilter: 'blur(4px)',
+                        background: 'rgba(0, 0, 0, 0.7)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         gap: '12px', zIndex: 10,
                     }}>
@@ -127,11 +124,11 @@ export function ContentCard({
                             <button
                                 onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
                                 style={{
-                                    background: 'rgba(255, 255, 255, 0.15)',
-                                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                                    background: 'rgba(255, 255, 255, 0.2)',
+                                    border: '1px solid rgba(255, 255, 255, 0.4)',
                                     borderRadius: '50%', width: '44px', height: '44px',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: '#fff', cursor: 'pointer', backdropFilter: 'blur(8px)',
+                                    color: '#fff', cursor: 'pointer',
                                     transition: 'all 0.2s ease',
                                 }}
                                 title="Edit"
@@ -143,11 +140,11 @@ export function ContentCard({
                             <button
                                 onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
                                 style={{
-                                    background: 'rgba(255, 68, 68, 0.2)',
-                                    border: '1px solid rgba(255, 68, 68, 0.3)',
+                                    background: 'rgba(255, 68, 68, 0.3)',
+                                    border: '1px solid rgba(255, 68, 68, 0.5)',
                                     borderRadius: '50%', width: '44px', height: '44px',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: '#ff4444', cursor: 'pointer', backdropFilter: 'blur(8px)',
+                                    color: '#ff4444', cursor: 'pointer',
                                     transition: 'all 0.2s ease',
                                 }}
                                 title="Delete"

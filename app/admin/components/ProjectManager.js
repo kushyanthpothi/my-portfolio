@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from '../admin.module.css';
 import { addProject, fetchProjects, deleteProject } from '@/lib/firestoreUtils';
 import { ContentCard } from './ContentCard';
-import { FiPlus, FiSearch, FiFolder, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiFolder, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiExternalLink } from 'react-icons/fi';
+import { IoSparkles } from 'react-icons/io5';
+import { useAuth } from '@/lib/AuthContext';
+import ProjectClient from '../../projects/[slug]/ProjectClient';
 
 export default function ProjectManager() {
     const [view, setView] = useState('list');
@@ -13,6 +16,12 @@ export default function ProjectManager() {
     const [searchQuery, setSearchQuery] = useState('');
     const [inputTech, setInputTech] = useState('');
     const [inputImage, setInputImage] = useState('');
+    const [githubInput, setGithubInput] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
+    const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('editor');
+    const { user } = useAuth();
 
     // eslint-disable-next-line no-unused-vars
     const [editingId, setEditingId] = useState(null);
@@ -41,6 +50,19 @@ export default function ProjectManager() {
         loadProjects();
     }, []);
 
+    // BroadcastChannel for reliable cross-tab live preview
+    const previewChannel = useRef(null);
+    useEffect(() => {
+        previewChannel.current = new BroadcastChannel('livePreview_project');
+        return () => previewChannel.current?.close();
+    }, []);
+
+    useEffect(() => {
+        if ((view === 'create' || view === 'edit') && previewChannel.current) {
+            previewChannel.current.postMessage(formData);
+        }
+    }, [formData, view]);
+
     const loadProjects = async () => {
         try {
             const data = await fetchProjects();
@@ -51,9 +73,7 @@ export default function ProjectManager() {
     };
 
     const handleCreateClick = () => {
-        setFormData(initialFormState);
-        setView('create');
-        setStatusMessage({ type: '', text: '' });
+        setIsCreationModalOpen(true);
     };
 
     const handleEditClick = (project) => {
@@ -81,6 +101,7 @@ export default function ProjectManager() {
         setEditingId(null);
         setFormData(initialFormState);
         setStatusMessage({ type: '', text: '' });
+        setActiveTab('editor');
     };
 
     const handleChange = (e) => {
@@ -129,6 +150,48 @@ export default function ProjectManager() {
         }
     };
 
+    const handleGithubGenerate = async () => {
+        if (!githubInput.trim()) {
+            setStatusMessage({ type: 'error', text: 'Please enter a GitHub URL' });
+            return;
+        }
+
+        setIsGenerating(true);
+        setStatusMessage({ type: 'info', text: 'Fetching README and generating project details...' });
+
+        try {
+            // Get the current user's ID token for authentication
+            const token = await user.getIdToken();
+
+            const response = await fetch('/api/generate-project', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ githubUrl: githubInput })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const generatedData = result.data;
+                setStatusMessage({ type: 'success', text: 'Content generated! You can now edit it.' });
+                setFormData(generatedData);
+                setView('create');
+                setIsGithubModalOpen(false);
+                setGithubInput('');
+            } else {
+                setStatusMessage({ type: 'error', text: result.error || 'Failed to generate project.' });
+            }
+        } catch (error) {
+            console.error(error);
+            setStatusMessage({ type: 'error', text: 'An unexpected error occurred.' });
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     const filteredProjects = projects.filter(p => {
         const query = searchQuery.toLowerCase();
         return p.title?.toLowerCase().includes(query) ||
@@ -152,7 +215,7 @@ export default function ProjectManager() {
                         </button>
                     </div>
 
-                    {/* Search + Stats */}
+                    {/* Search + Stats + AI Import */}
                     <div className={styles.modernControls}>
                         <div className={styles.searchInput}>
                             <FiSearch size={16} />
@@ -163,6 +226,7 @@ export default function ProjectManager() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
+                        
                         <div className={styles.blogStats}>
                             <span className={styles.statBadge}>
                                 {filteredProjects.length} Project{filteredProjects.length !== 1 ? 's' : ''}
@@ -201,147 +265,266 @@ export default function ProjectManager() {
             )}
 
             {(view === 'create' || view === 'edit') && (
-                <div className={styles.modernFormContainer}>
-                    <div className={styles.modernFormHeader}>
+                <div className={styles.editorPage}>
+                    {/* Editor Topbar */}
+                    <div className={styles.editorTopbar}>
                         <button onClick={handleCancel} className={styles.modernBackBtn}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <path d="M15 18l-6-6 6-6" />
                             </svg>
                             Back
                         </button>
-                        <div className={styles.modernFormTitle}>
-                            <div className={styles.modernFormIconProject} />
-                            <h2>{view === 'create' ? 'Create New Project' : 'Edit Project'}</h2>
+
+                        <div className={styles.editorTabGroup}>
+                            <button
+                                className={`${styles.editorTab} ${activeTab === 'editor' ? styles.editorTabActive : ''}`}
+                                onClick={() => setActiveTab('editor')}
+                            >
+                                <FiEyeOff size={14} />
+                                Editor
+                            </button>
+                            <button
+                                className={`${styles.editorTab} ${activeTab === 'preview' ? styles.editorTabActive : ''}`}
+                                onClick={() => setActiveTab('preview')}
+                            >
+                                <FiEye size={14} />
+                                Preview
+                            </button>
                         </div>
-                        <div className={styles.modernFormPlaceholder} />
+
+                        <button
+                            type="button"
+                            className={styles.livePreviewBtn}
+                            onClick={() => {
+                                const encoded = btoa(encodeURIComponent(JSON.stringify(formData)));
+                                window.open(`/admin/preview/project?data=${encoded}`, '_blank');
+                            }}
+                        >
+                            <FiExternalLink size={14} />
+                            Live Preview
+                        </button>
                     </div>
 
                     {statusMessage.text && (
-                        <div className={statusMessage.type === 'success' ? styles.successMessage : styles.errorMessage}>
+                        <div className={statusMessage.type === 'success' ? styles.successMessage : styles.errorMessage} style={{ margin: '0 0 1.5rem 0' }}>
                             {statusMessage.text}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className={styles.formGrid}>
-                        {/* Overview Section */}
-                        <div className={styles.formSectionTitle}><h3>Overview</h3></div>
+                    <div className={styles.editorBody}>
+                        {/* === EDITOR TAB === */}
+                        {activeTab === 'editor' && (
+                            <form onSubmit={handleSubmit} className={styles.editorFormWrapper}>
+                                {/* Overview */}
+                                <div className={styles.editorSectionTitle}>Overview</div>
+                                <div className={styles.editorFieldRow}>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Title <span style={{color:'#e63946'}}>*</span></label>
+                                        <input name="title" value={formData.title || ''} onChange={handleChange} className={styles.editorInput} placeholder="Project name" required />
+                                    </div>
+                                    <div className={styles.editorFieldGroup} style={{ maxWidth: '220px' }}>
+                                        <label className={styles.editorLabel}>Slug (ID)</label>
+                                        <input name="slug" value={formData.slug || ''} onChange={handleChange} className={`${styles.editorInput} ${view === 'edit' ? styles.editorInputDisabled : ''}`} disabled={view === 'edit'} placeholder="auto-generated" />
+                                    </div>
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Title</label>
-                            <input name="title" value={formData.title || ''} onChange={handleChange} className={styles.input} placeholder="Project name" required />
-                        </div>
+                                <div className={styles.editorFieldRow}>
+                                    <div className={styles.editorFieldGroup} style={{ maxWidth: '200px' }}>
+                                        <label className={styles.editorLabel}>Category <span style={{color:'#e63946'}}>*</span></label>
+                                        <input name="category" value={formData.category || ''} onChange={handleChange} className={styles.editorInput} placeholder="e.g. Web App" required />
+                                    </div>
+                                    <div className={styles.editorFieldGroup} style={{ maxWidth: '140px' }}>
+                                        <label className={styles.editorLabel}>Year <span style={{color:'#e63946'}}>*</span></label>
+                                        <input name="year" value={formData.year || ''} onChange={handleChange} className={styles.editorInput} placeholder="2026" required />
+                                    </div>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Industry</label>
+                                        <input name="industry" value={formData.industry || ''} onChange={handleChange} className={styles.editorInput} placeholder="e.g. Technology" />
+                                    </div>
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Slug (ID)</label>
-                            <input name="slug" value={formData.slug || ''} onChange={handleChange} className={`${styles.input} ${styles.inputDisabled}`} disabled={view === 'edit'} placeholder="Auto-generated if empty" />
-                        </div>
+                                <div className={styles.editorFieldGroup}>
+                                    <label className={styles.editorLabel}>Summary <span style={{color:'#e63946'}}>*</span></label>
+                                    <textarea name="summary" value={formData.summary || ''} onChange={handleChange} className={styles.editorTextarea} placeholder="Brief description of the project..." required style={{ minHeight: '100px' }} />
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan4}`}>
-                            <label className={styles.label}>Category</label>
-                            <input name="category" value={formData.category || ''} onChange={handleChange} className={styles.input} placeholder="e.g. Web App" required />
-                        </div>
+                                <div className={styles.editorFieldGroup}>
+                                    <label className={styles.editorLabel}>Hero Image URL <span style={{color:'#e63946'}}>*</span></label>
+                                    <div className={styles.editorImageInputRow}>
+                                        <input name="heroImage" value={formData.heroImage || ''} onChange={handleChange} className={styles.editorInput} placeholder="https://..." required />
+                                        {formData.heroImage && (
+                                            <img src={formData.heroImage} alt="thumb" className={styles.editorImageThumb} onError={e => e.target.style.display='none'} />
+                                        )}
+                                    </div>
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan4}`}>
-                            <label className={styles.label}>Year</label>
-                            <input name="year" value={formData.year || ''} onChange={handleChange} className={styles.input} placeholder="2026" required />
-                        </div>
+                                {/* Case Study */}
+                                <div className={styles.editorSectionTitle}>Case Study</div>
+                                <div className={styles.editorFieldRow}>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Problem <span style={{color:'#e63946'}}>*</span></label>
+                                        <textarea name="problem" value={formData.problem || ''} onChange={handleChange} className={styles.editorTextarea} placeholder="What problem does this solve?" required style={{ minHeight: '160px' }} />
+                                    </div>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Solution <span style={{color:'#e63946'}}>*</span></label>
+                                        <textarea name="solution" value={formData.solution || ''} onChange={handleChange} className={styles.editorTextarea} placeholder="How did you solve it?" required style={{ minHeight: '160px' }} />
+                                    </div>
+                                </div>
+                                <div className={styles.editorFieldGroup}>
+                                    <label className={styles.editorLabel}>Challenge</label>
+                                    <textarea name="challenge" value={formData.challenge || ''} onChange={handleChange} className={styles.editorTextarea} placeholder="Challenges faced during development..." style={{ minHeight: '120px' }} />
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan4}`}>
-                            <label className={styles.label}>Industry</label>
-                            <input name="industry" value={formData.industry || ''} onChange={handleChange} className={styles.input} placeholder="e.g. Technology" />
-                        </div>
+                                {/* Details */}
+                                <div className={styles.editorSectionTitle}>Details & Links</div>
+                                <div className={styles.editorFieldRow}>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Client</label>
+                                        <input name="client" value={formData.client || ''} onChange={handleChange} className={styles.editorInput} placeholder="Client or personal project" />
+                                    </div>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Duration</label>
+                                        <input name="duration" value={formData.duration || ''} onChange={handleChange} className={styles.editorInput} placeholder="e.g. 3 months" />
+                                    </div>
+                                </div>
+                                <div className={styles.editorFieldRow}>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>GitHub URL</label>
+                                        <input name="github" value={formData.github || ''} onChange={handleChange} className={styles.editorInput} placeholder="https://github.com/..." />
+                                    </div>
+                                    <div className={styles.editorFieldGroup}>
+                                        <label className={styles.editorLabel}>Live URL</label>
+                                        <input name="liveUrl" value={formData.liveUrl || ''} onChange={handleChange} className={styles.editorInput} placeholder="https://..." />
+                                    </div>
+                                </div>
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan12}`}>
-                            <label className={styles.label}>Summary</label>
-                            <textarea name="summary" value={formData.summary || ''} onChange={handleChange} className={styles.textarea} placeholder="Brief description of the project..." required style={{ minHeight: '120px' }} />
-                        </div>
+                                {/* Tech Stack */}
+                                <div className={styles.editorFieldGroup}>
+                                    <label className={styles.editorLabel}>Tech Stack</label>
+                                    <div className={styles.arrayInputContainer}>
+                                        {formData.techStack?.map((tech, i) => (
+                                            <span key={i} className={styles.tag}>
+                                                {tech} <span onClick={() => removeTech(i)} className={styles.removeTag}>×</span>
+                                            </span>
+                                        ))}
+                                        <input value={inputTech} onChange={(e) => setInputTech(e.target.value)} onKeyDown={addTech} placeholder="Type and press Enter" />
+                                    </div>
+                                </div>
 
-                        <div className={styles.colSpan12}>
-                            <label className={styles.label}>Hero Image URL</label>
-                            <input name="heroImage" value={formData.heroImage || ''} onChange={handleChange} className={styles.input} placeholder="URL for the hero image" required />
-                        </div>
+                                {/* Content Images */}
+                                <div className={styles.editorFieldGroup}>
+                                    <label className={styles.editorLabel}>Content Images</label>
+                                    <div className={styles.arrayInputContainer}>
+                                        {formData.contentImages?.map((img, i) => (
+                                            <span key={i} className={styles.imgTag}>
+                                                Image {i + 1} <span onClick={() => removeContentImage(i)} className={styles.removeTag}>×</span>
+                                            </span>
+                                        ))}
+                                        <input value={inputImage} onChange={(e) => setInputImage(e.target.value)} onKeyDown={addContentImage} placeholder="Add image URL and press Enter" />
+                                    </div>
+                                </div>
 
-                        {/* Case Study */}
-                        <div className={styles.formSectionTitle}><h3>Case Study</h3></div>
+                                <div className={styles.editorSubmitRow}>
+                                    <button type="button" className={styles.editorCancelBtn} onClick={handleCancel}>Cancel</button>
+                                    <button type="submit" className={styles.editorSubmitBtn}>
+                                        {view === 'create' ? '✦ Publish Project' : '✦ Save Changes'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Problem</label>
-                            <textarea name="problem" value={formData.problem || ''} onChange={handleChange} className={styles.textarea} placeholder="What problem does this solve?" style={{ minHeight: '180px' }} required />
-                        </div>
+                        {/* === PREVIEW TAB === */}
+                        {activeTab === 'preview' && (
+                            <div className={styles.fullWidthPreview}>
+                                <ProjectClient initialProject={formData} isPreview={true} />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Solution</label>
-                            <textarea name="solution" value={formData.solution || ''} onChange={handleChange} className={styles.textarea} placeholder="How did you solve it?" style={{ minHeight: '180px' }} required />
-                        </div>
-
-                        <div className={styles.colSpan12}>
-                            <label className={styles.label}>Challenge</label>
-                            <textarea name="challenge" value={formData.challenge || ''} onChange={handleChange} className={styles.textarea} placeholder="Any challenges faced during development?" style={{ minHeight: '150px' }} />
-                        </div>
-
-                        {/* Team & Links */}
-                        <div className={styles.formSectionTitle}><h3>Details</h3></div>
-
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Client</label>
-                            <input name="client" value={formData.client || ''} onChange={handleChange} className={styles.input} placeholder="Client or personal project" />
-                        </div>
-
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Duration</label>
-                            <input name="duration" value={formData.duration || ''} onChange={handleChange} className={styles.input} placeholder="e.g. 3 months" />
-                        </div>
-
-                        <div className={styles.colSpan12}>
-                            <label className={styles.label}>Tech Stack</label>
-                            <div className={styles.arrayInputContainer}>
-                                {formData.techStack?.map((tech, i) => (
-                                    <span key={i} className={styles.tag}>
-                                        {tech} <span onClick={() => removeTech(i)} className={styles.removeTag}>×</span>
-                                    </span>
-                                ))}
-                                <input
-                                    value={inputTech}
-                                    onChange={(e) => setInputTech(e.target.value)}
-                                    onKeyDown={addTech}
-                                    placeholder="Type and press Enter (comma-separated for multiple)"
-                                />
+            {/* AI Generation Modal (GitHub) */}
+            {isGithubModalOpen && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalTitle}>Generate Project from GitHub</div>
+                        <p className={styles.modalSubtitle}>Enter a GitHub repository URL. AI will parse the README and automatically structure a project showcase.</p>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <input
+                                type="text"
+                                placeholder="https://github.com/username/repository"
+                                value={githubInput}
+                                onChange={(e) => setGithubInput(e.target.value)}
+                                className={styles.input}
+                                disabled={isGenerating}
+                            />
+                            
+                            <div className={styles.modalActions}>
+                                <button 
+                                    type="button" 
+                                    className={styles.modalCancelBtn}
+                                    onClick={() => setIsGithubModalOpen(false)}
+                                    disabled={isGenerating}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={handleGithubGenerate} 
+                                    className={styles.sparkleBtn}
+                                    disabled={isGenerating || !githubInput.trim()}
+                                >
+                                    {isGenerating ? (
+                                        <>Generating...</>
+                                    ) : (
+                                        <>
+                                            <IoSparkles size={16} />
+                                            Generate
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
 
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>GitHub URL</label>
-                            <input name="github" value={formData.github || ''} onChange={handleChange} className={styles.input} placeholder="https://github.com/..." />
-                        </div>
-
-                        <div className={`${styles.inputGroup} ${styles.colSpan6}`}>
-                            <label className={styles.label}>Live URL</label>
-                            <input name="liveUrl" value={formData.liveUrl || ''} onChange={handleChange} className={styles.input} placeholder="https://..." />
-                        </div>
-
-                        <div className={styles.colSpan12}>
-                            <label className={styles.label}>Content Images</label>
-                            <div className={styles.arrayInputContainer}>
-                                {formData.contentImages?.map((img, i) => (
-                                    <span key={i} className={styles.imgTag}>
-                                        Image {i + 1} <span onClick={() => removeContentImage(i)} className={styles.removeTag}>×</span>
-                                    </span>
-                                ))}
-                                <input
-                                    value={inputImage}
-                                    onChange={(e) => setInputImage(e.target.value)}
-                                    onKeyDown={addContentImage}
-                                    placeholder="Add image URL and press Enter"
-                                />
-                            </div>
-                        </div>
-
-                        <div className={styles.colSpan12}>
-                            <button type="submit" className={styles.submitButton}>
-                                {view === 'create' ? 'Publish Project' : 'Save Changes'}
+            {/* Creation Method Modal */}
+            {isCreationModalOpen && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalTitle}>Create New Project</div>
+                        <p className={styles.modalSubtitle}>How would you like to create your new project?</p>
+                        
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                            <button 
+                                className={styles.modernCreateBtn}
+                                style={{ flex: 1, justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
+                                onClick={() => {
+                                    setIsCreationModalOpen(false);
+                                    setFormData(initialFormState);
+                                    setView('create');
+                                    setStatusMessage({ type: '', text: '' });
+                                }}
+                            >
+                                Manual Creation
+                            </button>
+                            <button 
+                                className={styles.sparkleBtn}
+                                style={{ flex: 1, justifyContent: 'center', padding: '1rem', fontSize: '1rem' }}
+                                onClick={() => {
+                                    setIsCreationModalOpen(false);
+                                    setIsGithubModalOpen(true);
+                                }}
+                            >
+                                <IoSparkles size={18} />
+                                AI Generate
                             </button>
                         </div>
-                    </form>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                            <button className={styles.modalCancelBtn} onClick={() => setIsCreationModalOpen(false)}>Cancel</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

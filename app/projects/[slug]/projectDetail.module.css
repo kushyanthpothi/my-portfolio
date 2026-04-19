@@ -7,6 +7,14 @@
     padding-top: 8rem;
 }
 
+.previewContainer {
+    padding-top: 2rem;
+    min-height: auto;
+    height: 100%;
+    overflow-y: auto;
+    background-color: transparent;
+}
+
 .contentWrapper {
     max-width: 75rem;
     margin: 0 auto;

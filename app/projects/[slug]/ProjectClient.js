@@ -8,16 +8,22 @@ import Footer from '../../../components/Footer';
 import ThemeSwitch from '../../../components/ThemeSwitch';
 import MouseBubble from '../../../components/MouseBubble';
 import ProjectCard from '../../../components/ProjectCard';
+import ProjectCarousel from '../../../components/ProjectCarousel';
 import styles from './projectDetail.module.css';
 
-export default function ProjectClient() {
+export default function ProjectClient({ initialProject = null, isPreview = false }) {
     const params = useParams();
     const slug = params?.slug;
-    const [project, setProject] = useState(null);
+    const [project, setProject] = useState(initialProject);
     const [otherProjects, setOtherProjects] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!initialProject);
 
     useEffect(() => {
+        if (initialProject) {
+            setLoading(false);
+            return;
+        }
+
         let currentSlug = slug;
 
         // Handle Firebase fallback rewrite
@@ -79,76 +85,79 @@ export default function ProjectClient() {
     }
 
     return (
-        <main className={styles.pageContainer}>
-            <Navbar />
-            <MouseBubble />
+        <main className={`${styles.pageContainer} ${isPreview ? styles.previewContainer : ''}`}>
+            {!isPreview && <Navbar />}
+            {!isPreview && <MouseBubble />}
 
             <div className={styles.contentWrapper}>
                 {/* Hero Section */}
                 <section className={styles.heroSection}>
-                    <div className={styles.categoryPill}>{project.category}</div>
-                    <h1 className={styles.projectTitle}>{project.title}</h1>
-                    <p className={styles.projectSummary}>{project.summary}</p>
+                    <div className={styles.categoryPill}>{project.category || 'Category'}</div>
+                    <h1 className={styles.projectTitle}>{project.title || 'Untitled Project'}</h1>
+                    <p className={styles.projectSummary} style={!project.summary ? { opacity: 0.6 } : {}}>
+                        {project.summary || 'Write a short summary of your project here...'}
+                    </p>
 
                     {/* Metadata Grid */}
                     <div className={styles.metadataGrid}>
                         <div className={styles.metadataItem}>
                             <span className={styles.metadataLabel}>Year</span>
-                            <span className={styles.metadataValue}>{project.year}</span>
+                            <span className={styles.metadataValue}>{project.year || 'YYYY'}</span>
                         </div>
                         <div className={styles.metadataItem}>
                             <span className={styles.metadataLabel}>Industry</span>
-                            <span className={styles.metadataValue}>{project.industry}</span>
+                            <span className={styles.metadataValue}>{project.industry || 'Industry'}</span>
                         </div>
                         <div className={styles.metadataItem}>
                             <span className={styles.metadataLabel}>Client</span>
-                            <span className={styles.metadataValue}>{project.client}</span>
+                            <span className={styles.metadataValue}>{project.client || 'Client Name'}</span>
                         </div>
                         <div className={styles.metadataItem}>
                             <span className={styles.metadataLabel}>Project Duration</span>
-                            <span className={styles.metadataValue}>{project.duration}</span>
+                            <span className={styles.metadataValue}>{project.duration || 'Duration'}</span>
                         </div>
                     </div>
                 </section>
 
                 {/* Hero Image */}
-                <div className={styles.heroImageWrapper}>
-                    <Image
-                        src={project.heroImage}
-                        alt={project.title}
-                        fill
-                        className={styles.heroImage}
-                        priority
-                    />
-                </div>
+                {project.heroImage && (
+                    <div className={styles.heroImageWrapper}>
+                        <Image
+                            src={project.heroImage}
+                            alt={project.title}
+                            fill
+                            className={styles.heroImage}
+                            priority
+                        />
+                    </div>
+                )}
 
                 {/* Content Sections */}
                 <section className={styles.contentSection}>
                     <div className={styles.textBlock}>
                         <h2 className={styles.sectionHeading}>PROBLEM :</h2>
-                        <p className={styles.sectionText}>{project.problem}</p>
+                        <p className={styles.sectionText} style={!project.problem ? { opacity: 0.6 } : {}}>
+                            {project.problem || 'Describe the problem here...'}
+                        </p>
                     </div>
-
-                    {project.contentImages && project.contentImages.length > 0 && (
-                        <div className={styles.contentImageWrapper}>
-                            <Image
-                                src={project.contentImages[0]}
-                                alt={`${project.title} content`}
-                                fill
-                                className={styles.contentImage}
-                            />
-                        </div>
-                    )}
 
                     <div className={styles.textBlock}>
                         <h2 className={styles.sectionHeading}>SOLUTION :</h2>
-                        <p className={styles.sectionText}>{project.solution}</p>
+                        <p className={styles.sectionText} style={!project.solution ? { opacity: 0.6 } : {}}>
+                            {project.solution || 'Describe the solution here...'}
+                        </p>
                     </div>
 
                     <div className={styles.textBlock}>
                         <h2 className={styles.sectionHeading}>CHALLENGE :</h2>
-                        <p className={styles.sectionText}>{project.challenge}</p>
+                        <p className={styles.sectionText} style={!project.challenge ? { opacity: 0.6 } : {}}>
+                            {project.challenge || 'Describe the challenge here...'}
+                        </p>
                     </div>
+
+                    {project.contentImages && project.contentImages.length > 0 && (
+                        <ProjectCarousel images={project.contentImages} title={project.title} />
+                    )}
 
                     {/* Tech Stack */}
                     {project.techStack && project.techStack.length > 0 && (
@@ -190,22 +199,22 @@ export default function ProjectClient() {
                 </section>
 
                 {/* More Projects Section */}
-                {otherProjects.length > 0 && (
+                {!isPreview && otherProjects.length > 0 && (
                     <section className={styles.moreProjectsSection}>
                         <div className={styles.sectionDivider}>
                             <h2 className={styles.moreProjectsTitle}>MORE PROJECTS</h2>
                         </div>
                         <div className={styles.projectsGrid}>
-                            {otherProjects.map((proj) => (
-                                <ProjectCard key={proj.id} project={proj} />
+                            {otherProjects.map((proj, index) => (
+                                <ProjectCard key={proj.slug || `${proj.id}-other-${index}`} project={proj} />
                             ))}
                         </div>
                     </section>
                 )}
             </div>
 
-            <Footer />
-            <ThemeSwitch />
+            {!isPreview && <Footer />}
+            {!isPreview && <ThemeSwitch />}
         </main>
     );
 }

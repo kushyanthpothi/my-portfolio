@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from '../admin.module.css';
 import Loading from '@/components/Loading';
 import { fetchProjects, fetchBlogs, getVisitorStats, deleteProject, deleteBlog } from '@/lib/firestoreUtils';
-import { FiFolder, FiFileText, FiCpu, FiUsers, FiBarChart2, FiCalendar, FiClock, FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi';
+import { FiSearch, FiMenu, FiTrendingUp } from 'react-icons/fi';
 
 export default function Dashboard() {
     const router = useRouter();
@@ -52,702 +52,262 @@ export default function Dashboard() {
         }
     };
 
-    const handleDeleteBlog = async (slug) => {
-        if (confirm('Are you sure you want to delete this blog post?')) {
-            const result = await deleteBlog(slug);
-            if (result.success) loadStats();
-        }
-    };
-
-    const handleDeleteProject = async (slug) => {
-        if (confirm('Are you sure you want to delete this project?')) {
-            const result = await deleteProject(slug);
-            if (result.success) loadStats();
-        }
-    };
-
-    // Calculate max for chart scaling
-    const maxVisits = Math.max(...visitorData.stats.map(d => d.count), 1);
-
     if (loading) {
         return (
-            <div className={styles.managerContainer}>
-                <Loading text="Loading analytics..." />
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <Loading text="Loading dashboard..." />
             </div>
         );
     }
 
-    // Modern "Glass" Card Style
-    const glassCardStyle = {
-        background: 'rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
-        borderRadius: '24px', // "Perfect rounded"
+    const neumorphicCard = {
+        background: '#161b22', /* Darker card background for contrast */
+        borderRadius: '24px',
         padding: '1.5rem',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', /* Smoother less-laggy shadow */
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
-        transition: 'transform 0.2s',
-        cursor: 'default'
     };
 
+    // Calculate max for bar chart
+    const maxVisits = Math.max(...visitorData.stats.map(d => d.count), 1);
+
     return (
-        <div className={styles.managerContainer}>
-            <div className={styles.managerHeader}>
-                <h2 className={styles.sectionTitle}>Dashboard</h2>
-            </div>
-
-            {/* Stats Cards Row */}
-            <div className={styles.statsGrid}>
-                {/* Total Visitors */}
-                <div style={glassCardStyle}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                        <div style={{
-                            padding: '10px',
-                            borderRadius: '14px',
-                            background: 'rgba(59, 130, 246, 0.1)',
-                            color: '#60A5FA'
-                        }}>
-                            <FiUsers size={24} />
-                        </div>
-                        <span style={{ color: '#60A5FA', fontSize: '0.75rem', fontWeight: '600' }}>+12%</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            
+            {/* Dashboard Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#828b9c', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                        <FiMenu size={16} /> <span>Dashboard</span>
                     </div>
-                    <div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#fff', lineHeight: '1' }}>
-                            {visitorData.totalVisits}
-                        </div>
-                        <div style={{ fontSize: '0.875rem', color: '#9CA3AF', marginTop: '0.5rem' }}>
-                            Visitors (Last 10 Days)
-                        </div>
-                    </div>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: '700', color: '#fff', margin: 0 }}>
+                        Hello there, Admin
+                    </h1>
                 </div>
-
-                {/* Total Projects */}
-                <div style={glassCardStyle}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                        <div style={{
-                            padding: '10px',
-                            borderRadius: '14px',
-                            background: 'rgba(99, 102, 241, 0.1)',
-                            color: '#818CF8'
-                        }}>
-                            <FiFolder size={24} />
-                        </div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#fff', lineHeight: '1' }}>
-                            {stats.totalProjects}
-                        </div>
-                        <div style={{ fontSize: '0.875rem', color: '#9CA3AF', marginTop: '0.5rem' }}>
-                            Total Projects
-                        </div>
-                    </div>
-                </div>
-
-                {/* Total Blogs */}
-                <div style={glassCardStyle}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                        <div style={{
-                            padding: '10px',
-                            borderRadius: '14px',
-                            background: 'rgba(16, 185, 129, 0.1)',
-                            color: '#34D399'
-                        }}>
-                            <FiFileText size={24} />
-                        </div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#fff', lineHeight: '1' }}>
-                            {stats.totalBlogs}
-                        </div>
-                        <div style={{ fontSize: '0.875rem', color: '#9CA3AF', marginTop: '0.5rem' }}>
-                            Total Blogs
-                        </div>
-                    </div>
-                </div>
-
-                {/* AI Generated */}
-                <div style={glassCardStyle}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                        <div style={{
-                            padding: '10px',
-                            borderRadius: '14px',
-                            background: 'rgba(255, 215, 0, 0.1)',
-                            color: '#FCD34D'
-                        }}>
-                            <FiCpu size={24} />
-                        </div>
-                        <span style={{
-                            background: 'rgba(255, 215, 0, 0.1)',
-                            color: '#FCD34D',
-                            padding: '2px 8px',
-                            borderRadius: '12px',
-                            fontSize: '0.75rem'
-                        }}>
-                            {Math.round((stats.aiBlogs / (stats.totalBlogs || 1)) * 100)}%
-                        </span>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#fff', lineHeight: '1' }}>
-                            {stats.aiBlogs}
-                        </div>
-                        <div style={{ fontSize: '0.875rem', color: '#9CA3AF', marginTop: '0.5rem' }}>
-                            AI Generated Blogs
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Visitor Chart Section - Transparent Container */}
-            <div style={{ marginBottom: '3rem' }}>
-                <h3 style={{
+                <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.75rem',
-                    marginBottom: '1.5rem',
-                    color: '#fff',
-                    fontSize: '1.25rem',
-                    fontWeight: '600'
+                    background: '#161b22',
+                    borderRadius: '12px',
+                    padding: '0.8rem 1rem',
+                    width: '300px',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.02)'
                 }}>
-                    <FiBarChart2 />
-                    Traffic Overview
-                </h3>
+                    <FiSearch color="#828b9c" size={18} style={{ marginRight: '10px' }} />
+                    <input 
+                        type="text" 
+                        placeholder="Search here" 
+                        style={{ border: 'none', background: 'transparent', color: '#fff', outline: 'none', width: '100%', fontSize: '0.9rem' }}
+                    />
+                </div>
+            </div>
 
-                <div style={{
-                    ...glassCardStyle,
-                    padding: '2rem',
-                    height: '300px'
-                }}>
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'flex-end',
-                        gap: '12px',
-                        height: '100%',
-                        width: '100%',
-                    }}>
-                        {visitorData.stats.map((day, index) => (
-                            <div key={day.date} style={{
-                                flex: 1,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '12px',
-                                height: '100%'
-                            }}>
-                                <div style={{
-                                    flex: 1,
-                                    width: '100%',
-                                    display: 'flex',
-                                    alignItems: 'flex-end',
-                                    justifyContent: 'center',
-                                    position: 'relative'
-                                }}>
-                                    {/* Tooltip-like count on hover could act here, but static for now */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: `${100 - ((Math.max((day.count / maxVisits) * 100, 5)))}%`, // Position above bar
-                                        marginTop: '-25px',
-                                        background: 'rgba(0,0,0,0.5)',
-                                        padding: '4px 8px',
-                                        borderRadius: '6px',
-                                        fontSize: '0.75rem',
-                                        color: '#fff',
-                                        opacity: day.count > 0 ? 1 : 0
-                                    }}>
-                                        {day.count}
+            {/* Top Stat Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                {/* Card 1 */}
+                <div style={neumorphicCard}>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#e5e7eb', color: '#374151', fontWeight: 'bold' }}>All</span>
+                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#ffe4e6', color: '#be123c', fontWeight: 'bold' }}>Active</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
+                        <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Total Projects</h3>
+                        <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '1.2rem' }}>{stats.totalProjects}</span>
+                    </div>
+                    <p style={{ color: '#828b9c', fontSize: '0.8rem', lineHeight: '1.4', marginBottom: '1.5rem' }}>
+                        Overview of all your deployed and draft projects currently sitting in the portfolio database.
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                        <div style={{ display: 'flex' }}>
+                            {[1,2,3].map((i) => (
+                                <div key={i} style={{
+                                    width: '30px', height: '30px', borderRadius: '50%', background: '#fff', 
+                                    marginLeft: i === 1 ? '0' : '-10px', border: '2px solid #161b22',
+                                    backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=proj${i})`, backgroundSize: 'cover'
+                                }} />
+                            ))}
+                            <div style={{
+                                width: '30px', height: '30px', borderRadius: '50%', background: '#3b82f6', 
+                                marginLeft: '-10px', border: '2px solid #161b22', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 'bold'
+                            }}>+</div>
+                        </div>
+                        <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d97706', cursor: 'pointer' }} onClick={() => router.push('/admin/projects')}>
+                            <FiTrendingUp size={16} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card 2 */}
+                <div style={neumorphicCard}>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#dcfce7', color: '#166534', fontWeight: 'bold' }}>AI</span>
+                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#e0e7ff', color: '#3730a3', fontWeight: 'bold' }}>Human</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
+                        <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Total Blogs</h3>
+                        <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '1.2rem' }}>{stats.totalBlogs}</span>
+                    </div>
+                    <p style={{ color: '#828b9c', fontSize: '0.8rem', lineHeight: '1.4', marginBottom: '1.5rem' }}>
+                        Automated AI blogs and manually written articles contributing to your overall platform SEO. 
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                        <div style={{ display: 'flex' }}>
+                            {[4,5,6].map((i) => (
+                                <div key={i} style={{
+                                    width: '30px', height: '30px', borderRadius: '50%', background: '#fff', 
+                                    marginLeft: i === 4 ? '0' : '-10px', border: '2px solid #161b22',
+                                    backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=blog${i})`, backgroundSize: 'cover'
+                                }} />
+                            ))}
+                            <div style={{
+                                width: '30px', height: '30px', borderRadius: '50%', background: '#8b5cf6', 
+                                marginLeft: '-10px', border: '2px solid #161b22', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 'bold'
+                            }}>+</div>
+                        </div>
+                        <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626', cursor: 'pointer' }} onClick={() => router.push('/admin/blogs')}>
+                            <FiTrendingUp size={16} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card 3 */}
+                <div style={neumorphicCard}>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#fef3c7', color: '#92400e', fontWeight: 'bold' }}>Organic</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
+                        <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Total Visitors</h3>
+                        <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '1.2rem' }}>{visitorData.totalVisits}</span>
+                    </div>
+                    <p style={{ color: '#828b9c', fontSize: '0.8rem', lineHeight: '1.4', marginBottom: '1.5rem' }}>
+                        Analytics summarizing organic user hits across your portfolio over the last 10 days period.
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                        <div style={{ display: 'flex' }}>
+                            {[7,8,9].map((i) => (
+                                <div key={i} style={{
+                                    width: '30px', height: '30px', borderRadius: '50%', background: '#fff', 
+                                    marginLeft: i === 7 ? '0' : '-10px', border: '2px solid #161b22',
+                                    backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=user${i})`, backgroundSize: 'cover'
+                                }} />
+                            ))}
+                            <div style={{
+                                width: '30px', height: '30px', borderRadius: '50%', background: '#10b981', 
+                                marginLeft: '-10px', border: '2px solid #161b22', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 'bold'
+                            }}>+</div>
+                        </div>
+                        <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16a34a', cursor: 'pointer' }}>
+                            <FiTrendingUp size={16} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Middle Row Charts */}
+            <div style={{ display: 'flex', gap: '1.5rem', height: '300px' }}>
+                {/* Bar Chart (Traffic) */}
+                <div style={{ ...neumorphicCard, flex: 2 }}>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#828b9c' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6' }}></div> Visitors</span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flex: 1, paddingBottom: '1rem' }}>
+                        {visitorData.stats.map((day, idx) => {
+                            const barHeight = Math.max((day.count / maxVisits) * 100, 5);
+                            return (
+                                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', height: '100%', width: '100%' }}>
+                                    <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%', justifyContent: 'center' }}>
+                                        {/* Segmented bar look */}
+                                        <div style={{
+                                            width: '12px',
+                                            height: `${barHeight}%`,
+                                            background: 'linear-gradient(180deg, #10b981 0%, #3b82f6 50%, #6366f1 100%)',
+                                            borderRadius: '6px',
+                                            boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
+                                        }}></div>
                                     </div>
+                                    <span style={{ fontSize: '0.65rem', color: '#555e70' }}>{day.label}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
 
-                                    <div style={{
-                                        width: '100%',
-                                        maxWidth: '40px',
-                                        height: `${Math.max((day.count / maxVisits) * 100, 5)}%`,
-                                        background: day.count > 0
-                                            ? 'linear-gradient(180deg, #3B82F6 0%, rgba(59, 130, 246, 0.2) 100%)'
-                                            : 'rgba(255, 255, 255, 0.05)',
-                                        borderRadius: '8px 8px 0 0',
-                                        transition: 'all 0.3s ease'
-                                    }} />
-                                </div>
-                                <div style={{
-                                    fontSize: '0.75rem',
-                                    color: '#9CA3AF',
-                                    fontWeight: '500'
-                                }}>
-                                    {day.label}
-                                </div>
+                {/* Pie Charts */}
+                <div style={{ ...neumorphicCard, flex: 1 }}>
+                    <h3 style={{ margin: '0 0 1.5rem 0', color: '#fff', fontSize: '1.1rem' }}>Very Important Stats</h3>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', fontSize: '0.75rem', fontWeight: 'bold', flexWrap: 'wrap' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#828b9c' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div> AI Blogs</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#828b9c' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8b5cf6' }}></div> Human</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#828b9c' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div> Projects</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', flex: 1 }}>
+                        {/* Circular Progress 1 */}
+                        <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', background: 'conic-gradient(#10b981 67%, rgba(255,255,255,0.05) 0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ position: 'absolute', width: '65px', height: '65px', borderRadius: '50%', background: '#161b22', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                {Math.round((stats.aiBlogs / (stats.totalBlogs || 1)) * 100)}%
                             </div>
-                        ))}
+                        </div>
+
+                        {/* Circular Progress 2 */}
+                        <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', background: 'conic-gradient(#8b5cf6 46%, rgba(255,255,255,0.05) 0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ position: 'absolute', width: '65px', height: '65px', borderRadius: '50%', background: '#1a2035', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b5cf6', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                {Math.round((stats.humanBlogs / (stats.totalBlogs || 1)) * 100)}%
+                            </div>
+                        </div>
+
+                        {/* Circular Progress 3 */}
+                        <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', background: 'conic-gradient(#ef4444 85%, rgba(255,255,255,0.05) 0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ position: 'absolute', width: '65px', height: '65px', borderRadius: '50%', background: '#1a2035', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                {stats.totalProjects > 0 ? '100%' : '0%'}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Recent Content Sections - Transparent Headers */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-
-                {/* Recent Blogs */}
-                <div>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '1.5rem'
+            {/* Bottom List Row */}
+            <div style={{ ...neumorphicCard, flex: 1, padding: '0.5rem 1.5rem' }}>
+                {stats.recentProjects.slice(0, 3).map((project, idx) => (
+                    <div key={project.slug} style={{ 
+                        display: 'flex', alignItems: 'center', padding: '1rem 0', 
+                        borderBottom: idx !== 2 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                        gap: '2rem'
                     }}>
-                        <h3 style={{
-                            fontSize: '1.25rem',
-                            fontWeight: '600',
-                            color: '#fff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem'
-                        }}>
-                            <FiCalendar /> Latest Blogs
-                        </h3>
-                        <button
-                            onClick={() => router.push('/admin/blogs')}
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.06)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '100px',
-                                padding: '8px 20px',
-                                color: '#fff',
-                                fontSize: '0.85rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            View All <FiArrowRight size={14} />
-                        </button>
-                    </div>
-
-                    {stats.recentBlogs.length === 0 ? (
-                        <div style={{ color: '#666' }}>No blogs yet</div>
-                    ) : (
-                        <div style={{
-                            display: 'flex',
-                            gap: '1.5rem',
-                            overflowX: 'auto',
-                            paddingBottom: '1rem',
-                            scrollBehavior: 'smooth',
-                            scrollbarWidth: 'none'
-                        }}>
-                            <style jsx global>{`
-                                div::-webkit-scrollbar { display: none; }
-                                .blog-card {
-                                    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-                                }
-                                .blog-card:hover {
-                                    transform: translateY(-6px);
-                                    border-color: rgba(255, 215, 0, 0.2) !important;
-                                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 215, 0, 0.1);
-                                }
-                                .blog-card:hover .blog-card-image {
-                                    transform: scale(1.05);
-                                }
-                                .blog-card-image {
-                                    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-                                }
-                                .card-actions-overlay {
-                                    opacity: 0;
-                                    transition: opacity 0.3s ease;
-                                }
-                                .blog-card:hover .card-actions-overlay {
-                                    opacity: 1 !important;
-                                }
-                            `}</style>
-                            {stats.recentBlogs.map((blog) => (
-                                <div key={blog.slug} className="blog-card" style={{
-                                    flex: '0 0 340px',
-                                    height: '380px',
-                                    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
-                                    border: '1px solid rgba(255, 255, 255, 0.06)',
-                                    borderRadius: '24px',
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    backdropFilter: 'blur(10px)',
-                                    position: 'relative'
-                                }}>
-                                    {/* Image Section */}
-                                    <div style={{
-                                        width: '100%',
-                                        height: '200px',
-                                        overflow: 'hidden',
-                                        position: 'relative'
-                                    }}>
-                                        <div
-                                            className="blog-card-image"
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                background: `url(${blog.coverImage}) center/cover`,
-                                                backgroundColor: '#1a1a2e'
-                                            }}
-                                        />
-                                        {/* Bottom Fade */}
-                                        <div style={{
-                                            position: 'absolute',
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            height: '100px',
-                                            background: 'radial-gradient(ellipse at center bottom, rgba(10, 10, 15, 0.8) 0%, transparent 70%)'
-                                        }} />
-                                        {/* Hover Edit/Delete Overlay */}
-                                        <div className="card-actions-overlay" style={{
-                                            position: 'absolute',
-                                            inset: 0,
-                                            background: 'rgba(0, 0, 0, 0.5)',
-                                            backdropFilter: 'blur(4px)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '12px',
-                                            zIndex: 10
-                                        }}>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); setActiveView('blogs'); }}
-                                                style={{
-                                                    background: 'rgba(255, 255, 255, 0.15)',
-                                                    border: '1px solid rgba(255, 255, 255, 0.25)',
-                                                    borderRadius: '50%',
-                                                    width: '44px',
-                                                    height: '44px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: '#fff',
-                                                    cursor: 'pointer',
-                                                    backdropFilter: 'blur(8px)',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                title="Edit"
-                                            >
-                                                <FiEdit2 size={18} />
-                                            </button>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleDeleteBlog(blog.slug); }}
-                                                style={{
-                                                    background: 'rgba(255, 68, 68, 0.2)',
-                                                    border: '1px solid rgba(255, 68, 68, 0.3)',
-                                                    borderRadius: '50%',
-                                                    width: '44px',
-                                                    height: '44px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: '#ff4444',
-                                                    cursor: 'pointer',
-                                                    backdropFilter: 'blur(8px)',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                title="Delete"
-                                            >
-                                                <FiTrash2 size={18} />
-                                            </button>
-                                        </div>
-                                        {/* AI Badge */}
-                                        {blog.isAI && (
-                                            <div style={{
-                                                position: 'absolute',
-                                                top: '12px',
-                                                right: '12px',
-                                                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05))',
-                                                backdropFilter: 'blur(8px)',
-                                                color: '#FFD700',
-                                                padding: '6px 14px',
-                                                borderRadius: '100px',
-                                                fontSize: '0.7rem',
-                                                fontWeight: '700',
-                                                border: '1px solid rgba(255, 215, 0, 0.25)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '5px',
-                                                letterSpacing: '0.05em',
-                                                textTransform: 'uppercase',
-                                                zIndex: 11
-                                            }}>
-                                                <FiCpu size={13} /> AI
-                                            </div>
-                                        )}
-                                        {/* Category Badge */}
-                                        {blog.category && (
-                                            <div style={{
-                                                position: 'absolute',
-                                                bottom: '12px',
-                                                left: '12px',
-                                                background: 'rgba(255, 255, 255, 0.1)',
-                                                backdropFilter: 'blur(8px)',
-                                                color: '#fff',
-                                                padding: '5px 12px',
-                                                borderRadius: '100px',
-                                                fontSize: '0.7rem',
-                                                fontWeight: '600',
-                                                letterSpacing: '0.03em',
-                                                textTransform: 'uppercase',
-                                                zIndex: 11
-                                            }}>
-                                                {blog.category}
-                                            </div>
-                                        )}
-                                    </div>
-                                    {/* Content Section */}
-                                    <div style={{
-                                        padding: '1.25rem 1.25rem 1rem',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.6rem',
-                                        flex: 1
-                                    }}>
-                                        <h4 style={{
-                                            color: '#fff',
-                                            fontSize: '1rem',
-                                            fontWeight: '600',
-                                            lineHeight: '1.4',
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: 'vertical',
-                                            overflow: 'hidden',
-                                            margin: 0
-                                        }}>
-                                            {blog.title}
-                                        </h4>
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.5rem',
-                                            color: '#6B7280',
-                                            fontSize: '0.8rem',
-                                            marginTop: 'auto'
-                                        }}>
-                                            <FiCalendar size={13} />
-                                            <span>{blog.date}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1.5 }}>
+                            <img src={project.heroImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${project.slug}`} alt="Project" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', background: '#333' }} />
+                            <div>
+                                <h4 style={{ margin: 0, color: '#fff', fontSize: '0.9rem' }}>{project.title}</h4>
+                                <span style={{ color: '#828b9c', fontSize: '0.75rem' }}>Project • {project.year}</span>
+                            </div>
                         </div>
-                    )}
-                </div>
 
-                {/* Recent Projects */}
-                <div>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '1.5rem'
-                    }}>
-                        <h3 style={{
-                            fontSize: '1.25rem',
-                            fontWeight: '600',
-                            color: '#fff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem'
-                        }}>
-                            <FiClock /> Latest Projects
-                        </h3>
-                        <button
-                            onClick={() => router.push('/admin/projects')}
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.06)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '100px',
-                                padding: '8px 20px',
-                                color: '#fff',
-                                fontSize: '0.85rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            View All <FiArrowRight size={14} />
-                        </button>
-                    </div>
-
-                    {stats.recentProjects.length === 0 ? (
-                        <div style={{ color: '#666' }}>No projects yet</div>
-                    ) : (
-                        <div style={{
-                            display: 'flex',
-                            gap: '1.5rem',
-                            overflowX: 'auto',
-                            paddingBottom: '1rem',
-                            scrollBehavior: 'smooth',
-                            scrollbarWidth: 'none'
-                        }}>
-                            <style jsx global>{`
-                                .project-card {
-                                    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-                                }
-                                .project-card:hover {
-                                    transform: translateY(-6px);
-                                    border-color: rgba(255, 215, 0, 0.2) !important;
-                                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 215, 0, 0.1);
-                                }
-                                .project-card:hover .project-card-image {
-                                    transform: scale(1.05);
-                                }
-                                .project-card-image {
-                                    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-                                }
-                                .project-actions-overlay {
-                                    opacity: 0;
-                                    transition: opacity 0.3s ease;
-                                }
-                                .project-card:hover .project-actions-overlay {
-                                    opacity: 1 !important;
-                                }
-                            `}</style>
-                            {stats.recentProjects.map((project) => (
-                                <div key={project.slug} className="project-card" style={{
-                                    flex: '0 0 340px',
-                                    height: '380px',
-                                    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
-                                    border: '1px solid rgba(255, 255, 255, 0.06)',
-                                    borderRadius: '24px',
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    backdropFilter: 'blur(10px)',
-                                    position: 'relative'
-                                }}>
-                                    {/* Image Section */}
-                                    <div style={{
-                                        width: '100%',
-                                        height: '200px',
-                                        overflow: 'hidden',
-                                        position: 'relative'
-                                    }}>
-                                        <div
-                                            className="project-card-image"
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                background: `url(${project.heroImage}) center/cover`,
-                                                backgroundColor: '#1a1a2e'
-                                            }}
-                                        />
-                                        {/* Hover Edit/Delete Overlay */}
-                                        <div className="project-actions-overlay" style={{
-                                            position: 'absolute',
-                                            inset: 0,
-                                            background: 'rgba(0, 0, 0, 0.5)',
-                                            backdropFilter: 'blur(4px)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '12px',
-                                            zIndex: 10
-                                        }}>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); setActiveView('projects'); }}
-                                                style={{
-                                                    background: 'rgba(255, 255, 255, 0.15)',
-                                                    border: '1px solid rgba(255, 255, 255, 0.25)',
-                                                    borderRadius: '50%',
-                                                    width: '44px',
-                                                    height: '44px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: '#fff',
-                                                    cursor: 'pointer',
-                                                    backdropFilter: 'blur(8px)',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                title="Edit"
-                                            >
-                                                <FiEdit2 size={18} />
-                                            </button>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.slug); }}
-                                                style={{
-                                                    background: 'rgba(255, 68, 68, 0.2)',
-                                                    border: '1px solid rgba(255, 68, 68, 0.3)',
-                                                    borderRadius: '50%',
-                                                    width: '44px',
-                                                    height: '44px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: '#ff4444',
-                                                    cursor: 'pointer',
-                                                    backdropFilter: 'blur(8px)',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                                title="Delete"
-                                            >
-                                                <FiTrash2 size={18} />
-                                            </button>
-                                        </div>
-                                        {/* Category Badge */}
-                                        {project.category && (
-                                            <div style={{
-                                                position: 'absolute',
-                                                bottom: '12px',
-                                                left: '12px',
-                                                background: 'rgba(255, 255, 255, 0.1)',
-                                                backdropFilter: 'blur(8px)',
-                                                color: '#fff',
-                                                padding: '5px 12px',
-                                                borderRadius: '100px',
-                                                fontSize: '0.7rem',
-                                                fontWeight: '600',
-                                                letterSpacing: '0.03em',
-                                                textTransform: 'uppercase',
-                                                zIndex: 11
-                                            }}>
-                                                {project.category}
-                                            </div>
-                                        )}
-                                    </div>
-                                    {/* Content Section */}
-                                    <div style={{
-                                        padding: '1.25rem 1.25rem 1rem',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.6rem',
-                                        flex: 1
-                                    }}>
-                                        <h4 style={{
-                                            color: '#fff',
-                                            fontSize: '1rem',
-                                            fontWeight: '600',
-                                            lineHeight: '1.4',
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: 'vertical',
-                                            overflow: 'hidden',
-                                            margin: 0
-                                        }}>
-                                            {project.title}
-                                        </h4>
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.5rem',
-                                            color: '#6B7280',
-                                            fontSize: '0.8rem',
-                                            marginTop: 'auto'
-                                        }}>
-                                            <FiCalendar size={13} />
-                                            <span>{project.year}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                        <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: 0, color: '#fff', fontSize: '0.9rem' }}>{project.category || 'General'}</h4>
+                            <span style={{ color: '#828b9c', fontSize: '0.75rem' }}>Category</span>
                         </div>
-                    )}
-                </div>
+
+                        <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: 0, color: '#fff', fontSize: '0.9rem' }}>Active</h4>
+                            <span style={{ color: '#828b9c', fontSize: '0.75rem' }}>Status</span>
+                        </div>
+
+                        <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: 0, color: '#10b981', fontSize: '0.9rem' }}>✓</h4>
+                            <span style={{ color: '#828b9c', fontSize: '0.75rem' }}>Deployed</span>
+                        </div>
+
+                        <div style={{ flex: 0.5, textAlign: 'right' }}>
+                            <button onClick={() => router.push('/admin/projects')} style={{ background: 'transparent', border: 'none', color: '#828b9c', cursor: 'pointer', fontSize: '1.2rem' }}>
+                                ›
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
+
         </div>
     );
 }
