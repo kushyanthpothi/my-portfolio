@@ -453,6 +453,32 @@ const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
 
+const GROQ_MODELS = new Set([
+    'llama-3.3-70b-versatile',
+    'llama-3.1-70b-versatile',
+    'llama-3.1-8b-instant',
+    'llama3-70b-8192',
+    'llama3-8b-8192',
+    'mixtral-8x7b-32768',
+    'gemma2-9b-it',
+    'gemma-7b-it',
+]);
+
+/**
+ * Returns a validated Groq model ID.
+ * If the value stored in Firestore settings is an unrecognised identifier
+ * (e.g. a leftover OpenRouter model ID), DEFAULT_MODEL is used instead.
+ */
+function resolveGroqModel(configModel) {
+    if (configModel && typeof configModel === 'string' && GROQ_MODELS.has(configModel.trim())) {
+        return configModel.trim();
+    }
+    if (configModel) {
+        console.warn(`[WARN] Unrecognised model "${configModel}" — falling back to ${DEFAULT_MODEL}`);
+    }
+    return DEFAULT_MODEL;
+}
+
 /**
  * Sanitizes a secret string by stripping surrounding quotes and whitespace.
  * Returns null if the result is empty, so callers can check for presence cleanly.
@@ -490,7 +516,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
             const payload = {
-                model: config.model || DEFAULT_MODEL,
+                model: resolveGroqModel(config.model),
                 messages,
                 temperature: 0.7,
                 max_tokens: 8000,
