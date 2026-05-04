@@ -452,17 +452,13 @@ function parseJSON(text) {
 const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const NVIDIA_MODEL   = 'meta/llama-4-maverick-17b-128e-instruct';
 
-// Groq — fallback provider used when NVIDIA is unavailable or errors
-const GROQ_API_URL    = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_API_URL       = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 
 const MAX_RETRIES        = 4;
-// Base delay for Groq exponential backoff. Retry-After header overrides this.
 const BASE_RETRY_DELAY_MS = 5000;
-// Pause between consecutive Groq calls within a topic to stay under RPM limit.
 const INTER_CALL_DELAY_MS = 8000;
-// Articles per run. 3 × 4 calls = 12 Groq requests — well within free tier.
-const TOPICS_PER_RUN = 3;
+const TOPICS_PER_RUN      = 3;
 
 const GROQ_MODELS = new Set([
     'llama-3.3-70b-versatile',
@@ -671,16 +667,18 @@ async function main() {
         process.exit(0);
     }
 
-    // Verify that the Groq key is present before doing any work.
-    const groqKeyPresent = !!(sanitizeKey(process.env.GROQ_API_KEY || settings.groqApiKey));
-    if (!groqKeyPresent) {
-        console.error('[ERROR] GROQ_API_KEY is missing. Add it as a GitHub Actions secret named GROQ_API_KEY.');
+    const nvidiaKeyPresent = !!(sanitizeKey(process.env.NVIDIA_KEY || settings.nvidiaApiKey));
+    const groqKeyPresent   = !!(sanitizeKey(process.env.GROQ_API_KEY || settings.groqApiKey));
+
+    if (!nvidiaKeyPresent && !groqKeyPresent) {
+        console.error('[ERROR] No AI provider key found. Set NVIDIA_KEY or GROQ_API_KEY as a GitHub Actions secret.');
         process.exit(1);
     }
 
-    console.log(`Settings loaded. Model: ${settings.model || DEFAULT_MODEL}`);
-    console.log('[DIAG] GROQ_API_KEY: present');
-    console.log(`[DIAG] TAVILY_API_KEY: ${process.env.TAVILY_API_KEY || settings.tavilyApiKey ? 'present' : 'missing (web search disabled)'}`);
+    const groqModel = settings.model || GROQ_DEFAULT_MODEL;
+    console.log(`[DIAG] NVIDIA_KEY:      ${nvidiaKeyPresent ? 'present → primary provider (' + NVIDIA_MODEL + ')' : 'missing'}`);
+    console.log(`[DIAG] GROQ_API_KEY:    ${groqKeyPresent   ? 'present → ' + (nvidiaKeyPresent ? 'fallback (' + groqModel + ')' : 'primary (' + groqModel + ')') : 'missing'}`);
+    console.log(`[DIAG] TAVILY_API_KEY:  ${sanitizeKey(process.env.TAVILY_API_KEY || settings.tavilyApiKey) ? 'present' : 'missing (web search disabled)'}`);
 
     try {
         const today = new Date().toLocaleDateString();
@@ -751,8 +749,6 @@ async function main() {
                 console.log('  → Researching...');
                 const research = await generateAI(topic, 'research', settings);
 
-                // Pause between every Groq call to stay within the free-tier
-                // requests-per-minute limit (typically 30 RPM on the free plan).
                 await new Promise(r => setTimeout(r, INTER_CALL_DELAY_MS));
 
                 console.log('  → Analyzing...');
@@ -792,8 +788,6 @@ async function main() {
                 console.error(`  [ERROR] Topic failed — "${topic}": ${err.message}`);
             }
 
-            // Longer cooldown between topics so the next topic's pipeline
-            // starts with a fresh rate-limit window.
             if (i < uniqueTopics.length - 1) {
                 console.log(`  [COOLDOWN] Waiting 15s before next topic...`);
                 await new Promise(r => setTimeout(r, 15_000));

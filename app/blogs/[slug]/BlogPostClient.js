@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '../../../components/Navbar';
@@ -14,6 +14,53 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
     const [blog, setBlog] = useState(initialBlog);
     const [relatedBlogs, setRelatedBlogs] = useState(initialRelatedBlogs);
     const [loading, setLoading] = useState(!initialBlog);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const carouselRef = useRef(null);
+
+    const openLightbox  = useCallback(() => setLightboxOpen(true),  []);
+    const closeLightbox = useCallback(() => setLightboxOpen(false), []);
+
+    useEffect(() => {
+        if (!lightboxOpen) return;
+        const onKey = (e) => { if (e.key === 'Escape') closeLightbox(); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [lightboxOpen, closeLightbox]);
+
+    useEffect(() => {
+        const track = carouselRef.current;
+        if (!track || relatedBlogs.length === 0) return;
+
+        let paused = false;
+        const onEnter = () => { paused = true; };
+        const onLeave = () => { paused = false; };
+        track.addEventListener('mouseenter', onEnter);
+        track.addEventListener('mouseleave', onLeave);
+
+        const interval = setInterval(() => {
+            if (paused) return;
+            const cardWidth = track.firstElementChild?.offsetWidth + 24 || 360;
+            const maxScroll = track.scrollWidth - track.clientWidth;
+            if (track.scrollLeft >= maxScroll - 4) {
+                track.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                track.scrollBy({ left: cardWidth, behavior: 'smooth' });
+            }
+        }, 3500);
+
+        return () => {
+            clearInterval(interval);
+            track.removeEventListener('mouseenter', onEnter);
+            track.removeEventListener('mouseleave', onLeave);
+        };
+    }, [relatedBlogs]);
+
+    const scrollCarousel = useCallback((dir) => {
+        const track = carouselRef.current;
+        if (!track) return;
+        const cardWidth = track.firstElementChild?.offsetWidth + 24 || 360;
+        track.scrollBy({ left: dir * cardWidth, behavior: 'smooth' });
+    }, []);
 
     useEffect(() => {
         // Only fetch if we don't have initial data (fallback scenario)
@@ -296,7 +343,45 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
                             alt={blog.title}
                             className={styles.featuredImage}
                         />
+                        {!isPreview && (
+                            <button
+                                className={styles.fullscreenBtn}
+                                onClick={openLightbox}
+                                aria-label="View image fullscreen"
+                                title="View fullscreen"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <polyline points="9 21 3 21 3 15"/>
+                                    <line x1="21" y1="3" x2="14" y2="10"/>
+                                    <line x1="3" y1="21" x2="10" y2="14"/>
+                                </svg>
+                            </button>
+                        )}
                     </motion.div>
+                )}
+
+                {lightboxOpen && blog.coverImage && (
+                    <div
+                        className={styles.lightboxOverlay}
+                        onClick={closeLightbox}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Image fullscreen view"
+                    >
+                        <button className={styles.lightboxClose} onClick={closeLightbox} aria-label="Close fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                        <img
+                            src={blog.coverImage}
+                            alt={blog.title}
+                            className={styles.lightboxImage}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
                 )}
 
                 {/* Article Content */}
@@ -315,33 +400,51 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
                 <section className={styles.relatedSection}>
                     <div className={styles.relatedHeader}>
                         <h2 className={styles.relatedTitle}>MORE POSTS</h2>
-                    </div>
-                    <div className={styles.relatedGrid}>
-                        {relatedBlogs.map((relatedBlog, index) => (
-                            <motion.div
-                                key={relatedBlog.slug}
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.1 * index }}
+                        <div className={styles.carouselControls}>
+                            <button
+                                className={styles.carouselArrow}
+                                onClick={() => scrollCarousel(-1)}
+                                aria-label="Previous blogs"
                             >
-                                <Link href={`/blogs/${relatedBlog.slug}`} className={styles.relatedCard} data-cursor-blog>
-                                    <div className={styles.relatedImageWrapper}>
-                                        <img
-                                            src={relatedBlog.coverImage}
-                                            alt={relatedBlog.title}
-                                            className={styles.relatedImage}
-                                        />
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="15 18 9 12 15 6"/>
+                                </svg>
+                            </button>
+                            <button
+                                className={styles.carouselArrow}
+                                onClick={() => scrollCarousel(1)}
+                                aria-label="Next blogs"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div className={styles.carouselTrack} ref={carouselRef}>
+                        {relatedBlogs.map((relatedBlog) => (
+                            <Link
+                                key={relatedBlog.slug}
+                                href={`/blogs/${relatedBlog.slug}`}
+                                className={styles.relatedCard}
+                                data-cursor-blog
+                            >
+                                <div className={styles.relatedImageWrapper}>
+                                    <img
+                                        src={relatedBlog.coverImage}
+                                        alt={relatedBlog.title}
+                                        className={styles.relatedImage}
+                                    />
+                                </div>
+                                <div className={styles.relatedContent}>
+                                    <div className={styles.relatedMeta}>
+                                        <span className={styles.relatedCategory}>{relatedBlog.category}</span>
+                                        <span className={styles.relatedDate}>{relatedBlog.date}</span>
                                     </div>
-                                    <div className={styles.relatedContent}>
-                                        <div className={styles.relatedMeta}>
-                                            <span className={styles.relatedCategory}>{relatedBlog.category}</span>
-                                            <span className={styles.relatedDate}>{relatedBlog.date}</span>
-                                        </div>
-                                        <h3 className={styles.relatedCardTitle}>{relatedBlog.title}</h3>
-                                        <p className={styles.relatedExcerpt}>{relatedBlog.excerpt}</p>
-                                    </div>
-                                </Link>
-                            </motion.div>
+                                    <h3 className={styles.relatedCardTitle}>{relatedBlog.title}</h3>
+                                    <p className={styles.relatedExcerpt}>{relatedBlog.excerpt}</p>
+                                </div>
+                            </Link>
                         ))}
                     </div>
                 </section>

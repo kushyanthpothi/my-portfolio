@@ -4,7 +4,27 @@ import { verifyAuth } from '@/lib/authMiddleware';
 // URL VALIDATION — SSRF prevention
 // ---------------------------------------------------------------------------
 
-const BLOCKED_HOSTS = /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|::1|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+|169\.254\.\d+\.\d+|metadata\.google\.internal)$/i;
+const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
+
+function isPrivateIp(hostname) {
+    // Reject bare numeric IPv4 (any format: decimal, hex, octal)
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+        const parts = hostname.split('.').map(Number);
+        return (
+            parts[0] === 10 ||
+            parts[0] === 127 ||
+            (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+            (parts[0] === 192 && parts[1] === 168) ||
+            (parts[0] === 169 && parts[1] === 254) ||
+            hostname === '0.0.0.0'
+        );
+    }
+    // Reject IPv6 loopback / link-local
+    if (hostname === '::1' || hostname.startsWith('fe80') || hostname.startsWith('[')) return true;
+    // Reject well-known internal hostnames
+    const blocked = ['localhost', 'metadata.google.internal'];
+    return blocked.includes(hostname);
+}
 
 function validatePublicUrl(raw) {
     if (!raw || typeof raw !== 'string') {
@@ -16,12 +36,11 @@ function validatePublicUrl(raw) {
     } catch {
         return { ok: false, url: null, reason: 'Malformed URL' };
     }
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
         return { ok: false, url: null, reason: 'Only http and https URLs are permitted' };
     }
-    const hostname = parsed.hostname.toLowerCase();
-    if (BLOCKED_HOSTS.test(hostname)) {
-        return { ok: false, url: null, reason: 'Requests to private or internal network addresses are not allowed' };
+    if (isPrivateIp(parsed.hostname.toLowerCase())) {
+        return { ok: false, url: null, reason: 'Requests to private or internal addresses are not allowed' };
     }
     return { ok: true, url: parsed };
 }
@@ -32,13 +51,13 @@ function validatePublicUrl(raw) {
 
 function stripAllHtml(html) {
     return html
+        .replace(/<[^>]*>/g, ' ')   // strip tags FIRST — prevents decoded entities forming new tags
         .replace(/&nbsp;/gi, ' ')
         .replace(/&amp;/gi, '&')
         .replace(/&lt;/gi, '<')
         .replace(/&gt;/gi, '>')
         .replace(/&quot;/gi, '"')
         .replace(/&#39;/gi, "'")
-        .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
 }
@@ -48,9 +67,12 @@ function stripAllHtml(html) {
 // ---------------------------------------------------------------------------
 
 async function fetchUrlContent(validatedUrl) {
-    const href = validatedUrl.href;
+    // Reconstruct URL from parsed, validated components — never use raw user string.
+    const safeUrl = new URL(
+        `${validatedUrl.protocol}//${validatedUrl.host}${validatedUrl.pathname}${validatedUrl.search}`
+    );
     try {
-        const response = await fetch(href, {
+        const response = await fetch(safeUrl.href, {
             headers: { 'User-Agent': 'PortfolioBot/1.0 (blog-generator; +https://kushyanthpothi.dev)' },
             next: { revalidate: 0 },
             signal: AbortSignal.timeout(10_000)

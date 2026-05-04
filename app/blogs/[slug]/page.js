@@ -74,7 +74,7 @@ export default async function BlogPostPage(props) {
 
     // Fetch related blogs
     const allBlogs = await fetchBlogs();
-    const relatedBlogs = blog ? allBlogs.filter(b => b.slug !== params.slug).slice(0, 3) : [];
+    const relatedBlogs = blog ? allBlogs.filter(b => b.slug !== params.slug) : [];
 
     const breadcrumbData = generateBreadcrumbSchema([
         { name: 'Home', url: BASE_URL },
