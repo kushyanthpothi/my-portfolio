@@ -423,13 +423,13 @@ function parseJSON(text) {
 }
 
 async function generateAI(promptText, contextMode, config, extraContext = {}) {
-    // --- OPENROUTER HANDLER ---
-    let apiKey = process.env.OPENROUTER_API_KEY || config.openrouterApiKey;
+    // --- GROQ HANDLER ---
+    let apiKey = process.env.GROQ_API_KEY || config.groqApiKey;
     if (apiKey) apiKey = apiKey.replace(/['"]/g, '').trim();
 
     if (!apiKey) {
-        console.error('Missing OpenRouter API Key.');
-        throw new Error('Missing OpenRouter API Key');
+        console.error('Missing Groq API Key.');
+        throw new Error('Missing Groq API Key');
     }
 
     const useSearch = ['discover', 'research'].includes(contextMode);
@@ -449,7 +449,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
     const messages = buildMessages(contextMode, promptText, searchResults, extraContext);
 
-    const DEFAULT_MODEL = 'openai/gpt-oss-120b:free';
+    const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
     let retries = 3;
     let lastError = new Error('Unknown API error');
 
@@ -460,10 +460,10 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
                 messages,
                 temperature: 0.7,
                 max_tokens: 8000,
-                response_format: { type: 'json_object' } // Natively hint OpenRouter to enforce JSON output
+                response_format: { type: 'json_object' }
             };
 
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -474,7 +474,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
             if (!response.ok) {
                 const errBody = await response.text();
-                throw new Error(`OpenRouter API error: ${response.status} ${errBody}`);
+                throw new Error(`Groq API error: ${response.status} ${errBody}`);
             }
 
             const data = await response.json();
@@ -486,58 +486,10 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
             return parseJSON(content);
         } catch (err) {
-            console.warn(`OpenRouter Error (Attempt ${4 - retries}):`, err.message);
+            console.warn(`Groq Error (Attempt ${4 - retries}):`, err.message);
             lastError = err;
             retries--;
             if (retries > 0) await new Promise(r => setTimeout(r, 2000));
-        }
-    }
-
-    // --- GROQ FALLBACK HANDLER ---
-    let groqKey = process.env.GROQ_API_KEY || config.groqApiKey;
-    if (groqKey) groqKey = groqKey.replace(/['"]/g, '').trim();
-
-    if (groqKey) {
-        console.log(`  [FALLBACK] OpenRouter exhausted or failed. Attempting Groq API...`);
-        let groqRetries = 2;
-        while (groqRetries > 0) {
-            try {
-                const payload = {
-                    model: 'llama-3.3-70b-versatile',
-                    messages,
-                    temperature: 0.7,
-                    max_tokens: 8000,
-                    response_format: { type: 'json_object' }
-                };
-
-                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${groqKey}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errBody = await response.text();
-                    throw new Error(`Groq API error: ${response.status} ${errBody}`);
-                }
-
-                const data = await response.json();
-                const content = data?.choices?.[0]?.message?.content;
-                
-                if (!content) {
-                    throw new Error('Received missing or empty content from Groq');
-                }
-                
-                return parseJSON(content);
-            } catch (err) {
-                console.warn(`Groq Error (Attempt ${3 - groqRetries}):`, err.message);
-                lastError = err;
-                groqRetries--;
-                if (groqRetries > 0) await new Promise(r => setTimeout(r, 2000));
-            }
         }
     }
 
@@ -567,14 +519,14 @@ async function main() {
         console.log('Already ran today. Skipping.');
     }
 
-    console.log(`Loaded Settings. Model: ${settings.model || 'default (OpenRouter)'}`);
+    console.log(`Loaded Settings. Model: ${settings.model || 'default (Groq)'}`);
 
-    // Diagnostic: verify OpenRouter key
-    let effectiveKey = process.env.OPENROUTER_API_KEY || settings.openrouterApiKey;
+    // Diagnostic: verify Groq key
+    let effectiveKey = process.env.GROQ_API_KEY || settings.groqApiKey;
     if (effectiveKey) effectiveKey = effectiveKey.replace(/['"]/g, '').trim();
-    const hasOpenRouterKey = !!effectiveKey;
-    const openRouterKeySource = process.env.OPENROUTER_API_KEY ? 'ENV' : (settings.openrouterApiKey ? 'settings' : 'none');
-    console.log(`[DIAG] OPENROUTER_API_KEY: ${hasOpenRouterKey ? `found (source=${openRouterKeySource})` : 'MISSING'}`);
+    const hasGroqKey = !!effectiveKey;
+    const groqKeySource = process.env.GROQ_API_KEY ? 'ENV' : (settings.groqApiKey ? 'settings' : 'none');
+    console.log(`[DIAG] GROQ_API_KEY: ${hasGroqKey ? `found (source=${groqKeySource})` : 'MISSING'}`);
 
     // 2. Perform Generation
     try {
