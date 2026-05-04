@@ -2,56 +2,35 @@ import { verifyAuth } from '@/lib/authMiddleware';
 
 // ---------------------------------------------------------------------------
 // URL VALIDATION — SSRF prevention
-// Only allow public HTTP(S) URLs; block private network ranges and non-web schemes.
 // ---------------------------------------------------------------------------
 
 const BLOCKED_HOSTS = /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|::1|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+|169\.254\.\d+\.\d+|metadata\.google\.internal)$/i;
 
-/**
- * Validates that a URL is safe to fetch on behalf of a user request.
- * Blocks non-HTTP(S) schemes and private / link-local network addresses.
- * @param {string} raw - The raw string provided by the caller.
- * @returns {{ ok: boolean, url: URL|null, reason?: string }}
- */
 function validatePublicUrl(raw) {
     if (!raw || typeof raw !== 'string') {
         return { ok: false, url: null, reason: 'URL must be a non-empty string' };
     }
-
     let parsed;
     try {
         parsed = new URL(raw);
     } catch {
         return { ok: false, url: null, reason: 'Malformed URL' };
     }
-
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
         return { ok: false, url: null, reason: 'Only http and https URLs are permitted' };
     }
-
     const hostname = parsed.hostname.toLowerCase();
     if (BLOCKED_HOSTS.test(hostname)) {
         return { ok: false, url: null, reason: 'Requests to private or internal network addresses are not allowed' };
     }
-
     return { ok: true, url: parsed };
 }
 
 // ---------------------------------------------------------------------------
 // HTML → plain text extraction
-// Uses a complete tag-stripping approach rather than trying to selectively
-// remove specific elements (incomplete multi-character sanitization is a
-// common bypass vector for regex-based HTML filters).
 // ---------------------------------------------------------------------------
 
-/**
- * Strips ALL HTML markup from a string and collapses whitespace.
- * This is intentionally aggressive: the result is used only as LLM input
- * (plain text), so losing formatting is acceptable and safer than partial
- * filtering that can be bypassed.
- */
 function stripAllHtml(html) {
-    // Normalize common HTML entities first so they don't linger as literal text.
     return html
         .replace(/&nbsp;/gi, ' ')
         .replace(/&amp;/gi, '&')
@@ -59,8 +38,6 @@ function stripAllHtml(html) {
         .replace(/&gt;/gi, '>')
         .replace(/&quot;/gi, '"')
         .replace(/&#39;/gi, "'")
-        // Remove ALL tags — no attempt to selectively preserve some — the content
-        // that matters (paragraph text) will still be present after stripping.
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -70,89 +47,45 @@ function stripAllHtml(html) {
 // CONTENT SCRAPER
 // ---------------------------------------------------------------------------
 
-/**
- * Fetches a validated public URL and extracts its readable plain-text content.
- * The URL must already have been validated by validatePublicUrl().
- * @param {URL} validatedUrl - A URL object that has passed validatePublicUrl().
- * @returns {Promise<string>} Extracted plain text, up to 8 000 characters.
- */
 async function fetchUrlContent(validatedUrl) {
-    // Use the normalized href from the URL object — never the raw user string.
     const href = validatedUrl.href;
-
     try {
         const response = await fetch(href, {
-            headers: {
-                // Identify as a bot rather than impersonating a browser to
-                // avoid misleading site analytics.
-                'User-Agent': 'PortfolioBot/1.0 (blog-generator; +https://kushyanthpothi.dev)'
-            },
-            // Next.js fetch option: disable caching for fresh content.
+            headers: { 'User-Agent': 'PortfolioBot/1.0 (blog-generator; +https://kushyanthpothi.dev)' },
             next: { revalidate: 0 },
-            // Hard timeout so a slow/stalled server can't tie up the worker.
             signal: AbortSignal.timeout(10_000)
         });
 
         if (!response.ok) {
-            // Log only the status code and host — not the full URL — to avoid
-            // reflecting user-controlled data into server logs (format-string issue).
             console.warn(`[fetchUrlContent] HTTP ${response.status} from host: ${validatedUrl.hostname}`);
             return '';
         }
 
         const contentType = response.headers.get('content-type') || '';
-        // Only process HTML/text responses; skip binary files.
         if (!contentType.includes('text/')) {
             console.warn(`[fetchUrlContent] Skipped non-text content-type: ${contentType}`);
             return '';
         }
 
         const html = await response.text();
-
-        // Strip ALL HTML tags completely instead of applying incomplete
-        // allow/block lists that can be bypassed via encoding or nesting.
-        const plainText = stripAllHtml(html);
-
-        return plainText.substring(0, 8_000);
+        return stripAllHtml(html).substring(0, 8_000);
     } catch (err) {
-        // Never interpolate the user-supplied URL directly into log messages
-        // (externally-controlled format string). Log only the error message and
-        // the safe, parsed hostname.
         console.error(`[fetchUrlContent] Error fetching ${validatedUrl.hostname}: ${err.message}`);
         return '';
     }
 }
 
 // ---------------------------------------------------------------------------
-// AI SYNTHESIS
+// AI PROVIDERS — NVIDIA (primary) → Groq (fallback)
 // ---------------------------------------------------------------------------
 
-/**
- * Calls the Groq API to synthesize multiple sources into a single blog post.
- * @param {{ url: string, content: string }[]} sources
- * @param {string} groqKey
- */
-async function synthesizeWithGroq(sources, groqKey) {
-    const combinedContent = sources
-        .map((s, i) => `--- SOURCE ${i + 1} ---\nLink: ${s.url}\nContent: ${s.content}`)
-        .join('\n\n');
+const SYSTEM_PROMPT =
+    'You are a professional tech blogger. Your job is to take multiple research sources and ' +
+    'synthesize them into ONE high-quality, professional blog post in Markdown format. ' +
+    'Ensure the narrative is cohesive and not just a collection of summaries. Always return valid JSON only.';
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${groqKey}`
-        },
-        body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You are a professional tech blogger. Your job is to take multiple research sources and synthesize them into ONE high-quality, professional blog post in Markdown format. Ensure the narrative is cohesive and not just a collection of summaries. Always return valid JSON only.'
-                },
-                {
-                    role: 'user',
-                    content: `TASK: Synthesize the following source materials into a single comprehensive blog post.
+function buildUserPrompt(combinedContent) {
+    return `TASK: Synthesize the following source materials into a single comprehensive blog post.
 
 SOURCES:
 ${combinedContent.substring(0, 15_000)}
@@ -165,31 +98,10 @@ REQUIREMENTS:
 5. "content": Full blog post in Markdown. Use H1 for title, H2 for sections.
 6. "coverImage": Use picsum.photos/seed/[keyword]/1280/720 format.
 
-RETURN VALID JSON ONLY.`
-                }
-            ],
-            temperature: 1,
-            max_completion_tokens: 8000,
-            top_p: 1,
-            stop: null,
-            response_format: { type: 'json_object' }
-        })
-    });
+RETURN VALID JSON ONLY.`;
+}
 
-    if (!response.ok) {
-        // Read and discard body; surface only the status code to avoid
-        // leaking internal API error details.
-        await response.text();
-        throw new Error(`Groq API returned HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content;
-
-    if (!content) {
-        throw new Error('Groq API returned an empty response');
-    }
-
+function parseAIContent(content) {
     try {
         return JSON.parse(content);
     } catch {
@@ -201,6 +113,103 @@ RETURN VALID JSON ONLY.`
         }
         return JSON.parse(jsonStr);
     }
+}
+
+/**
+ * Calls NVIDIA NIM API (OpenAI-compatible).
+ * Key is read from the NVIDIA_KEY environment variable.
+ */
+async function callNvidiaAPI(messages, nvidiaKey) {
+    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${nvidiaKey}`,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'meta/llama-4-maverick-17b-128e-instruct',
+            messages,
+            max_tokens: 8000,
+            temperature: 1.00,
+            top_p: 1.00,
+            frequency_penalty: 0.00,
+            presence_penalty: 0.00,
+            stream: false
+        })
+    });
+
+    if (!response.ok) {
+        await response.text();
+        throw new Error(`NVIDIA API returned HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('NVIDIA API returned an empty response');
+    return parseAIContent(content);
+}
+
+/**
+ * Calls Groq API. Used as fallback when NVIDIA is unavailable.
+ */
+async function callGroqAPI(messages, groqKey) {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages,
+            temperature: 1,
+            max_completion_tokens: 8000,
+            top_p: 1,
+            stop: null,
+            response_format: { type: 'json_object' }
+        })
+    });
+
+    if (!response.ok) {
+        await response.text();
+        throw new Error(`Groq API returned HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('Groq API returned an empty response');
+    return parseAIContent(content);
+}
+
+/**
+ * Synthesizes sources into a blog post. Tries NVIDIA first; falls back to Groq.
+ */
+async function synthesizeWithAI(sources, nvidiaKey, groqKey) {
+    const combinedContent = sources
+        .map((s, i) => `--- SOURCE ${i + 1} ---\nLink: ${s.url}\nContent: ${s.content}`)
+        .join('\n\n');
+
+    const messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user',   content: buildUserPrompt(combinedContent) }
+    ];
+
+    if (nvidiaKey) {
+        try {
+            console.log('[generate-blog-from-links] Using NVIDIA API...');
+            return await callNvidiaAPI(messages, nvidiaKey);
+        } catch (err) {
+            console.warn(`[generate-blog-from-links] NVIDIA failed (${err.message}). Falling back to Groq...`);
+        }
+    }
+
+    if (!groqKey) {
+        throw new Error('NVIDIA API failed and GROQ_API_KEY is not configured.');
+    }
+
+    console.log('[generate-blog-from-links] Using Groq API (fallback)...');
+    return await callGroqAPI(messages, groqKey);
 }
 
 // ---------------------------------------------------------------------------
@@ -226,7 +235,6 @@ export async function POST(req) {
             return Response.json({ success: false, error: `A maximum of ${MAX_LINKS} links is allowed per request` }, { status: 400 });
         }
 
-        // Validate every URL before any network I/O — SSRF prevention.
         const validatedLinks = [];
         for (const raw of links) {
             const { ok, url, reason } = validatePublicUrl(raw);
@@ -236,12 +244,13 @@ export async function POST(req) {
             validatedLinks.push(url);
         }
 
-        const groqKey = (process.env.GROQ_API_KEY || '').replace(/['"]/g, '').trim();
-        if (!groqKey) {
-            return Response.json({ success: false, error: 'GROQ_API_KEY is not configured on the server' }, { status: 500 });
+        const nvidiaKey = (process.env.NVIDIA_KEY || '').replace(/['"]/g, '').trim() || null;
+        const groqKey   = (process.env.GROQ_API_KEY || '').replace(/['"]/g, '').trim() || null;
+
+        if (!nvidiaKey && !groqKey) {
+            return Response.json({ success: false, error: 'No AI provider configured on the server.' }, { status: 500 });
         }
 
-        // Fetch content from all validated links concurrently.
         console.log(`[generate-blog-from-links] Fetching ${validatedLinks.length} source(s)...`);
         const fetchResults = await Promise.all(
             validatedLinks.map(async (url) => {
@@ -256,7 +265,7 @@ export async function POST(req) {
         }
 
         console.log(`[generate-blog-from-links] Synthesizing from ${validSources.length} valid source(s)...`);
-        const genData = await synthesizeWithGroq(validSources, groqKey);
+        const genData = await synthesizeWithAI(validSources, nvidiaKey, groqKey);
 
         const finalBlogData = {
             ...genData,

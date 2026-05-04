@@ -445,20 +445,23 @@ function parseJSON(text) {
 }
 
 // ---------------------------------------------------------------------------
-// AI GENERATION ENGINE — GROQ
+// AI GENERATION ENGINE — NVIDIA (primary) → GROQ (fallback)
 // ---------------------------------------------------------------------------
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
-const MAX_RETRIES = 4;
-// Base delay for exponential backoff. On a 429 the Retry-After header
-// overrides this value.
+// NVIDIA NIM — primary provider (llama-4-maverick, fast & generous limits)
+const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
+const NVIDIA_MODEL   = 'meta/llama-4-maverick-17b-128e-instruct';
+
+// Groq — fallback provider used when NVIDIA is unavailable or errors
+const GROQ_API_URL    = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_DEFAULT_MODEL = 'llama-3.3-70b-versatile';
+
+const MAX_RETRIES        = 4;
+// Base delay for Groq exponential backoff. Retry-After header overrides this.
 const BASE_RETRY_DELAY_MS = 5000;
-// Delay injected between every individual Groq call within a topic pipeline
-// to keep requests-per-minute well below the free-tier ceiling.
+// Pause between consecutive Groq calls within a topic to stay under RPM limit.
 const INTER_CALL_DELAY_MS = 8000;
-// Number of topics to generate per run. Lowered to 3 so the full pipeline
-// (3 topics × 4 calls = 12 requests) stays safely within rate limits.
+// Articles per run. 3 × 4 calls = 12 Groq requests — well within free tier.
 const TOPICS_PER_RUN = 3;
 
 const GROQ_MODELS = new Set([
@@ -482,9 +485,9 @@ function resolveGroqModel(configModel) {
         return configModel.trim();
     }
     if (configModel) {
-        console.warn(`[WARN] Unrecognised model "${configModel}" — falling back to ${DEFAULT_MODEL}`);
+        console.warn(`[WARN] Unrecognised model "${configModel}" — falling back to ${GROQ_DEFAULT_MODEL}`);
     }
-    return DEFAULT_MODEL;
+    return GROQ_DEFAULT_MODEL;
 }
 
 /**
@@ -497,11 +500,99 @@ function sanitizeKey(raw) {
     return cleaned.length > 0 ? cleaned : null;
 }
 
+// ---------------------------------------------------------------------------
+// PROVIDER IMPLEMENTATIONS
+// ---------------------------------------------------------------------------
+
+/**
+ * Calls the NVIDIA NIM API (OpenAI-compatible endpoint).
+ * NVIDIA does not support response_format, so JSON is enforced via the
+ * system prompt and parsed by parseJSON() on the response.
+ */
+async function callNvidiaAPI(messages, nvidiaKey) {
+    const response = await fetch(NVIDIA_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${nvidiaKey}`,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            model: NVIDIA_MODEL,
+            messages,
+            max_tokens: 4096,
+            temperature: 1.00,
+            top_p: 1.00,
+            frequency_penalty: 0.00,
+            presence_penalty: 0.00,
+            stream: false
+        })
+    });
+
+    if (!response.ok) {
+        await response.text();
+        throw new Error(`NVIDIA API returned HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('NVIDIA API returned an empty response');
+    return parseJSON(content);
+}
+
+/**
+ * Calls the Groq API with retry-after and exponential backoff handling.
+ * Used as fallback when NVIDIA is unavailable.
+ */
+async function callGroqAPI(messages, groqModel, groqKey, attempt) {
+    const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+            model: groqModel,
+            messages,
+            temperature: 1,
+            max_completion_tokens: 4096,
+            top_p: 1,
+            stop: null,
+            response_format: { type: 'json_object' }
+        })
+    });
+
+    if (!response.ok) {
+        if (response.status === 429) {
+            const retryAfter = response.headers.get('retry-after');
+            const waitMs = retryAfter
+                ? Math.ceil(parseFloat(retryAfter)) * 1000
+                : BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+            console.warn(`  [Groq] Rate limited (429). Waiting ${waitMs / 1000}s before retry...`);
+            await response.text();
+            await new Promise(r => setTimeout(r, waitMs));
+            throw new Error('Groq API returned HTTP 429 (rate limited)');
+        }
+        await response.text();
+        throw new Error(`Groq API returned HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('Groq API returned an empty response body');
+    return parseJSON(content);
+}
+
+// ---------------------------------------------------------------------------
+// UNIFIED AI CALL — NVIDIA primary, Groq fallback
+// ---------------------------------------------------------------------------
+
 async function generateAI(promptText, contextMode, config, extraContext = {}) {
-    // Env var takes precedence over Firestore settings; never log the value.
-    const apiKey = sanitizeKey(process.env.GROQ_API_KEY || config.groqApiKey);
-    if (!apiKey) {
-        throw new Error('GROQ_API_KEY is not configured. Set it as a GitHub Actions secret.');
+    const nvidiaKey = sanitizeKey(process.env.NVIDIA_KEY || config.nvidiaApiKey);
+    const groqKey   = sanitizeKey(process.env.GROQ_API_KEY  || config.groqApiKey);
+
+    if (!nvidiaKey && !groqKey) {
+        throw new Error('No AI provider configured. Set NVIDIA_KEY or GROQ_API_KEY as a GitHub Actions secret.');
     }
 
     const useSearch = ['discover', 'research'].includes(contextMode);
@@ -519,61 +610,31 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
 
     const messages = buildMessages(contextMode, promptText, searchResults, extraContext);
 
+    // ── 1. Try NVIDIA first ──────────────────────────────────────────────────
+    if (nvidiaKey) {
+        try {
+            console.log(`  → [NVIDIA] ${NVIDIA_MODEL}`);
+            return await callNvidiaAPI(messages, nvidiaKey);
+        } catch (err) {
+            console.warn(`  [NVIDIA] Failed (${err.message}). Falling back to Groq...`);
+        }
+    }
+
+    // ── 2. Groq fallback with exponential backoff ────────────────────────────
+    if (!groqKey) {
+        throw new Error('NVIDIA API failed and GROQ_API_KEY is not configured.');
+    }
+
+    const groqModel = resolveGroqModel(config.model);
     let lastError = new Error('Unknown Groq API error');
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-            const payload = {
-                model: resolveGroqModel(config.model),
-                messages,
-                temperature: 1,
-                // 4096 keeps us well within the free-tier tokens-per-minute
-                // budget. 8000 was burning quota too fast and causing 429s.
-                max_completion_tokens: 4096,
-                top_p: 1,
-                stop: null,
-                response_format: { type: 'json_object' }
-            };
-
-            const response = await fetch(GROQ_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                if (response.status === 429) {
-                    // Honor the Retry-After header returned by Groq.
-                    // If absent, fall back to exponential backoff.
-                    const retryAfter = response.headers.get('retry-after');
-                    const waitMs = retryAfter
-                        ? Math.ceil(parseFloat(retryAfter)) * 1000
-                        : BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
-                    console.warn(`  [Groq] Rate limited (429). Waiting ${waitMs / 1000}s before retry...`);
-                    await response.text(); // consume body
-                    await new Promise(r => setTimeout(r, waitMs));
-                    throw new Error('Groq API returned HTTP 429 (rate limited)');
-                }
-                await response.text();
-                throw new Error(`Groq API returned HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
-            const content = data?.choices?.[0]?.message?.content;
-
-            if (!content) {
-                throw new Error('Groq API returned an empty response body');
-            }
-
-            return parseJSON(content);
+            console.log(`  → [Groq] ${groqModel} (attempt ${attempt}/${MAX_RETRIES})`);
+            return await callGroqAPI(messages, groqModel, groqKey, attempt);
         } catch (err) {
             lastError = err;
             console.warn(`  [Groq] Attempt ${attempt}/${MAX_RETRIES} failed: ${err.message}`);
-            // Only apply additional backoff if this is NOT a 429
-            // (the 429 branch already waited above).
             if (attempt < MAX_RETRIES && !err.message.includes('429')) {
                 const backoff = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
                 await new Promise(r => setTimeout(r, backoff));

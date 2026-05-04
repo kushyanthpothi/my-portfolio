@@ -4,15 +4,6 @@ import { verifyAuth } from '@/lib/authMiddleware';
 // GITHUB URL VALIDATION — SSRF prevention + allowlist enforcement
 // ---------------------------------------------------------------------------
 
-/**
- * Parses a GitHub repository URL and extracts owner/repo components.
- * Validates that the URL strictly targets github.com and that owner/repo
- * segments are well-formed identifiers, preventing path-traversal and
- * SSRF attacks through crafted repository names.
- *
- * @param {string} raw - The raw URL string provided by the caller.
- * @returns {{ owner: string, repo: string } | null}
- */
 function parseGithubUrl(raw) {
     if (!raw || typeof raw !== 'string') return null;
 
@@ -23,18 +14,13 @@ function parseGithubUrl(raw) {
         return null;
     }
 
-    // Only github.com is an acceptable target — no SSRF via other hosts.
     if (parsed.hostname !== 'github.com') return null;
-    // Only allow HTTP(S) schemes.
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
 
-    // Path must be exactly: /<owner>/<repo> (with optional trailing slash).
-    // GitHub identifiers allow letters, digits, hyphens, underscores, and dots.
     const segments = parsed.pathname.replace(/\/$/, '').split('/').filter(Boolean);
     if (segments.length < 2) return null;
 
     const [owner, repo] = segments;
-
     const GITHUB_IDENT = /^[a-zA-Z0-9_.-]{1,100}$/;
     if (!GITHUB_IDENT.test(owner) || !GITHUB_IDENT.test(repo)) return null;
 
@@ -45,39 +31,24 @@ function parseGithubUrl(raw) {
 // IMAGE EXTRACTION
 // ---------------------------------------------------------------------------
 
-/**
- * Extracts image URLs from markdown content and resolves relative paths.
- * Validates each extracted URL to ensure it is an absolute HTTP(S) URL,
- * blocking javascript: and data: URIs that could be used for XSS.
- *
- * Previously the badge filter used `url.includes('img.shields.io')` which
- * is an incomplete substring check (issue #10). We now use an explicit
- * URL parse so the hostname comparison cannot be bypassed via crafted paths.
- */
 function extractImages(markdown, baseUrl, branch = 'main') {
     const BADGE_HOSTNAMES = new Set([
-        'img.shields.io',
-        'shields.io',
-        'github.com',       // GitHub badge CDN paths
-        'badge.fury.io',
-        'travis-ci.org',
-        'travis-ci.com',
-        'circleci.com',
-        'codecov.io',
+        'img.shields.io', 'shields.io', 'github.com',
+        'badge.fury.io', 'travis-ci.org', 'travis-ci.com',
+        'circleci.com', 'codecov.io',
     ]);
 
-    const mdRegex = /!\[.*?\]\((.*?)\)/g;
+    const mdRegex   = /!\[.*?\]\((.*?)\)/g;
     const htmlRegex = /<img.*?src="(.*?)".*?>/g;
 
     const raw = [];
     let match;
-    while ((match = mdRegex.exec(markdown)) !== null) raw.push(match[1]);
+    while ((match = mdRegex.exec(markdown))   !== null) raw.push(match[1]);
     while ((match = htmlRegex.exec(markdown)) !== null) raw.push(match[1]);
 
     return raw
         .map(href => {
             if (!href) return null;
-            // Resolve relative paths against the GitHub raw content base.
             if (!href.startsWith('http')) {
                 return `${baseUrl}/${branch}/${href.replace(/^\.\//, '')}`;
             }
@@ -85,73 +56,29 @@ function extractImages(markdown, baseUrl, branch = 'main') {
         })
         .filter(href => {
             if (!href) return false;
-
             let parsed;
             try {
                 parsed = new URL(href);
             } catch {
                 return false;
             }
-
-            // Block non-HTTP(S) schemes (javascript:, data:, etc.)
             if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
-
-            // Exclude badge/shield domains using a proper hostname comparison
-            // (fixes issue #10 — incomplete URL substring sanitization).
             if (BADGE_HOSTNAMES.has(parsed.hostname)) return false;
-
-            // Exclude by path keywords as a secondary heuristic (not primary).
             const path = parsed.pathname.toLowerCase();
             if (path.includes('/badge/') || path.includes('/shields/')) return false;
-
             return true;
         });
 }
 
 // ---------------------------------------------------------------------------
-// GROQ AI GENERATION
+// AI PROVIDERS — NVIDIA (primary) → Groq (fallback)
 // ---------------------------------------------------------------------------
 
-/**
- * Calls the Groq API to generate a structured project description from a README.
- * @param {string} prompt
- * @param {string} groqKey
- */
-async function generateWithGroq(prompt, groqKey) {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${groqKey}`
-        },
-        body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You are a professional portfolio project writer. You extract key information from a GitHub README and write a compelling case study. Always return valid JSON only.'
-                },
-                { role: 'user', content: prompt }
-            ],
-            temperature: 1,
-            max_completion_tokens: 4000,
-            top_p: 1,
-            stop: null,
-            response_format: { type: 'json_object' }
-        })
-    });
+const SYSTEM_PROMPT =
+    'You are a professional portfolio project writer. You extract key information from a ' +
+    'GitHub README and write a compelling case study. Always return valid JSON only.';
 
-    if (!response.ok) {
-        // Read and discard body to avoid leaking internal error details.
-        await response.text();
-        throw new Error(`Groq API returned HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content;
-
-    if (!content) throw new Error('Groq API returned an empty response');
-
+function parseAIContent(content) {
     try {
         return JSON.parse(content);
     } catch {
@@ -163,6 +90,100 @@ async function generateWithGroq(prompt, groqKey) {
         }
         return JSON.parse(jsonStr);
     }
+}
+
+/**
+ * Calls NVIDIA NIM API (OpenAI-compatible).
+ * Key is read from the NVIDIA_KEY environment variable.
+ */
+async function callNvidiaAPI(messages, nvidiaKey) {
+    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${nvidiaKey}`,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'meta/llama-4-maverick-17b-128e-instruct',
+            messages,
+            max_tokens: 4000,
+            temperature: 1.00,
+            top_p: 1.00,
+            frequency_penalty: 0.00,
+            presence_penalty: 0.00,
+            stream: false
+        })
+    });
+
+    if (!response.ok) {
+        await response.text();
+        throw new Error(`NVIDIA API returned HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('NVIDIA API returned an empty response');
+    return parseAIContent(content);
+}
+
+/**
+ * Calls Groq API. Used as fallback when NVIDIA is unavailable.
+ */
+async function callGroqAPI(messages, groqKey) {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages,
+            temperature: 1,
+            max_completion_tokens: 4000,
+            top_p: 1,
+            stop: null,
+            response_format: { type: 'json_object' }
+        })
+    });
+
+    if (!response.ok) {
+        await response.text();
+        throw new Error(`Groq API returned HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('Groq API returned an empty response');
+    return parseAIContent(content);
+}
+
+/**
+ * Generates project data from a README prompt.
+ * Tries NVIDIA first; falls back to Groq on any error.
+ */
+async function generateWithAI(prompt, nvidiaKey, groqKey) {
+    const messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user',   content: prompt }
+    ];
+
+    if (nvidiaKey) {
+        try {
+            console.log('[generate-project] Using NVIDIA API...');
+            return await callNvidiaAPI(messages, nvidiaKey);
+        } catch (err) {
+            console.warn(`[generate-project] NVIDIA failed (${err.message}). Falling back to Groq...`);
+        }
+    }
+
+    if (!groqKey) {
+        throw new Error('NVIDIA API failed and GROQ_API_KEY is not configured.');
+    }
+
+    console.log('[generate-project] Using Groq API (fallback)...');
+    return await callGroqAPI(messages, groqKey);
 }
 
 // ---------------------------------------------------------------------------
@@ -182,7 +203,6 @@ export async function POST(req) {
             return Response.json({ success: false, error: 'GitHub URL is required' }, { status: 400 });
         }
 
-        // Strictly validate and parse the URL — SSRF prevention (issues #13, #14).
         const repoInfo = parseGithubUrl(githubUrl);
         if (!repoInfo) {
             return Response.json({ success: false, error: 'Invalid GitHub URL. Only public github.com repositories are supported.' }, { status: 400 });
@@ -190,14 +210,13 @@ export async function POST(req) {
 
         const { owner, repo } = repoInfo;
 
-        const groqKey = (process.env.GROQ_API_KEY || '').replace(/['"]/g, '').trim();
-        if (!groqKey) {
-            return Response.json({ success: false, error: 'GROQ_API_KEY is not configured on the server' }, { status: 500 });
+        const nvidiaKey = (process.env.NVIDIA_KEY || '').replace(/['"]/g, '').trim() || null;
+        const groqKey   = (process.env.GROQ_API_KEY || '').replace(/['"]/g, '').trim() || null;
+
+        if (!nvidiaKey && !groqKey) {
+            return Response.json({ success: false, error: 'No AI provider configured on the server.' }, { status: 500 });
         }
 
-        // Fetch repo metadata and README from GitHub.
-        // The owner and repo values have already been validated against a strict
-        // identifier regex, so they are safe to interpolate into these URLs.
         console.log(`[generate-project] Fetching GitHub data for ${owner}/${repo}...`);
 
         const [repoResponse, readmeResponse] = await Promise.all([
@@ -220,7 +239,6 @@ export async function POST(req) {
         const defaultBranch = repoData.default_branch || 'main';
         const readmeText = await readmeResponse.text();
 
-        // Extract and validate images from the README.
         const baseUrl = `https://raw.githubusercontent.com/${owner}/${repo}`;
         const images = extractImages(readmeText, baseUrl, defaultBranch);
         const heroImage = images.length > 0 ? images[0] : '';
@@ -250,8 +268,7 @@ REQUIREMENTS:
 
 RETURN ONLY VALID JSON.`;
 
-        console.log('[generate-project] Generating project data with Groq...');
-        const aiData = await generateWithGroq(prompt, groqKey);
+        const aiData = await generateWithAI(prompt, nvidiaKey, groqKey);
 
         const finalProjectData = {
             ...aiData,
