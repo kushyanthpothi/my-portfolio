@@ -1,5 +1,10 @@
+'use strict';
+
 const { db } = require('../lib/admin');
 
+// ---------------------------------------------------------------------------
+// IMAGE UTILITIES
+// ---------------------------------------------------------------------------
 
 function getPlaceholderImage(category, topic = '') {
     const topicSeed = topic
@@ -61,6 +66,8 @@ async function searchAndVerifyImage(topic, category, tavilyKey) {
         const response = await fetch('https://api.tavily.com/search', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            // The Tavily API requires the key in the body per its spec.
+            // It is never echoed to logs.
             body: JSON.stringify({
                 api_key: tavilyKey,
                 query,
@@ -79,10 +86,9 @@ async function searchAndVerifyImage(topic, category, tavilyKey) {
         for (const imgUrl of images) {
             if (!validateImageUrl(imgUrl)) continue;
             if (await verifyImageUrl(imgUrl)) {
-                console.log(`  [IMG-CHECK] ✓ Valid image found: ${imgUrl}`);
+                console.log(`  [IMG-CHECK] ✓ Valid image found`);
                 return imgUrl;
             }
-            console.log(`  [IMG-CHECK] ✗ Rejected: ${imgUrl}`);
         }
 
         console.log(`  [IMG-CHECK] No valid images found via Tavily search`);
@@ -93,12 +99,14 @@ async function searchAndVerifyImage(topic, category, tavilyKey) {
     }
 }
 
-// Priority: metadata.coverImage → research.imageUrls[] → Tavily image search → placeholder
+/**
+ * Resolves the best available cover image using a priority chain:
+ * metadata.coverImage → research.imageUrls[] → Tavily image search → placeholder
+ */
 async function resolveCoverImage(metadata, research, topic, settings) {
-    const tavilyKey = settings.tavilyApiKey || process.env.TAVILY_API_KEY;
+    const tavilyKey = process.env.TAVILY_API_KEY || settings.tavilyApiKey;
     const category = metadata.category;
 
-    // 1. metadata.coverImage
     if (metadata.coverImage) {
         console.log(`  [IMG] Checking metadata image...`);
         if (await verifyImageUrl(metadata.coverImage)) {
@@ -108,39 +116,37 @@ async function resolveCoverImage(metadata, research, topic, settings) {
         console.log(`  [IMG] ✗ Metadata image invalid or unreachable`);
     }
 
-    // 2. research.imageUrls[]
     const researchImages = research.imageUrls || [];
     if (researchImages.length > 0) {
         console.log(`  [IMG] Checking ${researchImages.length} research image(s)...`);
         for (const url of researchImages) {
             if (await verifyImageUrl(url)) {
-                console.log(`  [IMG] ✓ Research image OK: ${url}`);
+                console.log(`  [IMG] ✓ Research image OK`);
                 return url;
             }
-            console.log(`  [IMG] ✗ Research image invalid: ${url}`);
         }
     }
 
-    // 3. Tavily image search
     if (tavilyKey) {
         const found = await searchAndVerifyImage(topic, category, tavilyKey);
         if (found) return found;
     }
 
-    // 4. Picsum placeholder (guaranteed fallback)
     const placeholder = getPlaceholderImage(category, topic);
-    console.log(`  [IMG] Using placeholder: ${placeholder}`);
+    console.log(`  [IMG] Using placeholder fallback`);
     return placeholder;
 }
 
-// --- FIRESTORE CRUD ---
+// ---------------------------------------------------------------------------
+// FIRESTORE CRUD
+// ---------------------------------------------------------------------------
 
 async function getSettings(id) {
     try {
         const snap = await db.collection('settings').doc(id).get();
         return snap.exists ? snap.data() : null;
     } catch (err) {
-        console.error('Error fetching settings:', err);
+        console.error('Error fetching settings:', err.message);
         return null;
     }
 }
@@ -150,7 +156,7 @@ async function saveSettings(id, data) {
         await db.collection('settings').doc(id).set(data, { merge: true });
         return { success: true };
     } catch (err) {
-        console.error('Error saving settings:', err);
+        console.error('Error saving settings:', err.message);
         return { success: false, error: err };
     }
 }
@@ -170,7 +176,7 @@ async function addBlog(blogData) {
         });
         return { success: true, id: slug };
     } catch (err) {
-        console.error('Error adding blog:', err);
+        console.error('Error adding blog:', err.message);
         return { success: false, error: err };
     }
 }
@@ -180,12 +186,14 @@ async function fetchExistingBlogs() {
         const snap = await db.collection('blogs').get();
         return snap.docs.map(d => ({ ...d.data(), slug: d.id }));
     } catch (err) {
-        console.error('Error fetching blogs:', err);
+        console.error('Error fetching blogs:', err.message);
         return [];
     }
 }
 
-// --- TAVILY SEARCH ---
+// ---------------------------------------------------------------------------
+// TAVILY SEARCH
+// ---------------------------------------------------------------------------
 
 async function tavilySearch(query, apiKey, isNews = false) {
     if (!apiKey) {
@@ -197,7 +205,7 @@ async function tavilySearch(query, apiKey, isNews = false) {
         const payload = {
             api_key: apiKey,
             query,
-            search_depth: 'advanced', // upgraded from basic to fetch more reliable results
+            search_depth: 'advanced',
             include_answer: true,
             include_images: true,
             max_results: 5
@@ -205,7 +213,7 @@ async function tavilySearch(query, apiKey, isNews = false) {
 
         if (isNews) {
             payload.topic = 'news';
-            payload.days = 2; // only fetch news from the last couple of days
+            payload.days = 2;
         }
 
         const response = await fetch('https://api.tavily.com/search', {
@@ -214,7 +222,8 @@ async function tavilySearch(query, apiKey, isNews = false) {
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error(`Tavily API error: ${response.statusText}`);
+        if (!response.ok) throw new Error(`Tavily API error: ${response.status}`);
+
         const data = await response.json();
         return {
             answer: data.answer || '',
@@ -226,12 +235,14 @@ async function tavilySearch(query, apiKey, isNews = false) {
             }))
         };
     } catch (err) {
-        console.log(`[WARNING] Search failed: ${err.message}`);
+        console.log(`[WARNING] Tavily search failed: ${err.message}`);
         return null;
     }
 }
 
-// --- PROMPT GENERATION (shared between OpenRouter and Gemini paths) ---
+// ---------------------------------------------------------------------------
+// PROMPT BUILDERS
+// ---------------------------------------------------------------------------
 
 const SYSTEM_PROMPT = 'You are an expert AI assistant. Always respond with valid JSON only. Never include markdown code blocks.';
 
@@ -239,11 +250,13 @@ function buildMessages(contextMode, promptText, searchResults, extraContext = {}
     const today = new Date().toLocaleDateString();
 
     if (contextMode === 'discover') {
-        const searchCtx = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
+        const searchCtx = searchResults
+            ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}`
+            : '';
         return [
             { role: 'system', content: SYSTEM_PROMPT },
             {
-                role: 'user', content: `You are an expert news curator. We need exactly 5 highly-trending tech headlines from the last 24-48 hours. 
+                role: 'user', content: `You are an expert news curator. We need exactly 5 highly-trending tech headlines from the last 24-48 hours.
 
 User Criteria: ${promptText}
 
@@ -261,12 +274,15 @@ ${searchCtx}
 CRITICAL: You MUST extract the 5 topics strictly from the WEB SEARCH RESULTS provided above. Do not invent topics older than a few days.
 
 Return ONLY valid JSON without markdown:
-{ "topics": ["Specific Headline 1", "Headline 2", "Headline 3", "Headline 4", "Headline 5"] }` }
+{ "topics": ["Specific Headline 1", "Headline 2", "Headline 3", "Headline 4", "Headline 5"] }`
+            }
         ];
     }
 
     if (contextMode === 'research') {
-        const searchCtx = searchResults ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}` : '';
+        const searchCtx = searchResults
+            ? `\n\nWEB SEARCH RESULTS:\n${JSON.stringify(searchResults, null, 2)}`
+            : '';
         return [
             { role: 'system', content: SYSTEM_PROMPT },
             {
@@ -283,7 +299,8 @@ Return ONLY valid JSON without markdown:
     "quotes": ["quote1"],
     "imageUrls": ["url1", "url2"],
     "publishedDate": "${today}"
-}` }
+}`
+            }
         ];
     }
 
@@ -318,7 +335,8 @@ Return ONLY valid JSON without markdown:
     "outline": ["intro", "section1", "section2", "conclusion"],
     "hook": "opening hook",
     "tone": "informative"
-}` }
+}`
+            }
         ];
     }
 
@@ -342,7 +360,8 @@ Return ONLY valid JSON without markdown:
     "excerpt": "Brief 1-2 sentence summary",
     "category": "${analysis.category}",
     "coverImage": "https://example.com/image.jpg"
-}` }
+}`
+            }
         ];
     }
 
@@ -388,23 +407,26 @@ REQUIREMENTS:
 - Natural flow from introduction to conclusion
 
 Return ONLY valid JSON without markdown code blocks:
-{ "content": "# Title\\n\\nOpening paragraph...\\n\\n## Section 1\\n\\nParagraphs...\\n\\n## Section 2\\n\\nParagraphs..." }` }
+{ "content": "# Title\\n\\nOpening paragraph...\\n\\n## Section 1\\n\\nParagraphs...\\n\\n## Section 2\\n\\nParagraphs..." }`
+            }
         ];
     }
 
     return [];
 }
 
-// --- AI GENERATION ENGINE ---
+// ---------------------------------------------------------------------------
+// JSON PARSER
+// ---------------------------------------------------------------------------
 
 function parseJSON(text) {
     if (!text || typeof text !== 'string') {
         throw new Error('API returned empty or non-string response');
     }
 
-    // Completely strip <think>...</think> blocks generated by reasoning models
+    // Strip <think>...</think> blocks generated by reasoning models
     let jsonStr = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-    // Strip markdown code block formatting
+    // Strip markdown code block wrappers
     jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
 
     const openBrace = jsonStr.indexOf('{');
@@ -422,38 +444,50 @@ function parseJSON(text) {
     throw new Error('No JSON object found in the AI response.');
 }
 
-async function generateAI(promptText, contextMode, config, extraContext = {}) {
-    // --- GROQ HANDLER ---
-    let apiKey = process.env.GROQ_API_KEY || config.groqApiKey;
-    if (apiKey) apiKey = apiKey.replace(/['"]/g, '').trim();
+// ---------------------------------------------------------------------------
+// AI GENERATION ENGINE — GROQ
+// ---------------------------------------------------------------------------
 
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2000;
+
+/**
+ * Sanitizes a secret string by stripping surrounding quotes and whitespace.
+ * Returns null if the result is empty, so callers can check for presence cleanly.
+ */
+function sanitizeKey(raw) {
+    if (!raw || typeof raw !== 'string') return null;
+    const cleaned = raw.replace(/['"]/g, '').trim();
+    return cleaned.length > 0 ? cleaned : null;
+}
+
+async function generateAI(promptText, contextMode, config, extraContext = {}) {
+    // Env var takes precedence over Firestore settings; never log the value.
+    const apiKey = sanitizeKey(process.env.GROQ_API_KEY || config.groqApiKey);
     if (!apiKey) {
-        console.error('Missing Groq API Key.');
-        throw new Error('Missing Groq API Key');
+        throw new Error('GROQ_API_KEY is not configured. Set it as a GitHub Actions secret.');
     }
 
     const useSearch = ['discover', 'research'].includes(contextMode);
     const today = new Date().toLocaleDateString();
+    const tavilyKey = sanitizeKey(process.env.TAVILY_API_KEY || config.tavilyApiKey);
 
     let searchResults = null;
-    const tavilyKey = config.tavilyApiKey || process.env.TAVILY_API_KEY;
-
     if (useSearch && tavilyKey) {
         const isNews = contextMode === 'discover';
         const searchQuery = isNews ? `trending tech news ${today}` : promptText;
         console.log(`  → Web Search: "${searchQuery}"`);
-        // Pass isNews to limit to the last 2 days of news
         searchResults = await tavilySearch(searchQuery, tavilyKey, isNews);
         if (searchResults) console.log(`  ✓ Found ${searchResults.results?.length || 0} results`);
     }
 
     const messages = buildMessages(contextMode, promptText, searchResults, extraContext);
 
-    const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
-    let retries = 3;
-    let lastError = new Error('Unknown API error');
+    let lastError = new Error('Unknown Groq API error');
 
-    while (retries > 0) {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
             const payload = {
                 model: config.model || DEFAULT_MODEL,
@@ -463,7 +497,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
                 response_format: { type: 'json_object' }
             };
 
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            const response = await fetch(GROQ_API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -473,38 +507,41 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
             });
 
             if (!response.ok) {
-                const errBody = await response.text();
-                throw new Error(`Groq API error: ${response.status} ${errBody}`);
+                // Read and discard body to avoid leaking tokens; surface only the status code.
+                await response.text();
+                throw new Error(`Groq API returned HTTP ${response.status}`);
             }
 
             const data = await response.json();
             const content = data?.choices?.[0]?.message?.content;
 
             if (!content) {
-                throw new Error('Received missing or empty content from AI provider');
+                throw new Error('Groq API returned an empty response body');
             }
 
             return parseJSON(content);
         } catch (err) {
-            console.warn(`Groq Error (Attempt ${4 - retries}):`, err.message);
             lastError = err;
-            retries--;
-            if (retries > 0) await new Promise(r => setTimeout(r, 2000));
+            console.warn(`  [Groq] Attempt ${attempt}/${MAX_RETRIES} failed: ${err.message}`);
+            if (attempt < MAX_RETRIES) {
+                await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+            }
         }
     }
 
     throw lastError;
 }
 
-// --- MAIN EXECUTION ---
+// ---------------------------------------------------------------------------
+// MAIN EXECUTION
+// ---------------------------------------------------------------------------
 
 async function main() {
     console.log('Starting AI Auto Blog Script...');
 
-    // 1. Load Settings
     const settings = await getSettings('ai_automation');
     if (!settings) {
-        console.log("No AI Automation settings found in DB. Exiting.");
+        console.log('No AI Automation settings found in Firestore. Exiting.');
         process.exit(0);
     }
 
@@ -513,25 +550,29 @@ async function main() {
         process.exit(0);
     }
 
+    // Skip if already ran today (UTC date comparison)
     const lastRun = settings.lastRun ? new Date(settings.lastRun) : null;
     const now = new Date();
     if (lastRun && lastRun.toDateString() === now.toDateString()) {
         console.log('Already ran today. Skipping.');
+        process.exit(0);
     }
 
-    console.log(`Loaded Settings. Model: ${settings.model || 'default (Groq)'}`);
+    // Verify that the Groq key is present before doing any work.
+    const groqKeyPresent = !!(sanitizeKey(process.env.GROQ_API_KEY || settings.groqApiKey));
+    if (!groqKeyPresent) {
+        console.error('[ERROR] GROQ_API_KEY is missing. Add it as a GitHub Actions secret named GROQ_API_KEY.');
+        process.exit(1);
+    }
 
-    // Diagnostic: verify Groq key
-    let effectiveKey = process.env.GROQ_API_KEY || settings.groqApiKey;
-    if (effectiveKey) effectiveKey = effectiveKey.replace(/['"]/g, '').trim();
-    const hasGroqKey = !!effectiveKey;
-    const groqKeySource = process.env.GROQ_API_KEY ? 'ENV' : (settings.groqApiKey ? 'settings' : 'none');
-    console.log(`[DIAG] GROQ_API_KEY: ${hasGroqKey ? `found (source=${groqKeySource})` : 'MISSING'}`);
+    console.log(`Settings loaded. Model: ${settings.model || DEFAULT_MODEL}`);
+    console.log('[DIAG] GROQ_API_KEY: present');
+    console.log(`[DIAG] TAVILY_API_KEY: ${process.env.TAVILY_API_KEY || settings.tavilyApiKey ? 'present' : 'missing (web search disabled)'}`);
 
-    // 2. Perform Generation
     try {
         const today = new Date().toLocaleDateString();
-        const populatedPrompt = (settings.prompt ||
+        const populatedPrompt = (
+            settings.prompt ||
             'Find 5 trending tech topics for {{date}}. Focus ONLY on: AI tools & innovations, smartphone rumors & launches, tech product innovations, breakthrough technologies, popular tech trends. EXCLUDE: stock market news, financial reports, cryptocurrency prices, company earnings.'
         ).replace('{{date}}', today);
 
@@ -539,7 +580,7 @@ async function main() {
         const existingTitles = existingBlogs.map(b => b.title?.toLowerCase().trim());
         console.log(`Loaded ${existingBlogs.length} existing blogs for duplicate checking`);
 
-        let uniqueTopics = [];
+        const uniqueTopics = [];
         const maxAttempts = 3;
 
         for (let attempt = 1; attempt <= maxAttempts && uniqueTopics.length < 5; attempt++) {
@@ -549,16 +590,20 @@ async function main() {
             const newTopics = discoverData.topics || [];
 
             if (newTopics.length === 0) {
-                console.log('[WARNING] No topics found in this attempt');
+                console.log('[WARNING] No topics returned in this attempt');
                 continue;
             }
 
-            console.log(`[SUCCESS] Found: ${newTopics.join(', ')}`);
+            console.log(`[SUCCESS] Candidates: ${newTopics.join(', ')}`);
 
             for (const topic of newTopics) {
                 const topicLower = topic.toLowerCase().trim();
-                const isDuplicateInDB = existingTitles.some(t => t && (t.includes(topicLower.slice(0, 20)) || topicLower.includes(t.slice(0, 20))));
-                const isDuplicateInSession = uniqueTopics.some(t => t.toLowerCase().includes(topicLower.slice(0, 20)) || topicLower.includes(t.toLowerCase().slice(0, 20)));
+                const isDuplicateInDB = existingTitles.some(
+                    t => t && (t.includes(topicLower.slice(0, 20)) || topicLower.includes(t.slice(0, 20)))
+                );
+                const isDuplicateInSession = uniqueTopics.some(
+                    t => t.toLowerCase().includes(topicLower.slice(0, 20)) || topicLower.includes(t.toLowerCase().slice(0, 20))
+                );
 
                 if (isDuplicateInDB) {
                     console.log(`  [SKIP] "${topic}" — Similar article exists in database`);
@@ -572,8 +617,8 @@ async function main() {
             }
 
             if (uniqueTopics.length < 5) {
-                console.log(`\nNeed ${5 - uniqueTopics.length} more unique topics. Searching again...`);
-                await new Promise(r => setTimeout(r, 2000));
+                console.log(`\nNeed ${5 - uniqueTopics.length} more unique topics. Retrying...`);
+                await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
             }
         }
 
@@ -581,7 +626,7 @@ async function main() {
             throw new Error('Could not find any unique topics after multiple attempts');
         }
 
-        console.log(`\n✓ Selected ${uniqueTopics.length} unique topics for generation\n`);
+        console.log(`\n✓ Selected ${uniqueTopics.length} unique topic(s) for generation\n`);
 
         let successCount = 0;
 
@@ -614,27 +659,26 @@ async function main() {
                     tags: ['AI', analysis.category || 'Technology']
                 };
 
-                console.log('  → Saving to DB...');
+                console.log('  → Saving to Firestore...');
                 const result = await addBlog(blogPost);
                 if (result.success) {
-                    console.log(`  [SUCCESS] Published! Cover: ${metadata.coverImage}`);
+                    console.log(`  [SUCCESS] Published: "${metadata.title || topic}"`);
                     successCount++;
                 } else {
-                    console.log(`  [ERROR] DB Save Failed: ${result.error}`);
+                    console.error(`  [ERROR] DB save failed for "${topic}"`);
                 }
             } catch (err) {
-                console.error(`  [ERROR] Topic Failed: ${err.message}`);
+                console.error(`  [ERROR] Topic failed — "${topic}": ${err.message}`);
             }
 
-            await new Promise(r => setTimeout(r, 2000));
+            await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
         }
 
-        // 3. Update Last Run
         await saveSettings('ai_automation', { lastRun: new Date().toISOString() });
-        console.log(`\n✅ Cycle complete! Successfully published ${successCount} out of ${uniqueTopics.length} unique articles.`);
+        console.log(`\n✅ Cycle complete! Published ${successCount}/${uniqueTopics.length} articles.`);
 
     } catch (error) {
-        console.error('CRITICAL FAILURE:', error);
+        console.error('CRITICAL FAILURE:', error.message);
         process.exit(1);
     }
 }

@@ -85,11 +85,28 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
         );
     }
 
+    /**
+     * Sanitizes a URL extracted from markdown content.
+     * Only http, https, and mailto schemes are permitted.
+     * Any other scheme (javascript:, data:, vbscript:, etc.) returns '#'
+     * to prevent DOM-based XSS (issue #15 — DOM text reinterpreted as HTML).
+     */
+    const sanitizeHref = (href) => {
+        if (!href || typeof href !== 'string') return '#';
+        try {
+            const parsed = new URL(href);
+            const allowed = ['http:', 'https:', 'mailto:'];
+            return allowed.includes(parsed.protocol) ? parsed.href : '#';
+        } catch {
+            // Relative URLs (no scheme) are not expected in blog content links.
+            return '#';
+        }
+    };
+
     // Helper to parse inline markdown (bold, italic, links, code)
     const parseInlineMarkdown = (text) => {
         if (!text) return text;
 
-        // Split text by markdown patterns and convert to React elements
         const parts = [];
         let remaining = text;
         let key = 0;
@@ -104,12 +121,11 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
             // Links: [text](url)
             const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
 
-            // Find the earliest match
             const matches = [
-                { type: 'bold', match: boldMatch, index: boldMatch?.index ?? Infinity },
+                { type: 'bold',   match: boldMatch,   index: boldMatch?.index   ?? Infinity },
                 { type: 'italic', match: italicMatch, index: italicMatch?.index ?? Infinity },
-                { type: 'code', match: codeMatch, index: codeMatch?.index ?? Infinity },
-                { type: 'link', match: linkMatch, index: linkMatch?.index ?? Infinity },
+                { type: 'code',   match: codeMatch,   index: codeMatch?.index   ?? Infinity },
+                { type: 'link',   match: linkMatch,   index: linkMatch?.index   ?? Infinity },
             ].filter(m => m.match).sort((a, b) => a.index - b.index);
 
             if (matches.length === 0) {
@@ -119,12 +135,10 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
 
             const earliest = matches[0];
 
-            // Add text before the match
             if (earliest.index > 0) {
                 parts.push(remaining.substring(0, earliest.index));
             }
 
-            // Add the formatted element
             switch (earliest.type) {
                 case 'bold':
                     parts.push(<strong key={key++} className={styles.boldText}>{earliest.match[1]}</strong>);
@@ -138,14 +152,18 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
                     parts.push(<code key={key++} className={styles.inlineCode}>{earliest.match[1]}</code>);
                     remaining = remaining.substring(earliest.index + earliest.match[0].length);
                     break;
-                case 'link':
+                case 'link': {
+                    // Sanitize the href before rendering to block javascript: and
+                    // other dangerous URI schemes (issue #15).
+                    const safeHref = sanitizeHref(earliest.match[2]);
                     parts.push(
-                        <a key={key++} href={earliest.match[2]} target="_blank" rel="noopener noreferrer" className={styles.contentLink}>
+                        <a key={key++} href={safeHref} target="_blank" rel="noopener noreferrer" className={styles.contentLink}>
                             {earliest.match[1]}
                         </a>
                     );
                     remaining = remaining.substring(earliest.index + earliest.match[0].length);
                     break;
+                }
             }
         }
 
