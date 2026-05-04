@@ -518,8 +518,10 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
             const payload = {
                 model: resolveGroqModel(config.model),
                 messages,
-                temperature: 0.7,
-                max_tokens: 8000,
+                temperature: 1,
+                max_completion_tokens: 8000,
+                top_p: 1,
+                stop: null,
                 response_format: { type: 'json_object' }
             };
 

@@ -133,8 +133,10 @@ async function generateWithGroq(prompt, groqKey) {
                 },
                 { role: 'user', content: prompt }
             ],
-            temperature: 0.7,
-            max_tokens: 4000,
+            temperature: 1,
+            max_completion_tokens: 4000,
+            top_p: 1,
+            stop: null,
             response_format: { type: 'json_object' }
         })
     });
