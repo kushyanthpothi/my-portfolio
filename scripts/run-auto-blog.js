@@ -450,8 +450,16 @@ function parseJSON(text) {
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 2000;
+const MAX_RETRIES = 4;
+// Base delay for exponential backoff. On a 429 the Retry-After header
+// overrides this value.
+const BASE_RETRY_DELAY_MS = 5000;
+// Delay injected between every individual Groq call within a topic pipeline
+// to keep requests-per-minute well below the free-tier ceiling.
+const INTER_CALL_DELAY_MS = 8000;
+// Number of topics to generate per run. Lowered to 3 so the full pipeline
+// (3 topics × 4 calls = 12 requests) stays safely within rate limits.
+const TOPICS_PER_RUN = 3;
 
 const GROQ_MODELS = new Set([
     'llama-3.3-70b-versatile',
@@ -519,7 +527,9 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
                 model: resolveGroqModel(config.model),
                 messages,
                 temperature: 1,
-                max_completion_tokens: 8000,
+                // 4096 keeps us well within the free-tier tokens-per-minute
+                // budget. 8000 was burning quota too fast and causing 429s.
+                max_completion_tokens: 4096,
                 top_p: 1,
                 stop: null,
                 response_format: { type: 'json_object' }
@@ -535,7 +545,18 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
             });
 
             if (!response.ok) {
-                // Read and discard body to avoid leaking tokens; surface only the status code.
+                if (response.status === 429) {
+                    // Honor the Retry-After header returned by Groq.
+                    // If absent, fall back to exponential backoff.
+                    const retryAfter = response.headers.get('retry-after');
+                    const waitMs = retryAfter
+                        ? Math.ceil(parseFloat(retryAfter)) * 1000
+                        : BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+                    console.warn(`  [Groq] Rate limited (429). Waiting ${waitMs / 1000}s before retry...`);
+                    await response.text(); // consume body
+                    await new Promise(r => setTimeout(r, waitMs));
+                    throw new Error('Groq API returned HTTP 429 (rate limited)');
+                }
                 await response.text();
                 throw new Error(`Groq API returned HTTP ${response.status}`);
             }
@@ -551,8 +572,11 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
         } catch (err) {
             lastError = err;
             console.warn(`  [Groq] Attempt ${attempt}/${MAX_RETRIES} failed: ${err.message}`);
-            if (attempt < MAX_RETRIES) {
-                await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+            // Only apply additional backoff if this is NOT a 429
+            // (the 429 branch already waited above).
+            if (attempt < MAX_RETRIES && !err.message.includes('429')) {
+                const backoff = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+                await new Promise(r => setTimeout(r, backoff));
             }
         }
     }
@@ -611,7 +635,7 @@ async function main() {
         const uniqueTopics = [];
         const maxAttempts = 3;
 
-        for (let attempt = 1; attempt <= maxAttempts && uniqueTopics.length < 5; attempt++) {
+        for (let attempt = 1; attempt <= maxAttempts && uniqueTopics.length < TOPICS_PER_RUN; attempt++) {
             console.log(`\nAttempt ${attempt}: Discovering topics...`);
 
             const discoverData = await generateAI(populatedPrompt, 'discover', settings);
@@ -639,14 +663,14 @@ async function main() {
                     console.log(`  [SKIP] "${topic}" — Already selected in this session`);
                 } else {
                     uniqueTopics.push(topic);
-                    console.log(`  [ADDED] "${topic}" (${uniqueTopics.length}/5)`);
-                    if (uniqueTopics.length >= 5) break;
+                    console.log(`  [ADDED] "${topic}" (${uniqueTopics.length}/${TOPICS_PER_RUN})`);
+                    if (uniqueTopics.length >= TOPICS_PER_RUN) break;
                 }
             }
 
-            if (uniqueTopics.length < 5) {
-                console.log(`\nNeed ${5 - uniqueTopics.length} more unique topics. Retrying...`);
-                await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+            if (uniqueTopics.length < TOPICS_PER_RUN) {
+                console.log(`\nNeed ${TOPICS_PER_RUN - uniqueTopics.length} more unique topics. Retrying...`);
+                await new Promise(r => setTimeout(r, BASE_RETRY_DELAY_MS));
             }
         }
 
@@ -666,13 +690,21 @@ async function main() {
                 console.log('  → Researching...');
                 const research = await generateAI(topic, 'research', settings);
 
+                // Pause between every Groq call to stay within the free-tier
+                // requests-per-minute limit (typically 30 RPM on the free plan).
+                await new Promise(r => setTimeout(r, INTER_CALL_DELAY_MS));
+
                 console.log('  → Analyzing...');
                 const analysis = await generateAI(topic, 'analyze', settings, { research });
+
+                await new Promise(r => setTimeout(r, INTER_CALL_DELAY_MS));
 
                 console.log('  → Generating Metadata...');
                 const metadata = await generateAI(topic, 'write-json', settings, { research, analysis });
 
                 metadata.coverImage = await resolveCoverImage(metadata, research, topic, settings);
+
+                await new Promise(r => setTimeout(r, INTER_CALL_DELAY_MS));
 
                 console.log('  → Writing Content...');
                 const contentData = await generateAI(topic, 'write-content', settings, { research, analysis, metadata });
@@ -699,7 +731,12 @@ async function main() {
                 console.error(`  [ERROR] Topic failed — "${topic}": ${err.message}`);
             }
 
-            await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+            // Longer cooldown between topics so the next topic's pipeline
+            // starts with a fresh rate-limit window.
+            if (i < uniqueTopics.length - 1) {
+                console.log(`  [COOLDOWN] Waiting 15s before next topic...`);
+                await new Promise(r => setTimeout(r, 15_000));
+            }
         }
 
         await saveSettings('ai_automation', { lastRun: new Date().toISOString() });
