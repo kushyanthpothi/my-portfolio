@@ -8,6 +8,7 @@ import Footer from '../../../components/Footer';
 import ThemeSwitch from '../../../components/ThemeSwitch';
 import styles from './blogPost.module.css';
 import { motion } from 'framer-motion';
+import Loading from '../../../components/Loading';
 
 export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs = [], isPreview = false }) {
     const params = useParams();
@@ -15,6 +16,7 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
     const [relatedBlogs, setRelatedBlogs] = useState(initialRelatedBlogs);
     const [loading, setLoading] = useState(!initialBlog);
     const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(true);
     const carouselRef = useRef(null);
 
     const openLightbox  = useCallback(() => setLightboxOpen(true),  []);
@@ -29,7 +31,7 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
 
     useEffect(() => {
         const track = carouselRef.current;
-        if (!track || relatedBlogs.length === 0) return;
+        if (!track || relatedBlogs.length === 0 || !isPlaying) return;
 
         let paused = false;
         const onEnter = () => { paused = true; };
@@ -53,7 +55,7 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
             track.removeEventListener('mouseenter', onEnter);
             track.removeEventListener('mouseleave', onLeave);
         };
-    }, [relatedBlogs]);
+    }, [relatedBlogs, isPlaying]);
 
     const scrollCarousel = useCallback((dir) => {
         const track = carouselRef.current;
@@ -109,10 +111,7 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
         return (
             <main className={`${styles.pageContainer} ${isPreview ? styles.previewContainer : ''}`}>
                 {!isPreview && <Navbar />}
-                <div className={styles.loadingContainer}>
-                    <div className={styles.loader}></div>
-                    <span className={styles.loadingText}>Loading article...</span>
-                </div>
+                <Loading text="Loading article..." />
             </main>
         );
     }
@@ -306,6 +305,9 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
         });
     };
 
+    // Show unique related blogs (fixed repetition issue)
+    const displayBlogs = relatedBlogs;
+
     return (
         <main className={`${styles.pageContainer} ${isPreview ? styles.previewContainer : ''}`}>
             {!isPreview && <Navbar />}
@@ -402,6 +404,23 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
                         <h2 className={styles.relatedTitle}>MORE POSTS</h2>
                         <div className={styles.carouselControls}>
                             <button
+                                className={styles.playPauseBtn}
+                                onClick={() => setIsPlaying(!isPlaying)}
+                                aria-label={isPlaying ? "Pause auto-scroll" : "Play auto-scroll"}
+                                title={isPlaying ? "Pause" : "Play"}
+                            >
+                                {isPlaying ? (
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <rect x="6" y="4" width="4" height="16" />
+                                        <rect x="14" y="4" width="4" height="16" />
+                                    </svg>
+                                ) : (
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                )}
+                            </button>
+                            <button
                                 className={styles.carouselArrow}
                                 onClick={() => scrollCarousel(-1)}
                                 aria-label="Previous blogs"
@@ -422,9 +441,9 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
                         </div>
                     </div>
                     <div className={styles.carouselTrack} ref={carouselRef}>
-                        {relatedBlogs.map((relatedBlog) => (
+                        {displayBlogs.map((relatedBlog, index) => (
                             <Link
-                                key={relatedBlog.slug}
+                                key={`${relatedBlog.slug}-${index}`}
                                 href={`/blogs/${relatedBlog.slug}`}
                                 className={styles.relatedCard}
                                 data-cursor-blog

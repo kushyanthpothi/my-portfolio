@@ -252,6 +252,7 @@
     text-decoration: none;
     color: inherit;
     transition: transform 0.4s ease, box-shadow 0.4s ease;
+    height: 100%;
     overflow: hidden; /* Clips the translated glow strictly to the border */
 }
 
@@ -322,6 +323,9 @@
 
 .blogContent {
     padding: 28px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .blogMeta {
@@ -342,6 +346,11 @@
     color: var(--text-primary);
     margin-bottom: 12px;
     transition: color 0.3s ease;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 4.5rem; /* Reserves space for up to 3 lines */
 }
 
 .blogCard:hover .blogTitle {
@@ -357,6 +366,8 @@
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    min-height: 4.7rem; /* Reserves space for 3 lines */
+    margin-bottom: 16px;
 }
 
 /* Loading State */
@@ -433,7 +444,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-top: 16px;
+    margin-top: auto; /* Pushes to bottom of card content */
     font-weight: 600;
     font-size: 0.9rem;
     color: var(--accent-color);

@@ -107,6 +107,91 @@
     object-fit: cover;
 }
 
+.fullscreenBtn {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease, background 0.25s ease;
+    backdrop-filter: blur(6px);
+    z-index: 2;
+}
+
+.heroImageWrapper:hover .fullscreenBtn {
+    opacity: 1;
+}
+
+.fullscreenBtn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.08);
+}
+
+.lightboxOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: lightboxFadeIn 0.25s ease;
+    cursor: zoom-out;
+}
+
+@keyframes lightboxFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.lightboxImage {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 16px;
+    object-fit: contain;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+    cursor: default;
+    animation: lightboxScaleIn 0.25s ease;
+}
+
+@keyframes lightboxScaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+.lightboxClose {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+    backdrop-filter: blur(8px);
+}
+
+.lightboxClose:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: scale(1.1);
+}
+
 /* Content Section */
 .contentSection {
     max-width: 70rem;

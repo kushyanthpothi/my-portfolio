@@ -9,6 +9,7 @@ import ThemeSwitch from '../../../components/ThemeSwitch';
 import MouseBubble from '../../../components/MouseBubble';
 import ProjectCard from '../../../components/ProjectCard';
 import ProjectCarousel from '../../../components/ProjectCarousel';
+import Loading from '../../../components/Loading';
 import styles from './projectDetail.module.css';
 
 export default function ProjectClient({ initialProject = null, isPreview = false }) {
@@ -17,6 +18,17 @@ export default function ProjectClient({ initialProject = null, isPreview = false
     const [project, setProject] = useState(initialProject);
     const [otherProjects, setOtherProjects] = useState([]);
     const [loading, setLoading] = useState(!initialProject);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+
+    const openLightbox = () => setLightboxOpen(true);
+    const closeLightbox = () => setLightboxOpen(false);
+
+    useEffect(() => {
+        if (!lightboxOpen) return;
+        const onKey = (e) => { if (e.key === 'Escape') closeLightbox(); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [lightboxOpen]);
 
     useEffect(() => {
         if (initialProject) {
@@ -70,18 +82,9 @@ export default function ProjectClient({ initialProject = null, isPreview = false
 
     if (loading) {
         return (
-            <main className={styles.pageContainer}>
-                <Navbar />
-                <div style={{
-                    height: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontFamily: 'var(--font-primary)'
-                }}>
-                    Loading project...
-                </div>
+            <main className={`${styles.pageContainer} ${isPreview ? styles.previewContainer : ''}`}>
+                {!isPreview && <Navbar />}
+                <Loading text="Loading project..." />
             </main>
         );
     }
@@ -134,6 +137,44 @@ export default function ProjectClient({ initialProject = null, isPreview = false
                             fill
                             className={styles.heroImage}
                             priority
+                        />
+                        {!isPreview && (
+                            <button
+                                className={styles.fullscreenBtn}
+                                onClick={openLightbox}
+                                aria-label="View image fullscreen"
+                                title="View fullscreen"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="15 3 21 3 21 9"/>
+                                    <polyline points="9 21 3 21 3 15"/>
+                                    <line x1="21" y1="3" x2="14" y2="10"/>
+                                    <line x1="3" y1="21" x2="10" y2="14"/>
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                )}
+
+                {lightboxOpen && project.heroImage && (
+                    <div
+                        className={styles.lightboxOverlay}
+                        onClick={closeLightbox}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Image fullscreen view"
+                    >
+                        <button className={styles.lightboxClose} onClick={closeLightbox} aria-label="Close fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                        <img
+                            src={project.heroImage}
+                            alt={project.title}
+                            className={styles.lightboxImage}
+                            onClick={(e) => e.stopPropagation()}
                         />
                     </div>
                 )}
