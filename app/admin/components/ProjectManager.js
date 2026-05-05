@@ -296,8 +296,8 @@ export default function ProjectManager() {
                             type="button"
                             className={styles.livePreviewBtn}
                             onClick={() => {
-                                const encoded = btoa(encodeURIComponent(JSON.stringify(formData)));
-                                window.open(`/admin/preview/project?data=${encoded}`, '_blank');
+                                sessionStorage.setItem('preview_project_data', JSON.stringify(formData));
+                                window.open('/admin/preview/project', '_blank');
                             }}
                         >
                             <FiExternalLink size={14} />

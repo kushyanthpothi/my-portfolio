@@ -62,6 +62,12 @@ export default function ProjectClient({ initialProject = null, isPreview = false
         loadProject();
     }, [slug]);
 
+    useEffect(() => {
+        if (project && project.title) {
+            document.title = `${project.title} | Kushyanth Pothineni`;
+        }
+    }, [project]);
+
     if (loading) {
         return (
             <main className={styles.pageContainer}>

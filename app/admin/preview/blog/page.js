@@ -8,18 +8,17 @@ export default function BlogPreviewPage() {
     const searchParams = useSearchParams();
     const [blog, setBlog] = useState(null);
 
-    // On mount: load initial data from URL param
+    // On mount: load initial data from sessionStorage
     useEffect(() => {
-        const dataParam = searchParams.get('data');
-        if (dataParam) {
+        const storedData = sessionStorage.getItem('preview_blog_data');
+        if (storedData) {
             try {
-                const decoded = JSON.parse(decodeURIComponent(atob(dataParam)));
-                setBlog(decoded);
+                setBlog(JSON.parse(storedData));
             } catch (e) {
-                console.error('Failed to decode preview data', e);
+                console.error('Failed to parse preview data from sessionStorage', e);
             }
         }
-    }, [searchParams]);
+    }, []);
 
     // Separate effect: listen for live updates via BroadcastChannel
     useEffect(() => {

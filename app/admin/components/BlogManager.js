@@ -306,8 +306,8 @@ export default function BlogManager() {
                                 type="button"
                                 className={styles.livePreviewBtn}
                                 onClick={() => {
-                                    const encoded = btoa(encodeURIComponent(JSON.stringify(formData)));
-                                    window.open(`/admin/preview/blog?data=${encoded}`, '_blank');
+                                    sessionStorage.setItem('preview_blog_data', JSON.stringify(formData));
+                                    window.open('/admin/preview/blog', '_blank');
                                 }}
                                 title="Open full-page preview"
                             >

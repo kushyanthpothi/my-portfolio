@@ -8,18 +8,17 @@ export default function ProjectPreviewPage() {
     const searchParams = useSearchParams();
     const [project, setProject] = useState(null);
 
-    // On mount: load initial data from URL param
+    // On mount: load initial data from sessionStorage
     useEffect(() => {
-        const dataParam = searchParams.get('data');
-        if (dataParam) {
+        const storedData = sessionStorage.getItem('preview_project_data');
+        if (storedData) {
             try {
-                const decoded = JSON.parse(decodeURIComponent(atob(dataParam)));
-                setProject(decoded);
+                setProject(JSON.parse(storedData));
             } catch (e) {
-                console.error('Failed to decode preview data', e);
+                console.error('Failed to parse preview data from sessionStorage', e);
             }
         }
-    }, [searchParams]);
+    }, []);
 
     // Separate effect: listen for live updates via BroadcastChannel
     useEffect(() => {

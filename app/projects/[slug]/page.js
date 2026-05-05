@@ -16,8 +16,8 @@ export async function generateMetadata(props) {
 
     if (!project) {
         return {
-            title: 'Project Not Found',
-            description: 'The requested project could not be found.',
+            title: 'Loading Project | Kushyanth Pothineni',
+            description: 'Loading project details...',
         };
     }
 
