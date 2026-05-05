@@ -5,12 +5,8 @@ import { generateProjectSchema, generateBreadcrumbSchema } from '../../../lib/se
 
 const BASE_URL = 'https://kushyanth-portfolio.web.app';
 
-export async function generateStaticParams() {
-    const projects = await fetchProjects();
-    const params = projects.map((project) => ({
-        slug: project.slug,
-    }));
-    return [...params, { slug: '__fallback' }];
+export function generateStaticParams() {
+    return [{ slug: '__fallback' }];
 }
 
 // Dynamic metadata for each project

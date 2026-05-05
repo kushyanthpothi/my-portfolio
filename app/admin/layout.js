@@ -49,7 +49,7 @@ function AdminContent({ children }) {
     };
 
     if (loading) {
-        return <div className={styles.loginWrapper}><div className={styles.loadingSpinner}></div></div>;
+        return <div className={styles.loginWrapper}><div className={styles.loader}></div></div>;
     }
 
     if (!user) {

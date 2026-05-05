@@ -110,7 +110,7 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
             <main className={`${styles.pageContainer} ${isPreview ? styles.previewContainer : ''}`}>
                 {!isPreview && <Navbar />}
                 <div className={styles.loadingContainer}>
-                    <div className={styles.loadingSpinner}></div>
+                    <div className={styles.loader}></div>
                     <span className={styles.loadingText}>Loading article...</span>
                 </div>
             </main>

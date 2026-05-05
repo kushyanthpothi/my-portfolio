@@ -107,11 +107,10 @@ async function callNvidiaAPI(messages, nvidiaKey) {
         body: JSON.stringify({
             model: 'meta/llama-4-maverick-17b-128e-instruct',
             messages,
-            max_tokens: 4000,
-            temperature: 1.00,
+            max_tokens: 4096,
+            temperature: 0.7,
             top_p: 1.00,
-            frequency_penalty: 0.00,
-            presence_penalty: 0.00,
+            response_format: { type: 'json_object' },
             stream: false
         })
     });
@@ -210,11 +209,25 @@ export async function POST(req) {
 
         const { owner, repo } = repoInfo;
 
-        const nvidiaKey = (process.env.NVIDIA_KEY || '').replace(/['"]/g, '').trim() || null;
-        const groqKey   = (process.env.GROQ_API_KEY || '').replace(/['"]/g, '').trim() || null;
+        let nvidiaKey = (process.env.NVIDIA_KEY || '').replace(/['"]/g, '').trim() || null;
+        let groqKey   = (process.env.GROQ_API_KEY || '').replace(/['"]/g, '').trim() || null;
+
+        if (!nvidiaKey || !groqKey) {
+            try {
+                const { db } = require('@/lib/admin');
+                const settingsDoc = await db.collection('settings').doc('ai_automation').get();
+                if (settingsDoc.exists) {
+                    const settings = settingsDoc.data();
+                    if (!nvidiaKey && settings.nvidiaApiKey) nvidiaKey = settings.nvidiaApiKey.trim();
+                    if (!groqKey && settings.groqApiKey) groqKey = settings.groqApiKey.trim();
+                }
+            } catch (err) {
+                console.error('[generate-project] Error fetching settings from Firestore:', err.message);
+            }
+        }
 
         if (!nvidiaKey && !groqKey) {
-            return Response.json({ success: false, error: 'No AI provider configured on the server.' }, { status: 500 });
+            return Response.json({ success: false, error: 'No AI provider configured on the server or in database.' }, { status: 500 });
         }
 
         console.log(`[generate-project] Fetching GitHub data for ${owner}/${repo}...`);

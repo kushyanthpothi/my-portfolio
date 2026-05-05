@@ -2,9 +2,6 @@
 
 const { db } = require('../lib/admin');
 
-// ---------------------------------------------------------------------------
-// IMAGE UTILITIES
-// ---------------------------------------------------------------------------
 
 function getPlaceholderImage(category, topic = '') {
     const topicSeed = topic
@@ -444,21 +441,17 @@ function parseJSON(text) {
     throw new Error('No JSON object found in the AI response.');
 }
 
-// ---------------------------------------------------------------------------
-// AI GENERATION ENGINE — NVIDIA (primary) → GROQ (fallback)
-// ---------------------------------------------------------------------------
 
-// NVIDIA NIM — primary provider (llama-4-maverick, fast & generous limits)
 const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-const NVIDIA_MODEL   = 'meta/llama-4-maverick-17b-128e-instruct';
+const NVIDIA_MODEL = 'meta/llama-4-maverick-17b-128e-instruct';
 
-const GROQ_API_URL       = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 
-const MAX_RETRIES        = 4;
+const MAX_RETRIES = 4;
 const BASE_RETRY_DELAY_MS = 5000;
 const INTER_CALL_DELAY_MS = 8000;
-const TOPICS_PER_RUN      = 3;
+const TOPICS_PER_RUN = 3;
 
 const GROQ_MODELS = new Set([
     'llama-3.3-70b-versatile',
@@ -517,10 +510,9 @@ async function callNvidiaAPI(messages, nvidiaKey) {
             model: NVIDIA_MODEL,
             messages,
             max_tokens: 4096,
-            temperature: 1.00,
+            temperature: 0.7,
             top_p: 1.00,
-            frequency_penalty: 0.00,
-            presence_penalty: 0.00,
+            response_format: { type: 'json_object' },
             stream: false
         })
     });
@@ -585,7 +577,7 @@ async function callGroqAPI(messages, groqModel, groqKey, attempt) {
 
 async function generateAI(promptText, contextMode, config, extraContext = {}) {
     const nvidiaKey = sanitizeKey(process.env.NVIDIA_KEY || config.nvidiaApiKey);
-    const groqKey   = sanitizeKey(process.env.GROQ_API_KEY  || config.groqApiKey);
+    const groqKey = sanitizeKey(process.env.GROQ_API_KEY || config.groqApiKey);
 
     if (!nvidiaKey && !groqKey) {
         throw new Error('No AI provider configured. Set NVIDIA_KEY or GROQ_API_KEY as a GitHub Actions secret.');
@@ -668,7 +660,7 @@ async function main() {
     }
 
     const nvidiaKeyPresent = !!(sanitizeKey(process.env.NVIDIA_KEY || settings.nvidiaApiKey));
-    const groqKeyPresent   = !!(sanitizeKey(process.env.GROQ_API_KEY || settings.groqApiKey));
+    const groqKeyPresent = !!(sanitizeKey(process.env.GROQ_API_KEY || settings.groqApiKey));
 
     if (!nvidiaKeyPresent && !groqKeyPresent) {
         console.error('[ERROR] No AI provider key found. Set NVIDIA_KEY or GROQ_API_KEY as a GitHub Actions secret.');
@@ -677,7 +669,7 @@ async function main() {
 
     const groqModel = settings.model || GROQ_DEFAULT_MODEL;
     console.log(`[DIAG] NVIDIA_KEY:      ${nvidiaKeyPresent ? 'present → primary provider (' + NVIDIA_MODEL + ')' : 'missing'}`);
-    console.log(`[DIAG] GROQ_API_KEY:    ${groqKeyPresent   ? 'present → ' + (nvidiaKeyPresent ? 'fallback (' + groqModel + ')' : 'primary (' + groqModel + ')') : 'missing'}`);
+    console.log(`[DIAG] GROQ_API_KEY:    ${groqKeyPresent ? 'present → ' + (nvidiaKeyPresent ? 'fallback (' + groqModel + ')' : 'primary (' + groqModel + ')') : 'missing'}`);
     console.log(`[DIAG] TAVILY_API_KEY:  ${sanitizeKey(process.env.TAVILY_API_KEY || settings.tavilyApiKey) ? 'present' : 'missing (web search disabled)'}`);
 
     try {
