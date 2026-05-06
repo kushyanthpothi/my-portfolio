@@ -1,4 +1,9 @@
 import { verifyAuth } from '@/lib/authMiddleware';
+import dns from 'dns';
+import { promisify } from 'util';
+
+const lookupAsync = promisify(dns.lookup);
+
 
 // ---------------------------------------------------------------------------
 // URL VALIDATION — SSRF prevention
@@ -22,7 +27,7 @@ function isPrivateIp(hostname) {
     return ['localhost', 'metadata.google.internal'].includes(hostname);
 }
 
-function validatePublicUrl(raw) {
+async function validatePublicUrl(raw) {
     if (!raw || typeof raw !== 'string') {
         return { ok: false, url: null, reason: 'URL must be a non-empty string' };
     }
@@ -35,9 +40,22 @@ function validatePublicUrl(raw) {
     if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
         return { ok: false, url: null, reason: 'Only http and https URLs are permitted' };
     }
-    if (isPrivateIp(parsed.hostname.toLowerCase())) {
+
+    const hostname = parsed.hostname.toLowerCase();
+    if (isPrivateIp(hostname)) {
         return { ok: false, url: null, reason: 'Requests to private or internal addresses are not allowed' };
     }
+
+    // Resolve DNS to verify the final IP and prevent DNS-rebinding SSRF attacks
+    try {
+        const lookup = await lookupAsync(hostname);
+        if (isPrivateIp(lookup.address)) {
+            return { ok: false, url: null, reason: 'Requests to private or internal addresses are not allowed' };
+        }
+    } catch {
+        return { ok: false, url: null, reason: 'Could not resolve hostname' };
+    }
+
     return { ok: true, url: parsed };
 }
 
@@ -99,14 +117,17 @@ async function fetchUrlContent(validatedUrl) {
         const html = await response.text();
         const image = extractImageFromHtml(html);
 
-        const text = html
-            .replace(/<[^>]*>/g, ' ')
-            .replace(/&nbsp;/gi, ' ')
-            .replace(/&amp;/gi, '&')
-            .replace(/&lt;/gi, '<')
-            .replace(/&gt;/gi, '>')
-            .replace(/&quot;/gi, '"')
-            .replace(/&#39;/gi, "'")
+        const cleanHtml = html.replace(/<[^>]*>/g, ' ');
+        const entityMap = {
+            '&nbsp;': ' ',
+            '&amp;': '&',
+            '&lt;': '<',
+            '&gt;': '>',
+            '&quot;': '"',
+            '&#39;': "'"
+        };
+        const text = cleanHtml
+            .replace(/&(nbsp|amp|lt|gt|quot|#39);/gi, (match) => entityMap[match.toLowerCase()] || match)
             .replace(/\s+/g, ' ')
             .trim()
             .substring(0, 8_000);
@@ -390,7 +411,7 @@ export async function POST(req) {
 
         const validatedLinks = [];
         for (const raw of links) {
-            const { ok, url, reason } = validatePublicUrl(raw);
+            const { ok, url, reason } = await validatePublicUrl(raw);
             if (!ok) {
                 return Response.json({ success: false, error: `Invalid URL "${String(raw).substring(0, 100)}": ${reason}` }, { status: 400 });
             }

@@ -117,10 +117,14 @@ function ruleBasedParse(query) {
     if (/dark mode|turn on dark|enable dark|switch to dark/.test(q)) {
         return { action: 'toggleTheme', theme: 'dark', message: 'Switching to dark mode...' };
     }
-    if (/add.*blog|new blog|create blog|write.*article|new article|add.*article/.test(q)) {
+    const hasAddBlog = q.includes('add') && q.includes('blog') && q.indexOf('add') < q.indexOf('blog');
+    const hasWriteArticle = q.includes('write') && q.includes('article') && q.indexOf('write') < q.indexOf('article');
+    const hasAddArticle = q.includes('add') && q.includes('article') && q.indexOf('add') < q.indexOf('article');
+    if (hasAddBlog || q.includes('new blog') || q.includes('create blog') || hasWriteArticle || q.includes('new article') || hasAddArticle) {
         return { action: 'openCreateBlog', askForLinks: true, message: 'Opening blog creation. Please provide source links for AI generation or write manually.' };
     }
-    if (/add.*project|new project|create project/.test(q)) {
+    const hasAddProject = q.includes('add') && q.includes('project') && q.indexOf('add') < q.indexOf('project');
+    if (hasAddProject || q.includes('new project') || q.includes('create project')) {
         return { action: 'openCreateProject', message: 'Opening project creation form...' };
     }
     if (/go to blog|show blog|manage blog|blog manager|open blog/.test(q)) {
