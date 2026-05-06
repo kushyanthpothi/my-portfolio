@@ -50,28 +50,25 @@
 
 
 
-/* More Projects Section */
+/* More Projects Carousel Section */
 .moreProjectsSection {
     max-width: var(--container-max-width);
     margin: 0 auto;
     padding: clamp(4rem, 8vw, 6rem) clamp(1rem, 3vw, 1.5rem);
 }
 
-.sectionDivider {
-    text-align: center;
-    margin-bottom: 4rem;
-    position: relative;
+.carouselHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
 }
 
-.sectionDivider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--border-color);
-    z-index: 0;
+.sectionDividerLeft {
+    display: flex;
+    align-items: center;
 }
 
 .sectionTitle {
@@ -82,17 +79,72 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 0;
-    background: var(--bg-primary);
-    padding: 0 clamp(1rem, 2vw, 2rem);
-    display: inline-block;
-    position: relative;
-    z-index: 1;
 }
 
-.projectsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
-    gap: clamp(1.5rem, 3vw, 2.5rem);
+.carouselControls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.playPauseBtn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--text-primary);
+    border: 1.5px solid var(--text-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+    margin-right: 8px;
+}
+
+.playPauseBtn:hover {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    transform: scale(1.08);
+}
+
+.carouselArrow {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--text-primary);
+    border: 1.5px solid var(--text-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+
+.carouselArrow:hover {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    transform: scale(1.08);
+}
+
+.carouselTrack {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
+    scrollbar-width: none;
+}
+
+.carouselTrack::-webkit-scrollbar {
+    display: none;
+}
+
+.carouselItem {
+    flex: 0 0 calc((100% - 48px) / 3);
+    min-width: 0;
 }
 
 /* Responsive */
@@ -105,9 +157,8 @@
         font-size: 2.5rem;
     }
 
-    .projectsGrid {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
+    .carouselItem {
+        flex: 0 0 calc((100% - 24px) / 2);
     }
 }
 
@@ -126,12 +177,15 @@
 
     .sectionTitle {
         font-size: 2rem;
-        padding: 0 1rem;
     }
 
-    .projectsGrid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+    .carouselItem {
+        flex: 0 0 80vw;
+    }
+
+    .carouselHeader {
+        flex-direction: row;
+        align-items: center;
     }
 
     .featuredSection,

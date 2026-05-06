@@ -318,48 +318,101 @@
     /* No background change needed here as pseudo-element handles it */
 }
 
-/* More Projects Section */
+/* More Projects Carousel Section */
 .moreProjectsSection {
     margin-top: 8rem;
     padding-top: 4rem;
 }
 
-.sectionDivider {
-    text-align: center;
-    margin-bottom: 4rem;
-    position: relative;
+.carouselHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
 }
 
-.sectionDivider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--border-color);
-    z-index: 0;
+.sectionDividerLeft {
+    display: flex;
+    align-items: center;
+    flex: 1;
 }
 
 .moreProjectsTitle {
     font-family: 'Antonio', sans-serif;
-    font-size: 3.5rem;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
     font-weight: 700;
     color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 0;
-    background: var(--bg-primary);
-    padding: 0 2rem;
-    display: inline-block;
-    position: relative;
-    z-index: 1;
 }
 
-.projectsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 2.5rem;
+.carouselControls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.playPauseBtn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--text-primary);
+    border: 1.5px solid var(--text-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+    margin-right: 8px;
+}
+
+.playPauseBtn:hover {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    transform: scale(1.08);
+}
+
+.carouselArrow {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--text-primary);
+    border: 1.5px solid var(--text-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+
+.carouselArrow:hover {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    transform: scale(1.08);
+}
+
+.carouselTrack {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
+    scrollbar-width: none;
+}
+
+.carouselTrack::-webkit-scrollbar {
+    display: none;
+}
+
+.carouselItem {
+    flex: 0 0 calc((100% - 48px) / 3);
+    min-width: 0;
 }
 
 /* Responsive */
@@ -376,8 +429,8 @@
         height: 400px;
     }
 
-    .projectsGrid {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    .carouselItem {
+        flex: 0 0 calc((100% - 24px) / 2);
     }
 }
 
@@ -423,12 +476,10 @@
 
     .moreProjectsTitle {
         font-size: 2rem;
-        padding: 0 1rem;
     }
 
-    .projectsGrid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+    .carouselItem {
+        flex: 0 0 85vw;
     }
 
     .linksSection {

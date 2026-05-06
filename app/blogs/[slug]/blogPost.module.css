@@ -443,7 +443,6 @@
     display: flex;
     gap: 24px;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 12px;
     scrollbar-width: none;
@@ -455,7 +454,6 @@
 
 .carouselTrack .relatedCard {
     flex: 0 0 calc((100% - 48px) / 3);
-    scroll-snap-align: start;
 }
 
 .relatedCard {
@@ -548,7 +546,7 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 4.7rem; /* Ensures consistent space for up to 3 lines */
+    min-height: 4.8rem; /* Consistent space for up to 3 lines */
 }
 
 .relatedCard:hover .relatedCardTitle {
@@ -560,11 +558,11 @@
     color: var(--text-secondary);
     line-height: 1.6;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.9rem; /* Ensures consistent space for 2 lines */
+    min-height: 4.5rem; /* Consistent space for 3 lines */
     margin-top: auto;
 }
 

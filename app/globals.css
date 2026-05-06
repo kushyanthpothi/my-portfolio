@@ -1,5 +1,6 @@
+/* ─── Light Mode (default :root) ─────────────────────────────────────────── */
 :root {
-  /* Light Mode Colors */
+  /* Public site colors */
   --bg-primary: #FFFFFF;
   --bg-secondary: #F5F5F7;
   --text-primary: #303030;
@@ -8,12 +9,56 @@
   --accent-hover: #D1AF08;
   --footer-bg: #FFD60A;
   --footer-text: #303030;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --bg-tertiary: #E5E5EA;
+
+  /* ── Admin Panel — Light Mode ── */
+  --admin-layout-bg: #eef0f4;
+  --admin-sidebar-bg: #ffffff;
+  --admin-sidebar-border: rgba(0,0,0,0.06);
+  --admin-main-bg: #f3f5f8;
+  --admin-main-shadow: -10px 0 30px rgba(0,0,0,0.06);
+  --admin-card-bg: #ffffff;
+  --admin-card-border: rgba(0,0,0,0.06);
+  --admin-card-shadow: 0 4px 16px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+  --admin-text-primary: #111827;
+  --admin-text-secondary: #6b7280;
+  --admin-text-muted: #9ca3af;
+  --admin-sidebar-item-color: #6b7280;
+  --admin-sidebar-item-hover-color: #111827;
+  --admin-sidebar-active-bg: rgba(250,204,21,0.14);
+  --admin-sidebar-active-color: #78350f;
+  --admin-sidebar-active-border: rgba(250,204,21,0.4);
+  --admin-sidebar-header-border: rgba(0,0,0,0.07);
+  --admin-profile-border: #f0f2f5;
+  --admin-input-bg: rgba(0,0,0,0.04);
+  --admin-input-border: rgba(0,0,0,0.1);
+  --admin-input-color: #111827;
+  --admin-input-placeholder: rgba(0,0,0,0.3);
+  --admin-input-focus-border: rgba(250,204,21,0.6);
+  --admin-bar-label: #9ca3af;
+  --admin-donut-inner: #ffffff;
+  --admin-carousel-card-bg: rgba(0,0,0,0.02);
+  --admin-carousel-card-border: rgba(0,0,0,0.06);
+  --admin-action-btn-bg: rgba(0,0,0,0.04);
+  --admin-action-btn-border: rgba(0,0,0,0.08);
+  --admin-action-btn-color: #6b7280;
+  --admin-section-title-color: #111827;
+  --admin-tag-bg: rgba(0,0,0,0.06);
+  --admin-tag-color: #374151;
+  --admin-modal-bg: #ffffff;
+  --admin-modal-border: rgba(0,0,0,0.08);
+  --admin-success-bg: rgba(16,185,129,0.1);
+  --admin-success-color: #065f46;
+  --admin-error-bg: rgba(239,68,68,0.1);
+  --admin-error-color: #991b1b;
+  --admin-login-panel-bg: #07080d;
 
   /* Typography */
   --font-heading: 'Antonio', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  /* Fluid Typography - Scales automatically between viewport sizes */
+  /* Fluid Typography */
   --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
   --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
   --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
@@ -25,7 +70,7 @@
   --text-5xl: clamp(3rem, 2.5rem + 2.5vw, 4.5rem);
   --text-6xl: clamp(3.75rem, 3rem + 3.75vw, 6rem);
 
-  /* Fluid Spacing - Scales with viewport */
+  /* Fluid Spacing */
   --space-3xs: clamp(0.25rem, 0.23rem + 0.11vw, 0.31rem);
   --space-2xs: clamp(0.5rem, 0.48rem + 0.11vw, 0.56rem);
   --space-xs: clamp(0.75rem, 0.7rem + 0.22vw, 0.88rem);
@@ -36,23 +81,26 @@
   --space-2xl: clamp(4rem, 3.8rem + 0.87vw, 4.5rem);
   --space-3xl: clamp(6rem, 5.7rem + 1.3vw, 6.75rem);
 
-  /* Fluid spacing pairs for consistent rhythm */
+  /* Fluid spacing pairs */
   --space-xs-sm: clamp(0.75rem, 0.65rem + 0.43vw, 1rem);
   --space-sm-md: clamp(1rem, 0.8rem + 0.87vw, 1.5rem);
   --space-md-lg: clamp(1.5rem, 1.2rem + 1.3vw, 2.25rem);
   --space-lg-xl: clamp(2rem, 1.5rem + 2.17vw, 3.38rem);
   --space-xl-2xl: clamp(3rem, 2.3rem + 3.04vw, 5rem);
 
-  /* Responsive Container */
+  /* Layout */
   --container-max-width: min(100% - 2rem, 1400px);
   --container-padding: clamp(1rem, 5vw, 8rem);
-
-  /* Responsive Header & Section */
   --header-height: clamp(60px, 10vh, 80px);
   --section-padding: clamp(60px, 10vh, 120px);
+
+  /* Easing */
+  --expo-out: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
+/* ─── Dark Mode ───────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
+  /* Public site colors */
   --bg-primary: #1a1a1a;
   --bg-secondary: #252525;
   --text-primary: #FFFFFF;
@@ -61,8 +109,53 @@
   --accent-hover: #D1AF08;
   --footer-bg: #FFD60A;
   --footer-text: #303030;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --bg-tertiary: #0d1117;
+
+  /* ── Admin Panel — Dark Mode ── */
+  --admin-layout-bg: #02040a;
+  --admin-sidebar-bg: #02040a;
+  --admin-sidebar-border: rgba(255,255,255,0.04);
+  --admin-main-bg: #0d1117;
+  --admin-main-shadow: -10px 0 30px rgba(0,0,0,0.2);
+  --admin-card-bg: #161b22;
+  --admin-card-border: rgba(255,255,255,0.05);
+  --admin-card-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  --admin-text-primary: #ffffff;
+  --admin-text-secondary: #828b9c;
+  --admin-text-muted: #555e70;
+  --admin-sidebar-item-color: #828b9c;
+  --admin-sidebar-item-hover-color: #ffffff;
+  --admin-sidebar-active-bg: #161b22;
+  --admin-sidebar-active-color: #ffffff;
+  --admin-sidebar-active-border: rgba(255,255,255,0.05);
+  --admin-sidebar-header-border: rgba(255,255,255,0.05);
+  --admin-profile-border: #02040a;
+  --admin-input-bg: rgba(0,0,0,0.3);
+  --admin-input-border: rgba(255,255,255,0.08);
+  --admin-input-color: #ffffff;
+  --admin-input-placeholder: rgba(255,255,255,0.2);
+  --admin-input-focus-border: rgba(250,204,21,0.5);
+  --admin-bar-label: #555e70;
+  --admin-donut-inner: #161b22;
+  --admin-carousel-card-bg: rgba(255,255,255,0.03);
+  --admin-carousel-card-border: rgba(255,255,255,0.05);
+  --admin-action-btn-bg: rgba(255,255,255,0.05);
+  --admin-action-btn-border: rgba(255,255,255,0.07);
+  --admin-action-btn-color: #828b9c;
+  --admin-section-title-color: #ffffff;
+  --admin-tag-bg: rgba(255,255,255,0.08);
+  --admin-tag-color: #c4cad4;
+  --admin-modal-bg: #161b22;
+  --admin-modal-border: rgba(255,255,255,0.08);
+  --admin-success-bg: rgba(16,185,129,0.12);
+  --admin-success-color: #6ee7b7;
+  --admin-error-bg: rgba(239,68,68,0.12);
+  --admin-error-color: #fca5a5;
+  --admin-login-panel-bg: #07080d;
 }
 
+/* ─── Global resets ───────────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
   padding: 0;
@@ -76,7 +169,6 @@ html {
   width: 100%;
 }
 
-
 body {
   width: 100%;
   max-width: 100%;
@@ -88,15 +180,13 @@ body {
   -moz-osx-software-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
   position: relative;
-  /* Prevent flash on page load */
   opacity: 1;
   animation: fadeIn 0.2s ease-in;
 }
 
-/* View Transitions API - Rounded Rect Reveal & Contract */
+/* ─── View Transitions API ────────────────────────────────────────────────── */
 ::view-transition-group(root) {
   animation: none;
-  /* Suppress default cross-fade */
 }
 
 ::view-transition-old(root),
@@ -108,7 +198,7 @@ body {
   height: 100%;
 }
 
-/* --- Light-to-Dark: New dark screen SPREADS from the switch --- */
+/* Light-to-Dark: new dark screen spreads from the switch */
 html[data-theme-direction="to-dark"]::view-transition-old(root) {
   animation: none;
   z-index: 1;
@@ -119,7 +209,7 @@ html[data-theme-direction="to-dark"]::view-transition-new(root) {
   animation: reveal 1s var(--expo-out);
 }
 
-/* --- Dark-to-Light: Old dark screen CONTRACTS back to the switch --- */
+/* Dark-to-Light: old dark screen contracts back to the switch */
 html[data-theme-direction="to-light"]::view-transition-new(root) {
   animation: none;
   z-index: 1;
@@ -130,13 +220,11 @@ html[data-theme-direction="to-light"]::view-transition-old(root) {
   animation: contract 1s var(--expo-out) forwards;
 }
 
-/* Ensure the switch and knob also move smoothly over the same duration */
 ::view-transition-group(theme-switch),
 ::view-transition-group(theme-knob) {
   animation-duration: 1s;
 }
 
-/* Ensure the image pair doesn't have default blending that causes flashes */
 ::view-transition-image-pair(root) {
   isolation: isolate;
 }
@@ -149,40 +237,26 @@ html[data-theme-direction="to-light"]::view-transition-old(root) {
   from {
     clip-path: inset(var(--transition-top) calc(var(--viewport-width) - var(--transition-left) - var(--transition-width)) calc(var(--viewport-height) - var(--transition-top) - var(--transition-height)) var(--transition-left) round 100px);
   }
-
   to {
-    /* Over-expand to ensure rounded corners are far off-screen at the end */
     clip-path: inset(-100px -100px -100px -100px round 100px);
   }
 }
 
 @keyframes contract {
   from {
-    /* Start from over-expanded state */
     clip-path: inset(-100px -100px -100px -100px round 100px);
   }
-
   to {
     clip-path: inset(var(--transition-top) calc(var(--viewport-width) - var(--transition-left) - var(--transition-width)) calc(var(--viewport-height) - var(--transition-top) - var(--transition-height)) var(--transition-left) round 100px);
   }
 }
 
-:root {
-  --expo-out: cubic-bezier(0.19, 1, 0.22, 1);
-}
-
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-
-
+/* ─── Base elements ───────────────────────────────────────────────────────── */
 a {
   color: inherit;
   text-decoration: none;

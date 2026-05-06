@@ -30,6 +30,12 @@
     mix-blend-mode: lighten;
 }
 
+/* Light mode: white canvas + multiply blend — white disappears, yellow stays */
+:global([data-theme="light"]) .loader {
+    background: #fff;
+    mix-blend-mode: multiply;
+}
+
 .loader:before,
 .loader:after {
     content: "";

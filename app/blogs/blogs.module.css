@@ -45,7 +45,7 @@
     display: block;
     position: relative;
     border-radius: 32px;
-    background: rgba(128, 128, 128, 0.2);
+    background: var(--card-border, rgba(128, 128, 128, 0.2));
     /* Subtler default border */
     padding: 1px;
     /* The border thickness */
@@ -247,7 +247,7 @@
     display: block;
     position: relative;
     border-radius: 24px;
-    background: rgba(128, 128, 128, 0.2);
+    background: var(--card-border, rgba(128, 128, 128, 0.2));
     padding: 1px;
     text-decoration: none;
     color: inherit;
@@ -350,7 +350,7 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 4.5rem; /* Reserves space for up to 3 lines */
+    min-height: 5rem; /* Consistent space for up to 3 lines */
 }
 
 .blogCard:hover .blogTitle {
@@ -366,7 +366,7 @@
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 4.7rem; /* Reserves space for 3 lines */
+    min-height: 4.8rem; /* Consistent space for 3 lines */
     margin-bottom: 16px;
 }
 

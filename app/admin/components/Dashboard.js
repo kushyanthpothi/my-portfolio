@@ -1,313 +1,517 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../admin.module.css';
 import Loading from '@/components/Loading';
 import { fetchProjects, fetchBlogs, getVisitorStats, deleteProject, deleteBlog } from '@/lib/firestoreUtils';
-import { FiSearch, FiMenu, FiTrendingUp } from 'react-icons/fi';
+import { FiMenu, FiTrendingUp, FiArrowUp, FiArrowDown, FiExternalLink, FiEdit2, FiTrash2, FiZap, FiSun, FiMoon } from 'react-icons/fi';
 
+// ─── Global site theme helpers (mirrors ThemeSwitch.js logic) ───────────────
+const SITE_THEME_KEY = 'theme'; // Same key used by ThemeSwitch.js and layout.js
+
+function getGlobalTheme() {
+    if (typeof localStorage === 'undefined') return 'dark';
+    return localStorage.getItem(SITE_THEME_KEY) || 'dark';
+}
+
+/**
+ * Applies theme globally to the entire site by setting data-theme on <html>.
+ * Uses the View Transitions API when available — same as ThemeSwitch.js.
+ */
+function applyGlobalTheme(newTheme, triggerRect = null) {
+    const html = document.documentElement;
+
+    const commit = () => {
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem(SITE_THEME_KEY, newTheme);
+    };
+
+    if (!document.startViewTransition || !triggerRect) {
+        commit();
+        return;
+    }
+
+    // Set CSS transition properties for the reveal/contract animation
+    const s = html.style;
+    s.setProperty('--transition-top', `${triggerRect.top}px`);
+    s.setProperty('--transition-left', `${triggerRect.left}px`);
+    s.setProperty('--transition-width', `${triggerRect.width}px`);
+    s.setProperty('--transition-height', `${triggerRect.height}px`);
+    s.setProperty('--viewport-width', `${window.innerWidth}px`);
+    s.setProperty('--viewport-height', `${window.innerHeight}px`);
+
+    html.setAttribute('data-theme-direction', `to-${newTheme}`);
+    html.setAttribute('data-theme-transitioning', 'true');
+
+    const transition = document.startViewTransition(commit);
+    transition.finished.finally(() => {
+        html.removeAttribute('data-theme-transitioning');
+        html.removeAttribute('data-theme-direction');
+    });
+}
+
+// ─── AI Smart Search Bar ────────────────────────────────────────────────────
+function AISearchBar({ onAction, stats }) {
+    const [query, setQuery] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [response, setResponse] = useState(null);
+    const [isFocused, setIsFocused] = useState(false);
+    const inputRef = useRef(null);
+    const responseTimer = useRef(null);
+
+    const suggestions = [
+        'add new article in blogs',
+        'go to projects',
+        'turn off dark mode',
+        'show my stats',
+    ];
+
+    const executeSearch = useCallback(async (q) => {
+        const trimmed = q.trim();
+        if (!trimmed) return;
+
+        // Clear any pending response timer
+        if (responseTimer.current) clearTimeout(responseTimer.current);
+
+        setLoading(true);
+        setResponse(null);
+        setIsFocused(false);
+
+        try {
+            const res = await fetch('/api/admin/ai-search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: trimmed, context: stats }),
+            });
+            const data = await res.json();
+            const action = data.result;
+
+            // Show response message immediately
+            setResponse(action.message);
+
+            // Execute the action immediately (no delay for theme toggle / navigation)
+            onAction(action);
+
+            // Auto-clear message after 4 seconds
+            responseTimer.current = setTimeout(() => setResponse(null), 4000);
+
+        } catch {
+            setResponse('Could not reach AI. Please try again.');
+        } finally {
+            setLoading(false);
+            setQuery('');
+        }
+    }, [stats, onAction]);
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') executeSearch(query);
+        if (e.key === 'Escape') { setIsFocused(false); inputRef.current?.blur(); }
+    };
+
+    // Cleanup timer on unmount
+    useEffect(() => () => { if (responseTimer.current) clearTimeout(responseTimer.current); }, []);
+
+    return (
+        <div className={styles.aiSearchContainer}>
+            <div className={`${styles.aiSearchBar} ${isFocused ? styles.aiSearchBarFocused : ''}`}>
+                {loading ? (
+                    <div className={styles.aiSearchSpinner} />
+                ) : (
+                    <FiZap size={15} className={styles.aiSearchIcon} />
+                )}
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setTimeout(() => setIsFocused(false), 150)}
+                    placeholder="Ask AI anything: add blog, toggle dark mode…"
+                    className={styles.aiSearchInput}
+                    disabled={loading}
+                />
+                {query && !loading && (
+                    <button className={styles.aiSearchSendBtn} onClick={() => executeSearch(query)} aria-label="Send">↵</button>
+                )}
+            </div>
+
+            {/* Suggestion dropdown */}
+            {isFocused && !query && (
+                <div className={styles.aiSuggestionsDropdown}>
+                    <div className={styles.aiSuggestionsLabel}>Try asking</div>
+                    {suggestions.map((s) => (
+                        <button
+                            key={s}
+                            className={styles.aiSuggestionItem}
+                            onMouseDown={() => executeSearch(s)}
+                        >
+                            <FiZap size={11} />
+                            {s}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Response pill */}
+            {response && (
+                <div className={styles.aiResponsePill}>
+                    <FiZap size={11} />
+                    <span>{response}</span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Vertical Carousel ───────────────────────────────────────────────────────
+function VerticalCarousel({ items, type, onView, onEdit, onDelete }) {
+    const [offset, setOffset] = useState(0);
+    const VISIBLE = 3;
+    const canUp = offset > 0;
+    const canDown = offset + VISIBLE < items.length;
+    const visible = items.slice(offset, offset + VISIBLE);
+
+    return (
+        <div className={styles.carouselPanel}>
+            <div className={styles.carouselHeader}>
+                <h3 className={styles.carouselTitle}>
+                    {type === 'blogs' ? '✦ Recent Blogs' : '◈ Recent Projects'}
+                </h3>
+                <div className={styles.carouselNavBtns}>
+                    <button
+                        className={`${styles.carouselNavBtn} ${!canUp ? styles.carouselNavBtnDisabled : ''}`}
+                        onClick={() => setOffset((o) => Math.max(0, o - 1))}
+                        disabled={!canUp}
+                        aria-label="Previous"
+                    >
+                        <FiArrowUp size={13} />
+                    </button>
+                    <button
+                        className={`${styles.carouselNavBtn} ${!canDown ? styles.carouselNavBtnDisabled : ''}`}
+                        onClick={() => setOffset((o) => Math.min(items.length - VISIBLE, o + 1))}
+                        disabled={!canDown}
+                        aria-label="Next"
+                    >
+                        <FiArrowDown size={13} />
+                    </button>
+                </div>
+            </div>
+
+            <div className={styles.carouselViewport}>
+                {visible.length === 0 ? (
+                    <div className={styles.carouselEmpty}>No {type} yet.</div>
+                ) : (
+                    visible.map((item, i) => (
+                        <div key={item.slug} className={styles.carouselCard} style={{ animationDelay: `${i * 50}ms` }}>
+                            <div
+                                className={styles.carouselThumb}
+                                style={{ backgroundImage: `url(${type === 'blogs' ? item.coverImage : item.heroImage})` }}
+                            >
+                                {type === 'blogs' && item.isAI && (
+                                    <span className={styles.carouselAiBadge}>AI</span>
+                                )}
+                            </div>
+                            <div className={styles.carouselInfo}>
+                                <h4 className={styles.carouselItemTitle}>{item.title}</h4>
+                                <span className={styles.carouselItemMeta}>
+                                    {type === 'blogs'
+                                        ? item.date
+                                        : `${item.category || 'Project'} · ${item.year || ''}`}
+                                </span>
+                            </div>
+                            <div className={styles.carouselActions}>
+                                <button className={styles.carouselActionBtn} onClick={() => onView(item)} title="View">
+                                    <FiExternalLink size={12} /><span>View</span>
+                                </button>
+                                <button className={`${styles.carouselActionBtn} ${styles.carouselEditBtn}`} onClick={() => onEdit(item)} title="Edit">
+                                    <FiEdit2 size={12} />
+                                </button>
+                                <button className={`${styles.carouselActionBtn} ${styles.carouselDeleteBtn}`} onClick={() => onDelete(item)} title="Delete">
+                                    <FiTrash2 size={12} />
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            <div className={styles.carouselFooter}>
+                <span className={styles.carouselCount}>
+                    {items.length === 0 ? '0' : `${offset + 1}–${Math.min(offset + VISIBLE, items.length)}`} of {items.length}
+                </span>
+            </div>
+        </div>
+    );
+}
+
+// ─── Donut Chart ─────────────────────────────────────────────────────────────
+function DonutChart({ percent, color, label }) {
+    const clamped = Math.min(100, Math.max(0, Math.round(percent)));
+    return (
+        <div className={styles.donutWrapper}>
+            <div
+                className={styles.donutOuter}
+                style={{ background: `conic-gradient(${color} ${clamped}%, rgba(255,255,255,0.05) 0)` }}
+            >
+                <div className={styles.donutInner} style={{ color }}>
+                    {clamped}%
+                </div>
+            </div>
+            <span className={styles.donutLabel}>{label}</span>
+        </div>
+    );
+}
+
+// ─── Stat Card ───────────────────────────────────────────────────────────────
+function StatCard({ badges, title, value, desc, iconColor, onClick }) {
+    return (
+        <div className={styles.statCard}>
+            <div className={styles.statBadgeRow}>
+                {badges.map((b) => (
+                    <span key={b.label} className={styles.statBadgeChip} style={{ background: b.bg, color: b.color }}>
+                        {b.label}
+                    </span>
+                ))}
+            </div>
+            <div className={styles.statCardHeader}>
+                <h3 className={styles.statCardTitle}>{title}</h3>
+                <span className={styles.statCardValue}>{value}</span>
+            </div>
+            <p className={styles.statCardDesc}>{desc}</p>
+            <div className={styles.statCardFooter}>
+                {onClick && (
+                    <button className={styles.statCardBtn} onClick={onClick} style={{ color: iconColor, background: `${iconColor}22`, borderColor: `${iconColor}33` }}>
+                        <FiTrendingUp size={15} />
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// ─── Main Dashboard ──────────────────────────────────────────────────────────
 export default function Dashboard() {
     const router = useRouter();
+    const themeToggleBtnRef = useRef(null);
+
+    // Mirror the global site theme (reads same localStorage key as ThemeSwitch.js)
+    const [theme, setTheme] = useState('dark');
     const [stats, setStats] = useState({
-        totalProjects: 0,
-        totalBlogs: 0,
-        aiBlogs: 0,
-        humanBlogs: 0,
-        recentBlogs: [],
-        recentProjects: []
+        totalProjects: 0, totalBlogs: 0, aiBlogs: 0, humanBlogs: 0,
+        activeProjects: 0, recentBlogs: [], recentProjects: [],
     });
     const [visitorData, setVisitorData] = useState({ stats: [], totalVisits: 0 });
     const [loading, setLoading] = useState(true);
 
+    // Sync local state with the global data-theme on mount
     useEffect(() => {
-        loadStats();
+        setTheme(getGlobalTheme());
+
+        // Listen for theme changes made by ThemeSwitch on other pages
+        const observer = new MutationObserver(() => {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            setTheme(current);
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        return () => observer.disconnect();
     }, []);
+
+    // Global toggle — affects the entire website
+    const toggleTheme = useCallback((newTheme) => {
+        const rect = themeToggleBtnRef.current?.getBoundingClientRect() ?? null;
+        setTheme(newTheme);
+        applyGlobalTheme(newTheme, rect);
+    }, []);
+
+    useEffect(() => { loadStats(); }, []);
 
     const loadStats = async () => {
         try {
             const [projects, blogs, visitors] = await Promise.all([
-                fetchProjects(),
-                fetchBlogs(),
-                getVisitorStats(10)
+                fetchProjects(), fetchBlogs(), getVisitorStats(10),
             ]);
-
-            const aiBlogs = blogs.filter(b => b.isAI || (b.tags && b.tags.includes('AI')));
-            const humanBlogs = blogs.filter(b => !b.isAI && (!b.tags || !b.tags.includes('AI')));
-
+            const aiBlogs = blogs.filter((b) => b.isAI || (b.tags && b.tags.includes('AI')));
+            const humanBlogs = blogs.filter((b) => !b.isAI && (!b.tags || !b.tags.includes('AI')));
+            const activeProjects = projects.filter((p) => p.status !== 'draft');
             setStats({
-                totalProjects: projects.length,
-                totalBlogs: blogs.length,
-                aiBlogs: aiBlogs.length,
-                humanBlogs: humanBlogs.length,
-                recentBlogs: blogs.slice(0, 10),
-                recentProjects: projects.slice(0, 10)
+                totalProjects: projects.length, totalBlogs: blogs.length,
+                aiBlogs: aiBlogs.length, humanBlogs: humanBlogs.length,
+                activeProjects: activeProjects.length,
+                recentBlogs: blogs.slice(0, 10), recentProjects: projects.slice(0, 10),
             });
-
             setVisitorData(visitors);
-        } catch (error) {
-            console.error('Error loading stats:', error);
+        } catch (err) {
+            console.error('Error loading stats:', err);
         } finally {
             setLoading(false);
         }
     };
 
+    // ── AI action handler ──
+    const handleAIAction = useCallback((action) => {
+        switch (action.action) {
+            case 'navigate':
+                router.push(action.target);
+                break;
+            case 'toggleTheme': {
+                const newTheme = action.theme === 'light' ? 'light' : 'dark';
+                toggleTheme(newTheme);
+                break;
+            }
+            case 'openCreateBlog':
+                router.push('/admin/blogs?action=create');
+                break;
+            case 'openCreateProject':
+                router.push('/admin/projects?action=create');
+                break;
+            case 'showStats':
+                document.getElementById('admin-dashboard-root')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                break;
+            default:
+                break;
+        }
+    }, [router, toggleTheme]);
+
+    const handleViewItem = (item, type) => {
+        window.open(type === 'blogs' ? `/blogs/${item.slug}` : `/projects/${item.slug}`, '_blank');
+    };
+    const handleEditItem = (item, type) => {
+        router.push(type === 'blogs' ? '/admin/blogs' : '/admin/projects');
+    };
+    const handleDeleteItem = async (item, type) => {
+        if (!confirm(`Delete "${item.title}"? This cannot be undone.`)) return;
+        await (type === 'blogs' ? deleteBlog(item.slug) : deleteProject(item.slug));
+        loadStats();
+    };
+
     if (loading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <div className={styles.dashboardLoading}>
                 <Loading text="Loading dashboard..." />
             </div>
         );
     }
 
-    const neumorphicCard = {
-        background: '#161b22', /* Darker card background for contrast */
-        borderRadius: '24px',
-        padding: '1.5rem',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', /* Smoother less-laggy shadow */
-        display: 'flex',
-        flexDirection: 'column',
-    };
-
-    // Calculate max for bar chart
-    const maxVisits = Math.max(...visitorData.stats.map(d => d.count), 1);
+    const maxVisits = Math.max(...visitorData.stats.map((d) => d.count), 1);
+    const projectsPct = (stats.activeProjects / (stats.totalProjects || 1)) * 100;
+    const aiBlogsPct = (stats.aiBlogs / (stats.totalBlogs || 1)) * 100;
+    const humanBlogsPct = (stats.humanBlogs / (stats.totalBlogs || 1)) * 100;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            
-            {/* Dashboard Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#828b9c', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                        <FiMenu size={16} /> <span>Dashboard</span>
+        <div id="admin-dashboard-root" className={styles.dashboardRoot}>
+
+            {/* ── Header ── */}
+            <div className={styles.dashHeader}>
+                <div className={styles.dashHeaderLeft}>
+                    <div className={styles.dashBreadcrumb}>
+                        <FiMenu size={14} />
+                        <span>Dashboard</span>
                     </div>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: '700', color: '#fff', margin: 0 }}>
-                        Hello there, Admin
-                    </h1>
+                    <h1 className={styles.dashTitle}>Hello there, Admin</h1>
                 </div>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: '#161b22',
-                    borderRadius: '12px',
-                    padding: '0.8rem 1rem',
-                    width: '300px',
-                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.02)'
-                }}>
-                    <FiSearch color="#828b9c" size={18} style={{ marginRight: '10px' }} />
-                    <input 
-                        type="text" 
-                        placeholder="Search here" 
-                        style={{ border: 'none', background: 'transparent', color: '#fff', outline: 'none', width: '100%', fontSize: '0.9rem' }}
-                    />
+                <div className={styles.dashHeaderRight}>
+                    {/* Global theme toggle — affects entire website */}
+                    <button
+                        ref={themeToggleBtnRef}
+                        className={styles.themeToggleBtn}
+                        onClick={(e) => {
+                            const newTheme = theme === 'dark' ? 'light' : 'dark';
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setTheme(newTheme);
+                            applyGlobalTheme(newTheme, rect);
+                        }}
+                        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode (affects entire site)`}
+                    >
+                        {theme === 'dark' ? <FiSun size={16} /> : <FiMoon size={16} />}
+                    </button>
+                    <AISearchBar onAction={handleAIAction} stats={stats} />
                 </div>
             </div>
 
-            {/* Top Stat Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-                {/* Card 1 */}
-                <div style={neumorphicCard}>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#e5e7eb', color: '#374151', fontWeight: 'bold' }}>All</span>
-                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#ffe4e6', color: '#be123c', fontWeight: 'bold' }}>Active</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
-                        <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Total Projects</h3>
-                        <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '1.2rem' }}>{stats.totalProjects}</span>
-                    </div>
-                    <p style={{ color: '#828b9c', fontSize: '0.8rem', lineHeight: '1.4', marginBottom: '1.5rem' }}>
-                        Overview of all your deployed and draft projects currently sitting in the portfolio database.
-                    </p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                        <div style={{ display: 'flex' }}>
-                            {[1,2,3].map((i) => (
-                                <div key={i} style={{
-                                    width: '30px', height: '30px', borderRadius: '50%', background: '#fff', 
-                                    marginLeft: i === 1 ? '0' : '-10px', border: '2px solid #161b22',
-                                    backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=proj${i})`, backgroundSize: 'cover'
-                                }} />
-                            ))}
-                            <div style={{
-                                width: '30px', height: '30px', borderRadius: '50%', background: '#3b82f6', 
-                                marginLeft: '-10px', border: '2px solid #161b22', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 'bold'
-                            }}>+</div>
-                        </div>
-                        <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d97706', cursor: 'pointer' }} onClick={() => router.push('/admin/projects')}>
-                            <FiTrendingUp size={16} />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Card 2 */}
-                <div style={neumorphicCard}>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#dcfce7', color: '#166534', fontWeight: 'bold' }}>AI</span>
-                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#e0e7ff', color: '#3730a3', fontWeight: 'bold' }}>Human</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
-                        <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Total Blogs</h3>
-                        <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '1.2rem' }}>{stats.totalBlogs}</span>
-                    </div>
-                    <p style={{ color: '#828b9c', fontSize: '0.8rem', lineHeight: '1.4', marginBottom: '1.5rem' }}>
-                        Automated AI blogs and manually written articles contributing to your overall platform SEO. 
-                    </p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                        <div style={{ display: 'flex' }}>
-                            {[4,5,6].map((i) => (
-                                <div key={i} style={{
-                                    width: '30px', height: '30px', borderRadius: '50%', background: '#fff', 
-                                    marginLeft: i === 4 ? '0' : '-10px', border: '2px solid #161b22',
-                                    backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=blog${i})`, backgroundSize: 'cover'
-                                }} />
-                            ))}
-                            <div style={{
-                                width: '30px', height: '30px', borderRadius: '50%', background: '#8b5cf6', 
-                                marginLeft: '-10px', border: '2px solid #161b22', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 'bold'
-                            }}>+</div>
-                        </div>
-                        <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626', cursor: 'pointer' }} onClick={() => router.push('/admin/blogs')}>
-                            <FiTrendingUp size={16} />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Card 3 */}
-                <div style={neumorphicCard}>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                        <span style={{ fontSize: '0.65rem', padding: '0.3rem 0.6rem', borderRadius: '6px', background: '#fef3c7', color: '#92400e', fontWeight: 'bold' }}>Organic</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
-                        <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem' }}>Total Visitors</h3>
-                        <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '1.2rem' }}>{visitorData.totalVisits}</span>
-                    </div>
-                    <p style={{ color: '#828b9c', fontSize: '0.8rem', lineHeight: '1.4', marginBottom: '1.5rem' }}>
-                        Analytics summarizing organic user hits across your portfolio over the last 10 days period.
-                    </p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                        <div style={{ display: 'flex' }}>
-                            {[7,8,9].map((i) => (
-                                <div key={i} style={{
-                                    width: '30px', height: '30px', borderRadius: '50%', background: '#fff', 
-                                    marginLeft: i === 7 ? '0' : '-10px', border: '2px solid #161b22',
-                                    backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=user${i})`, backgroundSize: 'cover'
-                                }} />
-                            ))}
-                            <div style={{
-                                width: '30px', height: '30px', borderRadius: '50%', background: '#10b981', 
-                                marginLeft: '-10px', border: '2px solid #161b22', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 'bold'
-                            }}>+</div>
-                        </div>
-                        <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16a34a', cursor: 'pointer' }}>
-                            <FiTrendingUp size={16} />
-                        </div>
-                    </div>
-                </div>
+            {/* ── Stat Cards ── */}
+            <div className={styles.statCardsGrid}>
+                <StatCard
+                    badges={[{ label: 'All', bg: '#e5e7eb', color: '#374151' }, { label: 'Active', bg: '#fef3c7', color: '#92400e' }]}
+                    title="Total Projects"
+                    value={stats.totalProjects}
+                    desc={`${stats.activeProjects} active · ${stats.totalProjects - stats.activeProjects} draft`}
+                    iconColor="#FACC15"
+                    onClick={() => router.push('/admin/projects')}
+                />
+                <StatCard
+                    badges={[{ label: 'AI', bg: '#dcfce7', color: '#166534' }, { label: 'Human', bg: '#e0e7ff', color: '#3730a3' }]}
+                    title="Total Blogs"
+                    value={stats.totalBlogs}
+                    desc={`${stats.aiBlogs} AI-generated · ${stats.humanBlogs} manually written`}
+                    iconColor="#FACC15"
+                    onClick={() => router.push('/admin/blogs')}
+                />
+                <StatCard
+                    badges={[{ label: 'Organic', bg: '#fef3c7', color: '#92400e' }]}
+                    title="Total Visitors"
+                    value={visitorData.totalVisits}
+                    desc="Organic visits across your portfolio (last 10 days)"
+                    iconColor="#10b981"
+                />
             </div>
 
-            {/* Middle Row Charts */}
-            <div style={{ display: 'flex', gap: '1.5rem', height: '300px' }}>
-                {/* Bar Chart (Traffic) */}
-                <div style={{ ...neumorphicCard, flex: 2 }}>
-                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#828b9c' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6' }}></div> Visitors</span>
+            {/* ── Charts Row ── */}
+            <div className={styles.chartsRow}>
+                {/* Bar chart */}
+                <div className={`${styles.dashCard} ${styles.barChartCard}`}>
+                    <div className={styles.chartLegend}>
+                        <div className={styles.chartDot} style={{ background: '#FACC15' }} />
+                        <span>Visitors — last 10 days</span>
                     </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flex: 1, paddingBottom: '1rem' }}>
+                    <div className={styles.barChart}>
                         {visitorData.stats.map((day, idx) => {
-                            const barHeight = Math.max((day.count / maxVisits) * 100, 5);
+                            const barH = Math.max((day.count / maxVisits) * 100, 5);
                             return (
-                                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', height: '100%', width: '100%' }}>
-                                    <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%', justifyContent: 'center' }}>
-                                        {/* Segmented bar look */}
-                                        <div style={{
-                                            width: '12px',
-                                            height: `${barHeight}%`,
-                                            background: 'linear-gradient(180deg, #10b981 0%, #3b82f6 50%, #6366f1 100%)',
-                                            borderRadius: '6px',
-                                            boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
-                                        }}></div>
+                                <div key={idx} className={styles.barCol}>
+                                    <div className={styles.barTrack}>
+                                        <div
+                                            className={styles.barFill}
+                                            style={{ height: `${barH}%` }}
+                                            title={`${day.count} visits`}
+                                        />
                                     </div>
-                                    <span style={{ fontSize: '0.65rem', color: '#555e70' }}>{day.label}</span>
+                                    <span className={styles.barLabel}>{day.label}</span>
                                 </div>
                             );
                         })}
                     </div>
                 </div>
 
-                {/* Pie Charts */}
-                <div style={{ ...neumorphicCard, flex: 1 }}>
-                    <h3 style={{ margin: '0 0 1.5rem 0', color: '#fff', fontSize: '1.1rem' }}>Very Important Stats</h3>
-                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', fontSize: '0.75rem', fontWeight: 'bold', flexWrap: 'wrap' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#828b9c' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div> AI Blogs</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#828b9c' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#8b5cf6' }}></div> Human</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#828b9c' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div> Projects</span>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', flex: 1 }}>
-                        {/* Circular Progress 1 */}
-                        <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', background: 'conic-gradient(#10b981 67%, rgba(255,255,255,0.05) 0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ position: 'absolute', width: '65px', height: '65px', borderRadius: '50%', background: '#161b22', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                {Math.round((stats.aiBlogs / (stats.totalBlogs || 1)) * 100)}%
-                            </div>
-                        </div>
-
-                        {/* Circular Progress 2 */}
-                        <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', background: 'conic-gradient(#8b5cf6 46%, rgba(255,255,255,0.05) 0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ position: 'absolute', width: '65px', height: '65px', borderRadius: '50%', background: '#1a2035', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b5cf6', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                {Math.round((stats.humanBlogs / (stats.totalBlogs || 1)) * 100)}%
-                            </div>
-                        </div>
-
-                        {/* Circular Progress 3 */}
-                        <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', background: 'conic-gradient(#ef4444 85%, rgba(255,255,255,0.05) 0)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ position: 'absolute', width: '65px', height: '65px', borderRadius: '50%', background: '#1a2035', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                {stats.totalProjects > 0 ? '100%' : '0%'}
-                            </div>
-                        </div>
+                {/* Donut charts */}
+                <div className={`${styles.dashCard} ${styles.donutCard}`}>
+                    <h3 className={styles.cardSectionTitle}>Content Breakdown</h3>
+                    <div className={styles.donutsRow}>
+                        <DonutChart percent={aiBlogsPct} color="#10b981" label="AI Blogs" />
+                        <DonutChart percent={humanBlogsPct} color="#8b5cf6" label="Human" />
+                        <DonutChart percent={projectsPct} color="#FACC15" label="Active Projects" />
                     </div>
                 </div>
             </div>
 
-            {/* Bottom List Row */}
-            <div style={{ ...neumorphicCard, flex: 1, padding: '0.5rem 1.5rem' }}>
-                {stats.recentProjects.slice(0, 3).map((project, idx) => (
-                    <div key={project.slug} style={{ 
-                        display: 'flex', alignItems: 'center', padding: '1rem 0', 
-                        borderBottom: idx !== 2 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                        gap: '2rem'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1.5 }}>
-                            <img src={project.heroImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${project.slug}`} alt="Project" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', background: '#333' }} />
-                            <div>
-                                <h4 style={{ margin: 0, color: '#fff', fontSize: '0.9rem' }}>{project.title}</h4>
-                                <span style={{ color: '#828b9c', fontSize: '0.75rem' }}>Project • {project.year}</span>
-                            </div>
-                        </div>
-
-                        <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: 0, color: '#fff', fontSize: '0.9rem' }}>{project.category || 'General'}</h4>
-                            <span style={{ color: '#828b9c', fontSize: '0.75rem' }}>Category</span>
-                        </div>
-
-                        <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: 0, color: '#fff', fontSize: '0.9rem' }}>Active</h4>
-                            <span style={{ color: '#828b9c', fontSize: '0.75rem' }}>Status</span>
-                        </div>
-
-                        <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: 0, color: '#10b981', fontSize: '0.9rem' }}>✓</h4>
-                            <span style={{ color: '#828b9c', fontSize: '0.75rem' }}>Deployed</span>
-                        </div>
-
-                        <div style={{ flex: 0.5, textAlign: 'right' }}>
-                            <button onClick={() => router.push('/admin/projects')} style={{ background: 'transparent', border: 'none', color: '#828b9c', cursor: 'pointer', fontSize: '1.2rem' }}>
-                                ›
-                            </button>
-                        </div>
-                    </div>
-                ))}
+            {/* ── Dual Carousels ── */}
+            <div className={styles.dualCarouselRow}>
+                <VerticalCarousel
+                    items={stats.recentProjects}
+                    type="projects"
+                    onView={(item) => handleViewItem(item, 'projects')}
+                    onEdit={(item) => handleEditItem(item, 'projects')}
+                    onDelete={(item) => handleDeleteItem(item, 'projects')}
+                />
+                <VerticalCarousel
+                    items={stats.recentBlogs}
+                    type="blogs"
+                    onView={(item) => handleViewItem(item, 'blogs')}
+                    onEdit={(item) => handleEditItem(item, 'blogs')}
+                    onDelete={(item) => handleDeleteItem(item, 'blogs')}
+                />
             </div>
-
         </div>
     );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import styles from '../admin.module.css';
 import { addBlog, fetchBlogs, deleteBlog } from '@/lib/firestoreUtils';
 import { FiCpu, FiCalendar, FiSearch, FiPlus, FiEye, FiEyeOff, FiExternalLink } from 'react-icons/fi';
@@ -11,6 +12,7 @@ import BlogPostClient from '../../blogs/[slug]/BlogPostClient';
 import MarkdownEditor from './MarkdownEditor';
 
 export default function BlogManager() {
+    const searchParams = useSearchParams();
     const [view, setView] = useState('list');
     const [blogs, setBlogs] = useState([]);
     const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
@@ -35,6 +37,13 @@ export default function BlogManager() {
     useEffect(() => {
         loadBlogs();
     }, []);
+
+    // Auto-open creation modal when AI search navigates with ?action=create
+    useEffect(() => {
+        if (searchParams?.get('action') === 'create') {
+            setIsCreationModalOpen(true);
+        }
+    }, [searchParams]);
 
     // BroadcastChannel for reliable cross-tab live preview
     const previewChannel = useRef(null);

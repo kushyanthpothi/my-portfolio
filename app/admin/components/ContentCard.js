@@ -42,8 +42,8 @@ function Badge({ children, position = 'top-right', variant = 'default' }) {
             border: '1px solid rgba(255, 215, 0, 0.25)',
         },
         'category': {
-            background: '#1a2035',
-            color: '#fff',
+            background: 'var(--admin-tag-bg)',
+            color: 'var(--admin-tag-color)',
         },
     };
     const vs = variantStyles[variant] || variantStyles.category;
@@ -62,6 +62,7 @@ function Badge({ children, position = 'top-right', variant = 'default' }) {
             alignItems: 'center',
             gap: variant === 'ai' ? '5px' : '0',
             zIndex: 11,
+            transition: 'background 0.3s ease, color 0.3s ease',
             ...vs,
         }}>
             {variant === 'ai' && <FiCpu size={13} />}
@@ -90,13 +91,14 @@ export function ContentCard({
             <div className="content-card" style={{
                 ...(cardWidth ? { flex: `0 0 ${cardWidth}` } : { width: '100%' }),
                 height: cardHeight,
-                background: '#161b22', /* Solid color for performance, matching Dashboard */
-                border: '1px solid rgba(255, 255, 255, 0.05)',
+                background: 'var(--admin-card-bg)',
+                border: '1px solid var(--admin-card-border)',
                 borderRadius: '24px',
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'relative',
+                transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
             }}>
                 {/* Image Section */}
                 <div style={{ width: '100%', height: imageHeight, overflow: 'hidden', position: 'relative' }}>
@@ -105,13 +107,13 @@ export function ContentCard({
                         style={{
                             width: '100%', height: '100%',
                             background: `url(${imageUrl}) center/cover`,
-                            backgroundColor: '#1a1a2e',
+                            backgroundColor: 'var(--admin-input-bg)',
                         }}
                     />
                     {/* Bottom Fade */}
                     <div style={{
                         position: 'absolute', bottom: 0, left: 0, right: 0, height: '100px',
-                        background: 'radial-gradient(ellipse at center bottom, rgba(10, 10, 15, 0.8) 0%, transparent 70%)',
+                        background: 'radial-gradient(ellipse at center bottom, rgba(10, 10, 15, 0.4) 0%, transparent 70%)',
                     }} />
                     {/* Hover Edit/Delete Overlay */}
                     <div className="card-actions-overlay" style={{
@@ -163,15 +165,17 @@ export function ContentCard({
                     display: 'flex', flexDirection: 'column', gap: '0.6rem', flex: 1,
                 }}>
                     <h4 style={{
-                        color: '#fff', fontSize: '1rem', fontWeight: '600', lineHeight: '1.4',
+                        color: 'var(--admin-text-primary)', fontSize: '1rem', fontWeight: '600', lineHeight: '1.4',
                         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                         overflow: 'hidden', margin: 0,
+                        transition: 'color 0.3s ease',
                     }}>
                         {title}
                     </h4>
                     <div style={{
                         display: 'flex', alignItems: 'center', gap: '0.5rem',
-                        color: '#6B7280', fontSize: '0.8rem', marginTop: 'auto',
+                        color: 'var(--admin-text-secondary)', fontSize: '0.8rem', marginTop: 'auto',
+                        transition: 'color 0.3s ease',
                     }}>
                         {metaDate && <><FiCalendar size={13} /><span>{metaDate}</span></>}
                         {metaLabel && <span style={{ marginLeft: metaDate ? 'auto' : 'auto' }}>{metaLabel}</span>}

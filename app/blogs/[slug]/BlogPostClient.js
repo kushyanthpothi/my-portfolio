@@ -34,24 +34,51 @@ export default function BlogPostClient({ initialBlog = null, initialRelatedBlogs
         if (!track || relatedBlogs.length === 0 || !isPlaying) return;
 
         let paused = false;
+        let animationId = null;
+        let timeoutId = null;
+
         const onEnter = () => { paused = true; };
         const onLeave = () => { paused = false; };
         track.addEventListener('mouseenter', onEnter);
         track.addEventListener('mouseleave', onLeave);
 
-        const interval = setInterval(() => {
-            if (paused) return;
-            const cardWidth = track.firstElementChild?.offsetWidth + 24 || 360;
-            const maxScroll = track.scrollWidth - track.clientWidth;
-            if (track.scrollLeft >= maxScroll - 4) {
-                track.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-                track.scrollBy({ left: cardWidth, behavior: 'smooth' });
-            }
-        }, 3500);
+        // Use requestAnimationFrame-based scroll to avoid CSS scroll-snap conflicts in production
+        const smoothScrollTo = (target, duration = 500) => {
+            const start = track.scrollLeft;
+            const distance = target - start;
+            const startTime = performance.now();
+
+            const step = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // Ease-in-out cubic
+                const ease = progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+                track.scrollLeft = start + distance * ease;
+                if (progress < 1) {
+                    animationId = requestAnimationFrame(step);
+                }
+            };
+            animationId = requestAnimationFrame(step);
+        };
+
+        const scheduleNext = () => {
+            timeoutId = setTimeout(() => {
+                if (paused) { scheduleNext(); return; }
+                const cardWidth = (track.firstElementChild?.offsetWidth ?? 336) + 24;
+                const maxScroll = track.scrollWidth - track.clientWidth;
+                const nextLeft = track.scrollLeft >= maxScroll - 4 ? 0 : track.scrollLeft + cardWidth;
+                smoothScrollTo(nextLeft);
+                scheduleNext();
+            }, 3500);
+        };
+
+        scheduleNext();
 
         return () => {
-            clearInterval(interval);
+            clearTimeout(timeoutId);
+            if (animationId) cancelAnimationFrame(animationId);
             track.removeEventListener('mouseenter', onEnter);
             track.removeEventListener('mouseleave', onLeave);
         };

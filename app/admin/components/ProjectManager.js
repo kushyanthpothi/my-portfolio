@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import styles from '../admin.module.css';
 import { addProject, fetchProjects, deleteProject } from '@/lib/firestoreUtils';
 import { ContentCard } from './ContentCard';
@@ -10,6 +11,7 @@ import { useAuth } from '@/lib/AuthContext';
 import ProjectClient from '../../projects/[slug]/ProjectClient';
 
 export default function ProjectManager() {
+    const searchParams = useSearchParams();
     const [view, setView] = useState('list');
     const [projects, setProjects] = useState([]);
     const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
@@ -49,6 +51,13 @@ export default function ProjectManager() {
     useEffect(() => {
         loadProjects();
     }, []);
+
+    // Auto-open creation modal when AI search navigates with ?action=create
+    useEffect(() => {
+        if (searchParams?.get('action') === 'create') {
+            setIsCreationModalOpen(true);
+        }
+    }, [searchParams]);
 
     // BroadcastChannel for reliable cross-tab live preview
     const previewChannel = useRef(null);

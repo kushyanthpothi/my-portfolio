@@ -5,7 +5,7 @@
 }
 
 .projectCard {
-    background: rgba(128, 128, 128, 0.2);
+    background: var(--card-border, rgba(128, 128, 128, 0.2));
     border-radius: 24px;
     position: relative;
     overflow: hidden;
@@ -86,7 +86,7 @@
 .category {
     display: inline-block;
     background: var(--accent-color);
-    color: var(--bg-primary);
+    color: #303030;
     padding: 0.4rem 1rem;
     border-radius: 20px;
     font-size: 0.85rem;
@@ -104,6 +104,12 @@
     letter-spacing: 0.02em;
     margin: 0;
     color: var(--text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 4.8rem; /* Consistent space for up to 3 lines */
+    line-height: 1.1;
 }
 
 .excerpt {
@@ -112,6 +118,11 @@
     line-height: 1.6;
     color: var(--text-secondary);
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 4.8rem; /* Consistent space for 3 lines */
 }
 
 @media (max-width: 768px) {
