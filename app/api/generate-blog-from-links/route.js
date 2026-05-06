@@ -100,11 +100,12 @@ async function fetchUrlContent(validatedUrl) {
         const response = await fetch(safeUrl.href, {
             headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PortfolioBot/1.0)' },
             next: { revalidate: 0 },
-            signal: AbortSignal.timeout(10_000)
+            signal: AbortSignal.timeout(10_000),
+            redirect: 'error'
         });
 
         if (!response.ok) {
-            console.warn(`[fetchUrlContent] HTTP ${response.status} from ${validatedUrl.hostname}`);
+            console.warn(`[fetchUrlContent] HTTP ${response.status} from ${safeUrl.hostname}`);
             return { text: '', image: null };
         }
 
