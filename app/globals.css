@@ -184,6 +184,8 @@ body {
   animation: fadeIn 0.2s ease-in;
 }
 
+
+
 /* ─── View Transitions API ────────────────────────────────────────────────── */
 ::view-transition-group(root) {
   animation: none;
@@ -235,19 +237,42 @@ html[data-theme-direction="to-light"]::view-transition-old(root) {
 
 @keyframes reveal {
   from {
-    clip-path: inset(var(--transition-top) calc(var(--viewport-width) - var(--transition-left) - var(--transition-width)) calc(var(--viewport-height) - var(--transition-top) - var(--transition-height)) var(--transition-left) round 100px);
+    clip-path: inset(
+      var(--transition-top)
+      calc(var(--viewport-width) - var(--transition-left) - var(--transition-width))
+      calc(var(--viewport-height) - var(--transition-top) - var(--transition-height))
+      var(--transition-left)
+      round var(--transition-radius)
+    );
   }
   to {
-    clip-path: inset(-100px -100px -100px -100px round 100px);
+    clip-path: inset(-100px -100px -100px -100px round var(--transition-radius));
   }
 }
 
 @keyframes contract {
   from {
-    clip-path: inset(-100px -100px -100px -100px round 100px);
+    clip-path: inset(-100px -100px -100px -100px round var(--transition-radius));
   }
   to {
-    clip-path: inset(var(--transition-top) calc(var(--viewport-width) - var(--transition-left) - var(--transition-width)) calc(var(--viewport-height) - var(--transition-top) - var(--transition-height)) var(--transition-left) round 100px);
+    clip-path: inset(
+      var(--transition-top)
+      calc(var(--viewport-width) - var(--transition-left) - var(--transition-width))
+      calc(var(--viewport-height) - var(--transition-top) - var(--transition-height))
+      var(--transition-left)
+      round var(--transition-radius)
+    );
+  }
+}
+
+/* ─── Mobile: speed up animation for smaller screens ─────────────────────── */
+@media (max-width: 768px) {
+  html[data-theme-direction="to-dark"]::view-transition-new(root) {
+    animation-duration: 0.6s;
+  }
+
+  html[data-theme-direction="to-light"]::view-transition-old(root) {
+    animation-duration: 0.6s;
   }
 }
 

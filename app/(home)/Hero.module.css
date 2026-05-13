@@ -75,7 +75,8 @@
     height: clamp(290px, 52vw, 420px);
     border-radius: clamp(15px, 2vw, 20px);
     overflow: hidden;
-    background-color: #666;
+    background-color: var(--bg-secondary);
+    transition: background-color 0.3s ease;
     opacity: 0;
     /* Hidden on desktop, FloatingProfile takes over */
 }
@@ -233,8 +234,8 @@
 
 @media (max-width: 768px) {
     .heroSection {
-        padding: clamp(80px, 12vh, 100px) clamp(1rem, 5vw, 1.5rem) clamp(30px, 5vh, 40px);
-        min-height: 100vh;
+        padding: clamp(65px, 7vh, 80px) clamp(1rem, 5vw, 1.5rem) clamp(30px, 5vh, 40px);
+        min-height: 97vh;
     }
 
     .heroContent {
@@ -315,7 +316,7 @@
 
 @media (max-width: 420px) {
     .heroSection {
-        padding: clamp(70px, 15vh, 90px) clamp(0.875rem, 4vw, 1.25rem) clamp(25px, 5vh, 35px);
+        padding: clamp(60px, 6vh, 75px) clamp(0.875rem, 4vw, 1.25rem) clamp(25px, 5vh, 35px);
     }
 
     .heroContent {

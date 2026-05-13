@@ -26,34 +26,50 @@ export default function ThemeSwitch({ className = '', style = {} }) {
     const toggleTheme = (event) => {
         const newTheme = theme === 'dark' ? 'light' : 'dark';
 
-        // Check if browser supports View Transitions API
+        // Fallback for browsers without View Transitions API
         if (!document.startViewTransition) {
             applyTheme(newTheme);
             return;
         }
 
-        // Get the switch's dimensions and position
+        // Capture switch position to anchor the clip-path animation.
+        // Use visualViewport API — it always matches getBoundingClientRect() coords,
+        // correctly accounting for Chrome's URL bar on mobile (window.innerHeight does not).
         const rect = event.currentTarget.getBoundingClientRect();
-        
-        // Pass everything needed to calculate the 'inset' clip-path
-        const style = document.documentElement.style;
-        style.setProperty('--transition-top', `${rect.top}px`);
-        style.setProperty('--transition-left', `${rect.left}px`);
-        style.setProperty('--transition-width', `${rect.width}px`);
-        style.setProperty('--transition-height', `${rect.height}px`);
-        style.setProperty('--viewport-width', `${window.innerWidth}px`);
-        style.setProperty('--viewport-height', `${window.innerHeight}px`);
+        const vv = window.visualViewport;
 
-        // Set direction and state
+        // Visual viewport dimensions — excludes URL bar, keyboard, etc.
+        const vpWidth  = Math.round(vv ? vv.width  : window.innerWidth);
+        const vpHeight = Math.round(vv ? vv.height : window.innerHeight);
+
+        // When pinch-zoomed, the visual viewport can be offset within the layout viewport.
+        // getBoundingClientRect on fixed elements is relative to visual viewport origin,
+        // so we add these offsets to translate to layout viewport coordinates.
+        const offsetTop  = vv ? Math.round(vv.offsetTop)  : 0;
+        const offsetLeft = vv ? Math.round(vv.offsetLeft) : 0;
+
+        const top    = Math.round(rect.top)  + offsetTop;
+        const left   = Math.round(rect.left) + offsetLeft;
+        const width  = Math.round(rect.width);
+        const height = Math.round(rect.height);
+
+        const domStyle = document.documentElement.style;
+        domStyle.setProperty('--transition-top',    `${top}px`);
+        domStyle.setProperty('--transition-left',   `${left}px`);
+        domStyle.setProperty('--transition-width',  `${width}px`);
+        domStyle.setProperty('--transition-height', `${height}px`);
+        domStyle.setProperty('--viewport-width',    `${vpWidth}px`);
+        domStyle.setProperty('--viewport-height',   `${vpHeight + offsetTop}px`);
+        // Pill radius = half the switch height — matches the exact toggle shape
+        domStyle.setProperty('--transition-radius', `${Math.round(height / 2)}px`);
+
         document.documentElement.setAttribute('data-theme-direction', `to-${newTheme}`);
         document.documentElement.setAttribute('data-theme-transitioning', 'true');
 
-        // Start the view transition
         const transition = document.startViewTransition(() => {
             applyTheme(newTheme);
         });
 
-        // Clean up attributes after transition
         transition.finished.finally(() => {
             document.documentElement.removeAttribute('data-theme-transitioning');
             document.documentElement.removeAttribute('data-theme-direction');

@@ -11,9 +11,12 @@ export default function Hero({ startAnimation = true }) {
     const [isMobile, setIsMobile] = useState(false);
     const [mounted, setMounted] = useState(false);
 
+    // Only enable scroll-driven parallax on desktop
     const { scrollYProgress } = useScroll({
         target: container,
-        offset: ['start start', 'end start']
+        offset: ['start start', 'end start'],
+        // Providing layoutEffect: false avoids the SSR/static position warning
+        layoutEffect: false,
     });
 
     const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
@@ -66,7 +69,7 @@ export default function Hero({ startAnimation = true }) {
     };
 
     return (
-        <div className={styles.heroSection} ref={container}>
+        <div className={styles.heroSection} ref={container} style={{ position: 'relative' }}>
             <motion.div
                 className={styles.heroContent}
                 initial={{ opacity: 0 }}
