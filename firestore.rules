@@ -1,0 +1,35 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public Content (Read: Public, Write: Admin)
+    match /blogs/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /projects/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /experiences/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /services/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /techStack/{document=**} { allow read: if true; allow write: if request.auth != null; }
+    match /tech_stack/{document=**} { allow read: if true; allow write: if request.auth != null; }
+
+    // Analytics (Read: Public, Write: Restricted to valid analytics events)
+    match /analytics/{dateDoc} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['date', 'count'])
+        && request.resource.data.count is int
+        && request.resource.data.count >= 0;
+      allow delete: if request.auth != null;
+    }
+
+    // Protected Settings (API Keys) - Admin Only
+    match /settings/profile { allow read: if true; allow write: if request.auth != null; }
+    match /settings/{document=**} { allow read, write: if request.auth != null; }
+
+    // Admin Tasks (Worker Queue) - Admin Only
+    match /admin_tasks/{taskId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Default catch-all (Secure)
+    match /{document=**} { allow read, write: if request.auth != null; }
+
+  }
+}

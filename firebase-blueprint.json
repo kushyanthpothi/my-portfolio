@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "About": {
+      "title": "About",
+      "description": "About me section content",
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "About me paragraph"
+        }
+      }
+    },
+    "Blog": {
+      "title": "Blog",
+      "description": "A blog post",
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      }
+    },
+    "Project": {
+      "title": "Project",
+      "description": "A featured project",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "tech": {
+          "type": "string"
+        }
+      }
+    },
+    "DailyAnalytics": {
+      "title": "Daily Analytics",
+      "description": "Daily visit counts",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "visits": { "type": "integer" }
+      }
+    },
+    "LocationAnalytics": {
+      "title": "Location Analytics",
+      "description": "Visit counts by country",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "views": { "type": "integer" }
+      }
+    }
+  },
+  "firestore": {
+    "/about/{docId}": {
+      "schema": "About",
+      "description": "About me details"
+    },
+    "/blogs/{blogId}": {
+      "schema": "Blog",
+      "description": "List of blog posts"
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "List of projects"
+    },
+    "/analytics_daily/{date}": {
+      "schema": "DailyAnalytics",
+      "description": "Daily visit counts"
+    },
+    "/analytics_locations/{country}": {
+      "schema": "LocationAnalytics",
+      "description": "Visit counts by location"
+    }
+  }
+}

@@ -1,0 +1,152 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400,300&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --accent: #3b82f6;
+  --bg-base: #020412;
+  --glow-1: rgba(1, 15, 200, 0.7);
+  --glow-2: rgba(0, 25, 150, 0.6);
+  --glow-3: rgba(0, 0, 0, 0);
+  --glow-4: rgba(0, 0, 0, 0);
+}
+
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #3b82f6;
+}
+@property --bg-base {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #020412;
+}
+@property --glow-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(1, 15, 200, 0.7);
+}
+@property --glow-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(0, 25, 150, 0.6);
+}
+@property --glow-3 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(0, 0, 0, 0);
+}
+@property --glow-4 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(0, 0, 0, 0);
+}
+
+[data-theme="purple"] {
+  --accent: #a855f7;
+  --bg-base: #0c0216;
+  --glow-1: rgba(140, 15, 200, 0.7);
+  --glow-2: rgba(90, 0, 150, 0.6);
+}
+
+[data-theme="emerald"] {
+  --accent: #10b981;
+  --bg-base: #02120a;
+  --glow-1: rgba(1, 180, 100, 0.7);
+  --glow-2: rgba(0, 120, 60, 0.6);
+}
+
+[data-theme="crimson"] {
+  --accent: #ef4444;
+  --bg-base: #160205;
+  --glow-1: rgba(200, 15, 40, 0.7);
+  --glow-2: rgba(150, 0, 20, 0.6);
+}
+
+[data-theme="silver"] {
+  --accent: #94a3b8;
+  --bg-base: #0a0a0c;
+  --glow-1: rgba(180, 190, 210, 0.5);
+  --glow-2: rgba(100, 110, 130, 0.4);
+}
+
+[data-theme="gold"] {
+  --accent: #eab308;
+  --bg-base: #181504;
+  --glow-1: rgba(220, 180, 50, 0.6);
+  --glow-2: rgba(160, 120, 20, 0.5);
+}
+
+[data-theme="hologram"] {
+  --accent: #22d3ee;
+  --bg-base: #f58231;
+  --glow-1: rgba(66, 99, 216, 0.8);
+  --glow-2: rgba(240, 50, 230, 0.8);
+  --glow-3: rgba(66, 212, 244, 0.8);
+  --glow-4: rgba(145, 30, 255, 0.8);
+}
+
+[data-theme="sunset"] {
+  --accent: #fcd34d;
+  --bg-base: #ff4560;
+  --glow-1: rgba(150, 0, 255, 0.8);
+  --glow-2: rgba(255, 210, 0, 0.9);
+  --glow-3: rgba(255, 100, 0, 0.8);
+  --glow-4: rgba(255, 0, 150, 0.8);
+}
+
+*, *::before, *::after, :root, body {
+  transition: --accent 0.4s cubic-bezier(0.4, 0, 0.2, 1), --bg-base 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-1 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-2 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-3 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-4 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.theme-accent-text {
+  color: var(--accent);
+}
+
+.theme-accent-border {
+  border-color: var(--accent);
+}
+
+body {
+  background-color: var(--bg-base);
+  background-size: auto, auto, auto, auto, 80px 100%;
+  background-image: 
+    radial-gradient(circle at 90% 90%, var(--glow-1) 0%, transparent 65%),
+    radial-gradient(circle at 10% 10%, var(--glow-2) 0%, transparent 60%),
+    radial-gradient(circle at 90% 10%, var(--glow-3) 0%, transparent 60%),
+    radial-gradient(circle at 10% 90%, var(--glow-4) 0%, transparent 65%),
+    /* Wide reeded glass effect (Liquid glass fluting) */
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.06) 0px,
+      rgba(255, 255, 255, 0.01) 20px,
+      rgba(0, 0, 0, 0.08) 60px,
+      rgba(0, 0, 0, 0.15) 79px,
+      rgba(255, 255, 255, 0.06) 80px
+    );
+  background-attachment: fixed;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+}
+
+
+
