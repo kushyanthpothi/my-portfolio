@@ -27,12 +27,6 @@ function buildFirebaseConfig() {
         return fromEnv;
     }
 
-    // Fallback: load the committed config file (works locally)
-    try {
-        const { createRequire } = await import('module');
-        // dynamic import for json in ESM
-    } catch (_) { /* handled below */ }
-
     // Static fallback (values match firebase-applet-config.json)
     return {
         apiKey:            'AIzaSyCxG11euXpbfRGhYMJhzpjRM-X07kQCRFg',
