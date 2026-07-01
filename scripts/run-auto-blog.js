@@ -1,48 +1,40 @@
 // ESM — matches "type": "module" in package.json
-// Uses the Firebase Admin SDK (firebase-admin) so it can authenticate via a
-// service account and bypass Firestore security rules — the correct pattern
-// for a trusted server-side automation script running in GitHub Actions.
+// Uses the Firebase Admin SDK (firebase-admin v10+ modular API) so it can
+// authenticate via a service account and bypass Firestore security rules —
+// the correct pattern for a trusted server-side script in GitHub Actions.
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
-// firebase-admin ships as CommonJS; require() is the correct loader for it in ESM.
-const admin = require('firebase-admin');
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
 // ---------------------------------------------------------------------------
 // FIREBASE ADMIN INITIALISATION
 // ---------------------------------------------------------------------------
 // FIREBASE_SERVICE_ACCOUNT_KEY must be set as a GitHub Actions secret.
-// Its value is the full JSON content of the service account key file,
-// stringified (i.e. the file contents pasted as a single secret string).
-// For local runs without the secret, set it in a .env file or export it in
-// your shell before running this script.
+// Its value is the full JSON content of the service account key file
+// (paste the entire .json file contents as the secret value).
 
-function initAdmin() {
-    if (admin.apps.length > 0) return admin.app();
-
-    const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-    if (!rawKey) {
-        console.error('[ERROR] FIREBASE_SERVICE_ACCOUNT_KEY env var is not set.');
-        console.error('        Set it as a GitHub Actions secret (full JSON content of your service account key).');
-        process.exit(1);
-    }
-
-    let serviceAccount;
-    try {
-        serviceAccount = JSON.parse(rawKey);
-    } catch (err) {
-        console.error('[ERROR] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY as JSON:', err.message);
-        process.exit(1);
-    }
-
-    return admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-    });
+const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+if (!rawKey) {
+    console.error('[ERROR] FIREBASE_SERVICE_ACCOUNT_KEY env var is not set.');
+    console.error('        Set it as a GitHub Actions secret (full JSON of your service account key file).');
+    process.exit(1);
 }
 
-initAdmin();
-const db = admin.firestore();
+let serviceAccount;
+try {
+    serviceAccount = JSON.parse(rawKey);
+} catch (err) {
+    console.error('[ERROR] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY as JSON:', err.message);
+    process.exit(1);
+}
+
+// Avoid re-initialising if the module is loaded more than once
+if (getApps().length === 0) {
+    initializeApp({ credential: cert(serviceAccount) });
+}
+
+const db = getFirestore();
+
 
 // ---------------------------------------------------------------------------
 // HELPERS
