@@ -1,7 +1,56 @@
-'use strict';
+// ESM — matches "type": "module" in package.json
+// Uses the Firebase client SDK (firebase/app + firebase/firestore), the same
+// SDK the rest of the v3 app uses, instead of the missing lib/admin wrapper.
 
-const { db } = require('../lib/admin');
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, doc, getDoc, setDoc, getDocs } from 'firebase/firestore';
 
+// ---------------------------------------------------------------------------
+// FIREBASE INITIALISATION
+// ---------------------------------------------------------------------------
+// Config is read from environment variables injected by GitHub Actions
+// (NEXT_PUBLIC_FIREBASE_* secrets).  When all vars are absent we fall back to
+// the committed firebase-applet-config.json so the script also works locally.
+
+function buildFirebaseConfig() {
+    const fromEnv = {
+        apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+        authDomain:        process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+        projectId:         process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        storageBucket:     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+        appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    };
+
+    // Use env vars if the essential fields are present
+    if (fromEnv.apiKey && fromEnv.projectId) {
+        return fromEnv;
+    }
+
+    // Fallback: load the committed config file (works locally)
+    try {
+        const { createRequire } = await import('module');
+        // dynamic import for json in ESM
+    } catch (_) { /* handled below */ }
+
+    // Static fallback (values match firebase-applet-config.json)
+    return {
+        apiKey:            'AIzaSyCxG11euXpbfRGhYMJhzpjRM-X07kQCRFg',
+        authDomain:        'kushyanth-portfolio.firebaseapp.com',
+        projectId:         'kushyanth-portfolio',
+        storageBucket:     'kushyanth-portfolio.firebasestorage.app',
+        messagingSenderId: '385947231226',
+        appId:             '1:385947231226:web:3d4ad68ca311d9d162fa43',
+    };
+}
+
+const firebaseConfig = buildFirebaseConfig();
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ---------------------------------------------------------------------------
+// HELPERS
+// ---------------------------------------------------------------------------
 
 function getPlaceholderImage(category, topic = '') {
     const topicSeed = topic
@@ -18,7 +67,7 @@ function getPlaceholderImage(category, topic = '') {
         'startup': 'business',
         'crypto': 'crypto',
         'technology': 'digital',
-        'default': 'tech'
+        'default': 'tech',
     };
 
     const keyword = categoryKeywords[category?.toLowerCase()] || categoryKeywords['default'];
@@ -41,7 +90,7 @@ async function verifyImageUrl(url) {
         const response = await fetch(url, {
             method: 'HEAD',
             signal: controller.signal,
-            headers: { 'User-Agent': 'Mozilla/5.0' }
+            headers: { 'User-Agent': 'Mozilla/5.0' },
         });
         clearTimeout(timeout);
         if (!response.ok) return false;
@@ -63,15 +112,13 @@ async function searchAndVerifyImage(topic, category, tavilyKey) {
         const response = await fetch('https://api.tavily.com/search', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // The Tavily API requires the key in the body per its spec.
-            // It is never echoed to logs.
             body: JSON.stringify({
                 api_key: tavilyKey,
                 query,
                 search_depth: 'basic',
                 include_images: true,
-                max_results: 3
-            })
+                max_results: 3,
+            }),
         });
 
         if (!response.ok) return null;
@@ -102,7 +149,7 @@ async function searchAndVerifyImage(topic, category, tavilyKey) {
  */
 async function resolveCoverImage(metadata, research, topic, settings) {
     const tavilyKey = process.env.TAVILY_API_KEY || settings.tavilyApiKey;
-    const category = metadata.category;
+    const category  = metadata.category;
 
     if (metadata.coverImage) {
         console.log(`  [IMG] Checking metadata image...`);
@@ -140,8 +187,8 @@ async function resolveCoverImage(metadata, research, topic, settings) {
 
 async function getSettings(id) {
     try {
-        const snap = await db.collection('settings').doc(id).get();
-        return snap.exists ? snap.data() : null;
+        const snap = await getDoc(doc(db, 'settings', id));
+        return snap.exists() ? snap.data() : null;
     } catch (err) {
         console.error('Error fetching settings:', err.message);
         return null;
@@ -150,7 +197,7 @@ async function getSettings(id) {
 
 async function saveSettings(id, data) {
     try {
-        await db.collection('settings').doc(id).set(data, { merge: true });
+        await setDoc(doc(db, 'settings', id), data, { merge: true });
         return { success: true };
     } catch (err) {
         console.error('Error saving settings:', err.message);
@@ -163,13 +210,13 @@ async function addBlog(blogData) {
         const slug = blogData.slug ||
             blogData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
         const date = blogData.date || new Date().toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric'
+            year: 'numeric', month: 'long', day: 'numeric',
         });
 
-        await db.collection('blogs').doc(slug).set({
+        await setDoc(doc(db, 'blogs', slug), {
             ...blogData,
             date,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
         });
         return { success: true, id: slug };
     } catch (err) {
@@ -180,7 +227,7 @@ async function addBlog(blogData) {
 
 async function fetchExistingBlogs() {
     try {
-        const snap = await db.collection('blogs').get();
+        const snap = await getDocs(collection(db, 'blogs'));
         return snap.docs.map(d => ({ ...d.data(), slug: d.id }));
     } catch (err) {
         console.error('Error fetching blogs:', err.message);
@@ -205,31 +252,31 @@ async function tavilySearch(query, apiKey, isNews = false) {
             search_depth: 'advanced',
             include_answer: true,
             include_images: true,
-            max_results: 5
+            max_results: 5,
         };
 
         if (isNews) {
             payload.topic = 'news';
-            payload.days = 2;
+            payload.days  = 2;
         }
 
         const response = await fetch('https://api.tavily.com/search', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
         });
 
         if (!response.ok) throw new Error(`Tavily API error: ${response.status}`);
 
         const data = await response.json();
         return {
-            answer: data.answer || '',
-            images: data.images || [],
+            answer:  data.answer || '',
+            images:  data.images || [],
             results: (data.results || []).map(r => ({
-                title: r.title,
-                url: r.url,
-                content: r.content
-            }))
+                title:   r.title,
+                url:     r.url,
+                content: r.content,
+            })),
         };
     } catch (err) {
         console.log(`[WARNING] Tavily search failed: ${err.message}`);
@@ -271,8 +318,8 @@ ${searchCtx}
 CRITICAL: You MUST extract the 5 topics strictly from the WEB SEARCH RESULTS provided above. Do not invent topics older than a few days.
 
 Return ONLY valid JSON without markdown:
-{ "topics": ["Specific Headline 1", "Headline 2", "Headline 3", "Headline 4", "Headline 5"] }`
-            }
+{ "topics": ["Specific Headline 1", "Headline 2", "Headline 3", "Headline 4", "Headline 5"] }`,
+            },
         ];
     }
 
@@ -296,8 +343,8 @@ Return ONLY valid JSON without markdown:
     "quotes": ["quote1"],
     "imageUrls": ["url1", "url2"],
     "publishedDate": "${today}"
-}`
-            }
+}`,
+            },
         ];
     }
 
@@ -332,8 +379,8 @@ Return ONLY valid JSON without markdown:
     "outline": ["intro", "section1", "section2", "conclusion"],
     "hook": "opening hook",
     "tone": "informative"
-}`
-            }
+}`,
+            },
         ];
     }
 
@@ -357,8 +404,8 @@ Return ONLY valid JSON without markdown:
     "excerpt": "Brief 1-2 sentence summary",
     "category": "${analysis.category}",
     "coverImage": "https://example.com/image.jpg"
-}`
-            }
+}`,
+            },
         ];
     }
 
@@ -404,8 +451,8 @@ REQUIREMENTS:
 - Natural flow from introduction to conclusion
 
 Return ONLY valid JSON without markdown code blocks:
-{ "content": "# Title\\n\\nOpening paragraph...\\n\\n## Section 1\\n\\nParagraphs...\\n\\n## Section 2\\n\\nParagraphs..." }`
-            }
+{ "content": "# Title\\n\\nOpening paragraph...\\n\\n## Section 1\\n\\nParagraphs...\\n\\n## Section 2\\n\\nParagraphs..." }`,
+            },
         ];
     }
 
@@ -426,7 +473,7 @@ function parseJSON(text) {
     // Strip markdown code block wrappers
     jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
 
-    const openBrace = jsonStr.indexOf('{');
+    const openBrace  = jsonStr.indexOf('{');
     const closeBrace = jsonStr.lastIndexOf('}');
 
     if (openBrace !== -1 && closeBrace !== -1 && closeBrace > openBrace) {
@@ -441,17 +488,20 @@ function parseJSON(text) {
     throw new Error('No JSON object found in the AI response.');
 }
 
+// ---------------------------------------------------------------------------
+// AI PROVIDER CONSTANTS
+// ---------------------------------------------------------------------------
 
-const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-const NVIDIA_MODEL = 'meta/llama-4-maverick-17b-128e-instruct';
+const NVIDIA_API_URL    = 'https://integrate.api.nvidia.com/v1/chat/completions';
+const NVIDIA_MODEL      = 'meta/llama-4-maverick-17b-128e-instruct';
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_API_URL      = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 
-const MAX_RETRIES = 4;
-const BASE_RETRY_DELAY_MS = 5000;
-const INTER_CALL_DELAY_MS = 8000;
-const TOPICS_PER_RUN = 3;
+const MAX_RETRIES          = 4;
+const BASE_RETRY_DELAY_MS  = 5000;
+const INTER_CALL_DELAY_MS  = 8000;
+const TOPICS_PER_RUN       = 3;
 
 const GROQ_MODELS = new Set([
     'llama-3.3-70b-versatile',
@@ -467,7 +517,7 @@ const GROQ_MODELS = new Set([
 /**
  * Returns a validated Groq model ID.
  * If the value stored in Firestore settings is an unrecognised identifier
- * (e.g. a leftover OpenRouter model ID), DEFAULT_MODEL is used instead.
+ * (e.g. a leftover OpenRouter model ID), GROQ_DEFAULT_MODEL is used instead.
  */
 function resolveGroqModel(configModel) {
     if (configModel && typeof configModel === 'string' && GROQ_MODELS.has(configModel.trim())) {
@@ -502,19 +552,19 @@ async function callNvidiaAPI(messages, nvidiaKey) {
     const response = await fetch(NVIDIA_API_URL, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type':  'application/json',
             'Authorization': `Bearer ${nvidiaKey}`,
-            'Accept': 'application/json'
+            'Accept':        'application/json',
         },
         body: JSON.stringify({
-            model: NVIDIA_MODEL,
+            model:           NVIDIA_MODEL,
             messages,
-            max_tokens: 4096,
-            temperature: 0.7,
-            top_p: 1.00,
+            max_tokens:      4096,
+            temperature:     0.7,
+            top_p:           1.00,
             response_format: { type: 'json_object' },
-            stream: false
-        })
+            stream:          false,
+        }),
     });
 
     if (!response.ok) {
@@ -522,7 +572,7 @@ async function callNvidiaAPI(messages, nvidiaKey) {
         throw new Error(`NVIDIA API returned HTTP ${response.status}`);
     }
 
-    const data = await response.json();
+    const data    = await response.json();
     const content = data?.choices?.[0]?.message?.content;
     if (!content) throw new Error('NVIDIA API returned an empty response');
     return parseJSON(content);
@@ -536,24 +586,24 @@ async function callGroqAPI(messages, groqModel, groqKey, attempt) {
     const response = await fetch(GROQ_API_URL, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${groqKey}`
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${groqKey}`,
         },
         body: JSON.stringify({
-            model: groqModel,
+            model:                groqModel,
             messages,
-            temperature: 1,
+            temperature:          1,
             max_completion_tokens: 4096,
-            top_p: 1,
-            stop: null,
-            response_format: { type: 'json_object' }
-        })
+            top_p:                1,
+            stop:                 null,
+            response_format:      { type: 'json_object' },
+        }),
     });
 
     if (!response.ok) {
         if (response.status === 429) {
             const retryAfter = response.headers.get('retry-after');
-            const waitMs = retryAfter
+            const waitMs     = retryAfter
                 ? Math.ceil(parseFloat(retryAfter)) * 1000
                 : BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
             console.warn(`  [Groq] Rate limited (429). Waiting ${waitMs / 1000}s before retry...`);
@@ -565,7 +615,7 @@ async function callGroqAPI(messages, groqModel, groqKey, attempt) {
         throw new Error(`Groq API returned HTTP ${response.status}`);
     }
 
-    const data = await response.json();
+    const data    = await response.json();
     const content = data?.choices?.[0]?.message?.content;
     if (!content) throw new Error('Groq API returned an empty response body');
     return parseJSON(content);
@@ -577,19 +627,19 @@ async function callGroqAPI(messages, groqModel, groqKey, attempt) {
 
 async function generateAI(promptText, contextMode, config, extraContext = {}) {
     const nvidiaKey = sanitizeKey(process.env.NVIDIA_KEY || config.nvidiaApiKey);
-    const groqKey = sanitizeKey(process.env.GROQ_API_KEY || config.groqApiKey);
+    const groqKey   = sanitizeKey(process.env.GROQ_API_KEY || config.groqApiKey);
 
     if (!nvidiaKey && !groqKey) {
         throw new Error('No AI provider configured. Set NVIDIA_KEY or GROQ_API_KEY as a GitHub Actions secret.');
     }
 
-    const useSearch = ['discover', 'research'].includes(contextMode);
-    const today = new Date().toLocaleDateString();
-    const tavilyKey = sanitizeKey(process.env.TAVILY_API_KEY || config.tavilyApiKey);
+    const useSearch  = ['discover', 'research'].includes(contextMode);
+    const today      = new Date().toLocaleDateString();
+    const tavilyKey  = sanitizeKey(process.env.TAVILY_API_KEY || config.tavilyApiKey);
 
     let searchResults = null;
     if (useSearch && tavilyKey) {
-        const isNews = contextMode === 'discover';
+        const isNews    = contextMode === 'discover';
         const searchQuery = isNews ? `trending tech news ${today}` : promptText;
         console.log(`  → Web Search: "${searchQuery}"`);
         searchResults = await tavilySearch(searchQuery, tavilyKey, isNews);
@@ -614,7 +664,7 @@ async function generateAI(promptText, contextMode, config, extraContext = {}) {
     }
 
     const groqModel = resolveGroqModel(config.model);
-    let lastError = new Error('Unknown Groq API error');
+    let lastError   = new Error('Unknown Groq API error');
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
@@ -653,14 +703,14 @@ async function main() {
 
     // Skip if already ran today (UTC date comparison)
     const lastRun = settings.lastRun ? new Date(settings.lastRun) : null;
-    const now = new Date();
+    const now     = new Date();
     if (lastRun && lastRun.toDateString() === now.toDateString()) {
         console.log('Already ran today. Skipping.');
         process.exit(0);
     }
 
     const nvidiaKeyPresent = !!(sanitizeKey(process.env.NVIDIA_KEY || settings.nvidiaApiKey));
-    const groqKeyPresent = !!(sanitizeKey(process.env.GROQ_API_KEY || settings.groqApiKey));
+    const groqKeyPresent   = !!(sanitizeKey(process.env.GROQ_API_KEY || settings.groqApiKey));
 
     if (!nvidiaKeyPresent && !groqKeyPresent) {
         console.error('[ERROR] No AI provider key found. Set NVIDIA_KEY or GROQ_API_KEY as a GitHub Actions secret.');
@@ -679,18 +729,18 @@ async function main() {
             'Find 5 trending tech topics for {{date}}. Focus ONLY on: AI tools & innovations, smartphone rumors & launches, tech product innovations, breakthrough technologies, popular tech trends. EXCLUDE: stock market news, financial reports, cryptocurrency prices, company earnings.'
         ).replace('{{date}}', today);
 
-        const existingBlogs = await fetchExistingBlogs();
+        const existingBlogs  = await fetchExistingBlogs();
         const existingTitles = existingBlogs.map(b => b.title?.toLowerCase().trim());
         console.log(`Loaded ${existingBlogs.length} existing blogs for duplicate checking`);
 
         const uniqueTopics = [];
-        const maxAttempts = 3;
+        const maxAttempts  = 3;
 
         for (let attempt = 1; attempt <= maxAttempts && uniqueTopics.length < TOPICS_PER_RUN; attempt++) {
             console.log(`\nAttempt ${attempt}: Discovering topics...`);
 
             const discoverData = await generateAI(populatedPrompt, 'discover', settings);
-            const newTopics = discoverData.topics || [];
+            const newTopics    = discoverData.topics || [];
 
             if (newTopics.length === 0) {
                 console.log('[WARNING] No topics returned in this attempt');
@@ -700,8 +750,8 @@ async function main() {
             console.log(`[SUCCESS] Candidates: ${newTopics.join(', ')}`);
 
             for (const topic of newTopics) {
-                const topicLower = topic.toLowerCase().trim();
-                const isDuplicateInDB = existingTitles.some(
+                const topicLower       = topic.toLowerCase().trim();
+                const isDuplicateInDB  = existingTitles.some(
                     t => t && (t.includes(topicLower.slice(0, 20)) || topicLower.includes(t.slice(0, 20)))
                 );
                 const isDuplicateInSession = uniqueTopics.some(
@@ -757,7 +807,7 @@ async function main() {
 
                 console.log('  → Writing Content...');
                 const contentData = await generateAI(topic, 'write-content', settings, { research, analysis, metadata });
-                const content = typeof contentData.content === 'string'
+                const content     = typeof contentData.content === 'string'
                     ? contentData.content
                     : JSON.stringify(contentData.content);
 
@@ -765,7 +815,7 @@ async function main() {
                     ...metadata,
                     content,
                     isAI: true,
-                    tags: ['AI', analysis.category || 'Technology']
+                    tags: ['AI', analysis.category || 'Technology'],
                 };
 
                 console.log('  → Saving to Firestore...');
