@@ -1,46 +1,48 @@
 // ESM — matches "type": "module" in package.json
-// Uses the Firebase client SDK (firebase/app + firebase/firestore), the same
-// SDK the rest of the v3 app uses, instead of the missing lib/admin wrapper.
+// Uses the Firebase Admin SDK (firebase-admin) so it can authenticate via a
+// service account and bypass Firestore security rules — the correct pattern
+// for a trusted server-side automation script running in GitHub Actions.
 
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDoc, setDoc, getDocs } from 'firebase/firestore';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+// firebase-admin ships as CommonJS; require() is the correct loader for it in ESM.
+const admin = require('firebase-admin');
 
 // ---------------------------------------------------------------------------
-// FIREBASE INITIALISATION
+// FIREBASE ADMIN INITIALISATION
 // ---------------------------------------------------------------------------
-// Config is read from environment variables injected by GitHub Actions
-// (NEXT_PUBLIC_FIREBASE_* secrets).  When all vars are absent we fall back to
-// the committed firebase-applet-config.json so the script also works locally.
+// FIREBASE_SERVICE_ACCOUNT_KEY must be set as a GitHub Actions secret.
+// Its value is the full JSON content of the service account key file,
+// stringified (i.e. the file contents pasted as a single secret string).
+// For local runs without the secret, set it in a .env file or export it in
+// your shell before running this script.
 
-function buildFirebaseConfig() {
-    const fromEnv = {
-        apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-        authDomain:        process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-        projectId:         process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        storageBucket:     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-        appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    };
+function initAdmin() {
+    if (admin.apps.length > 0) return admin.app();
 
-    // Use env vars if the essential fields are present
-    if (fromEnv.apiKey && fromEnv.projectId) {
-        return fromEnv;
+    const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (!rawKey) {
+        console.error('[ERROR] FIREBASE_SERVICE_ACCOUNT_KEY env var is not set.');
+        console.error('        Set it as a GitHub Actions secret (full JSON content of your service account key).');
+        process.exit(1);
     }
 
-    // Static fallback (values match firebase-applet-config.json)
-    return {
-        apiKey:            'AIzaSyCxG11euXpbfRGhYMJhzpjRM-X07kQCRFg',
-        authDomain:        'kushyanth-portfolio.firebaseapp.com',
-        projectId:         'kushyanth-portfolio',
-        storageBucket:     'kushyanth-portfolio.firebasestorage.app',
-        messagingSenderId: '385947231226',
-        appId:             '1:385947231226:web:3d4ad68ca311d9d162fa43',
-    };
+    let serviceAccount;
+    try {
+        serviceAccount = JSON.parse(rawKey);
+    } catch (err) {
+        console.error('[ERROR] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY as JSON:', err.message);
+        process.exit(1);
+    }
+
+    return admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+    });
 }
 
-const firebaseConfig = buildFirebaseConfig();
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+initAdmin();
+const db = admin.firestore();
 
 // ---------------------------------------------------------------------------
 // HELPERS
@@ -181,8 +183,8 @@ async function resolveCoverImage(metadata, research, topic, settings) {
 
 async function getSettings(id) {
     try {
-        const snap = await getDoc(doc(db, 'settings', id));
-        return snap.exists() ? snap.data() : null;
+        const snap = await db.collection('settings').doc(id).get();
+        return snap.exists ? snap.data() : null;
     } catch (err) {
         console.error('Error fetching settings:', err.message);
         return null;
@@ -191,7 +193,7 @@ async function getSettings(id) {
 
 async function saveSettings(id, data) {
     try {
-        await setDoc(doc(db, 'settings', id), data, { merge: true });
+        await db.collection('settings').doc(id).set(data, { merge: true });
         return { success: true };
     } catch (err) {
         console.error('Error saving settings:', err.message);
@@ -207,7 +209,7 @@ async function addBlog(blogData) {
             year: 'numeric', month: 'long', day: 'numeric',
         });
 
-        await setDoc(doc(db, 'blogs', slug), {
+        await db.collection('blogs').doc(slug).set({
             ...blogData,
             date,
             createdAt: new Date().toISOString(),
@@ -221,7 +223,7 @@ async function addBlog(blogData) {
 
 async function fetchExistingBlogs() {
     try {
-        const snap = await getDocs(collection(db, 'blogs'));
+        const snap = await db.collection('blogs').get();
         return snap.docs.map(d => ({ ...d.data(), slug: d.id }));
     } catch (err) {
         console.error('Error fetching blogs:', err.message);
