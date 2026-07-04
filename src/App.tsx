@@ -387,7 +387,7 @@ function BlogDetailView({ data }: { data: any[] }) {
 
   if (loading) return <LoadingIndicator />;
   if (!item) return (
-    <div className="w-[80%] mx-auto pb-10">
+    <div className="w-full md:w-[80%] mx-auto pb-10">
       <Link to="/blogs" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
         ← Back to Blogs
       </Link>
@@ -400,7 +400,7 @@ function BlogDetailView({ data }: { data: any[] }) {
 
 
   return (
-    <div className="w-[80%] mx-auto pb-10">
+    <div className="w-full md:w-[80%] mx-auto pb-10">
       <Link to="/blogs" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
          ← Back to Blogs
       </Link>
@@ -459,7 +459,7 @@ function ProjectDetailView({ data }: { data: any[] }) {
 
   if (loading) return <LoadingIndicator />;
   if (!item) return (
-    <div className="w-[80%] mx-auto pb-10">
+    <div className="w-full md:w-[80%] mx-auto pb-10">
       <Link to="/projects" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
         ← Back to Projects
       </Link>
@@ -497,7 +497,7 @@ function ProjectDetailView({ data }: { data: any[] }) {
   ];
 
   return (
-    <div className="w-[80%] mx-auto pb-10">
+    <div className="w-full md:w-[80%] mx-auto pb-10">
       <Link to="/projects" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
          ← Back to Projects
       </Link>
