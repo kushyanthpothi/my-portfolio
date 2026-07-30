@@ -26,36 +26,9 @@ import { ImageCarousel } from './ImageCarousel';
 import { LoadingIndicator } from './LoadingIndicator';
 import { JourneyCard } from './JourneyCard';
 import { ContentCard } from './ContentCard';
-
-export function updateMetaTags(title: string, description: string, path: string) {
-  document.title = title;
-  
-  const setMeta = (nameOrProperty: string, content: string, isProp = false) => {
-    const attr = isProp ? 'property' : 'name';
-    let el = document.head.querySelector(`meta[${attr}="${nameOrProperty}"]`);
-    if (!el) {
-      el = document.createElement('meta');
-      el.setAttribute(attr, nameOrProperty);
-      document.head.appendChild(el);
-    }
-    el.setAttribute('content', content);
-  };
-
-  setMeta('description', description);
-  setMeta('og:title', title, true);
-  setMeta('og:description', description, true);
-  setMeta('og:url', `https://kushyanth-portfolio.web.app${path}`, true);
-  setMeta('twitter:title', title);
-  setMeta('twitter:description', description);
-
-  let canonical = document.head.querySelector('link[rel="canonical"]');
-  if (!canonical) {
-    canonical = document.createElement('link');
-    canonical.setAttribute('rel', 'canonical');
-    document.head.appendChild(canonical);
-  }
-  canonical.setAttribute('href', `https://kushyanth-portfolio.web.app${path}`);
-}
+import { useMouseGlow } from './useMouseGlow';
+import { SEO } from './components/SEO';
+import { BreadcrumbSchema, ArticleSchema, ProjectSchema, SiteStructuredData } from './components/StructuredData';
 
 interface GlassOption {
   value: string;
@@ -90,7 +63,7 @@ function GlassSelect({ options, value, onChange, placeholder = 'Select...' }: Gl
       {/* Select button */}
       <div
         onClick={() => setIsOpen(prev => !prev)}
-        className="w-full bg-white/5 backdrop-blur-[32px] border border-white/10 rounded-xl px-5 py-3 text-white flex items-center justify-between cursor-pointer select-none transition hover:bg-white/10 focus:border-white/30"
+        className="w-full rounded-xl px-5 py-3 text-white flex items-center justify-between cursor-pointer select-none transition liquid-glass"
       >
         <span className={selectedOption ? 'text-white' : 'text-white/40'}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -115,11 +88,10 @@ function GlassSelect({ options, value, onChange, placeholder = 'Select...' }: Gl
                   onChange(opt.value);
                   setIsOpen(false);
                 }}
-                className={`px-5 py-3.5 text-sm cursor-pointer transition select-none ${
-                  opt.value === value
+                className={`px-5 py-3.5 text-sm cursor-pointer transition select-none ${opt.value === value
                     ? 'bg-white/10 text-white font-semibold'
                     : 'text-white/80 hover:bg-white/5 hover:text-white'
-                }`}
+                  }`}
               >
                 {opt.label}
               </div>
@@ -177,14 +149,24 @@ function ContactView() {
       });
   };
 
-  const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 outline-none focus:border-white/30 text-white placeholder:text-white/40 transition";
+  const inputClass = "w-full rounded-xl px-5 py-3 outline-none text-white placeholder:text-white/40 transition liquid-glass-input";
 
   return (
+    <>
+      <SEO
+        title="Get in Touch | Kushyanth Pothineni"
+        description="Contact Kushyanth Pothineni for web development, consulting, cloud migrations, or contract projects."
+        path="/contact"
+      />
+      <BreadcrumbSchema items={[
+        { name: 'Home', path: '/' },
+        { name: 'Contact', path: '/contact' },
+      ]} />
     <div className="w-full max-w-xl">
-      <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">Get in Touch</h2>
-      
+      <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">Get in Touch</h1>
+
       {status === 'success' && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm px-5 py-3 rounded-xl text-center font-medium"
@@ -194,7 +176,7 @@ function ContactView() {
       )}
 
       {status === 'error' && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-5 py-3 rounded-xl text-center font-medium"
@@ -206,27 +188,27 @@ function ContactView() {
       <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label className="block text-xs font-semibold tracking-wider text-white/50 uppercase mb-2 ml-1">Name</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="John Smith" 
-            className={inputClass} 
-            required 
+            placeholder="John Smith"
+            className={inputClass}
+            required
           />
         </div>
-        
+
         <div>
           <label className="block text-xs font-semibold tracking-wider text-white/50 uppercase mb-2 ml-1">Email</label>
-          <input 
-            type="email" 
+          <input
+            type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="johnsmith@gmail.com" 
-            className={inputClass} 
-            required 
+            placeholder="johnsmith@gmail.com"
+            className={inputClass}
+            required
           />
         </div>
 
@@ -248,19 +230,19 @@ function ContactView() {
 
         <div>
           <label className="block text-xs font-semibold tracking-wider text-white/50 uppercase mb-2 ml-1">What Can I Help You...</label>
-          <textarea 
-            rows={4} 
+          <textarea
+            rows={4}
             name="message"
             value={formData.message}
             onChange={handleChange}
-            placeholder="Hello, I'd like to enquire about..." 
-            className={`${inputClass} resize-none`} 
-            required 
+            placeholder="Hello, I'd like to enquire about..."
+            className={`${inputClass} resize-none`}
+            required
           />
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={status === 'loading' || status === 'success'}
           className="bg-white text-black font-semibold rounded-xl px-5 py-3.5 mt-2 hover:opacity-90 transition disabled:opacity-50"
         >
@@ -268,6 +250,7 @@ function ContactView() {
         </button>
       </form>
     </div>
+    </>
   );
 }
 
@@ -315,13 +298,13 @@ function BlurMorphText() {
 
   const wordVariants = {
     hidden: { filter: "blur(8px)", opacity: 0, y: 15, scale: 0.95 },
-    visible: { 
-      filter: "blur(0px)", opacity: 1, y: 0, scale: 1, 
-      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
+    visible: {
+      filter: "blur(0px)", opacity: 1, y: 0, scale: 1,
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
     },
-    exit: { 
-      filter: "blur(8px)", opacity: 0, y: -15, scale: 1.05, 
-      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } 
+    exit: {
+      filter: "blur(8px)", opacity: 0, y: -15, scale: 1.05,
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
     }
   };
 
@@ -375,45 +358,66 @@ function BlogDetailView({ data }: { data: any[] }) {
     }
   }, [id, data]);
 
-  useEffect(() => {
-    if (item) {
-      updateMetaTags(
-        `${item.title || item.name || 'Blog'} | Kushyanth Pothineni`,
-        item.description || item.summary || item.excerpt || 'Read this article by Kushyanth Pothineni.',
-        `/blogs/${id}`
-      );
-    }
-  }, [item, id]);
-
-  if (loading) return <LoadingIndicator />;
-  if (!item) return (
-    <div className="w-full md:w-[80%] mx-auto pb-10">
-      <Link to="/blogs" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
-        ← Back to Blogs
-      </Link>
-      <p className="text-white/50">Blog not found.</p>
-    </div>
-  );
-
-  // v2 Firestore canonical field for blogs is `coverImage`
-  const imgUrl = item.coverImage || item.heroImage || item.image || item.imgUrl || item.thumbnail || item.imageUrl || item.pic;
-
+  const blogTitle = item?.title || item?.name || 'Blog';
+  const blogDescription = item?.description || item?.summary || item?.excerpt || 'Read this article by Kushyanth Pothineni.';
+  const imgUrl = item?.coverImage || item?.heroImage || item?.image || item?.imgUrl || item?.thumbnail || item?.imageUrl || item?.pic;
 
   return (
-    <div className="w-full md:w-[80%] mx-auto pb-10">
-      <Link to="/blogs" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
-         ← Back to Blogs
-      </Link>
-      <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">{item.title || item.name || 'Untitled Blog'}</h1>
-      {imgUrl && !imgError ? (
-        <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden mb-10 bg-white/5 border border-white/10 relative">
-          <img src={imgUrl} onError={() => setImgError(true)} alt={item.title || "Blog Image"} className="w-full h-full object-cover" />
-        </div>
-      ) : (
-        <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden mb-10 bg-white/5 border border-white/10 flex items-center justify-center relative">
-          <KPLogo className="w-24 h-24 text-white/20" />
+    <>
+      {item && (
+        <>
+          <SEO
+            title={`${blogTitle} | Kushyanth Pothineni`}
+            description={blogDescription}
+            path={`/blogs/${id}`}
+            ogImage={imgUrl || undefined}
+            ogType="article"
+            publishedTime={item.createdAt || item.date}
+            modifiedTime={item.updatedAt}
+            keywords={item.tags?.join(', ')}
+          />
+          <ArticleSchema
+            title={blogTitle}
+            description={blogDescription}
+            url={`/blogs/${id}`}
+            imageUrl={imgUrl}
+            datePublished={item.createdAt || item.date}
+            dateModified={item.updatedAt}
+          />
+        </>
+      )}
+      {!item && <SEO title="Blog Not Found | Kushyanth Pothineni" description="The requested blog article could not be found." path={`/blogs/${id}`} noindex />}
+
+      <BreadcrumbSchema items={[
+        { name: 'Home', path: '/' },
+        { name: 'Blogs', path: '/blogs' },
+        { name: blogTitle, path: `/blogs/${id}` },
+      ]} />
+
+      {loading && <LoadingIndicator />}
+      {!loading && !item && (
+        <div className="w-full md:w-[80%] mx-auto pb-10">
+          <Link to="/blogs" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
+            ← Back to Blogs
+          </Link>
+          <p className="text-white/50">Blog not found.</p>
         </div>
       )}
+      {!loading && item && (
+        <div className="w-full md:w-[80%] mx-auto pb-10">
+          <Link to="/blogs" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
+            ← Back to Blogs
+          </Link>
+          <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">{blogTitle}</h1>
+          {imgUrl && !imgError ? (
+            <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden mb-10 liquid-glass relative">
+              <img src={imgUrl} onError={() => setImgError(true)} alt={blogTitle} loading="lazy" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden mb-10 liquid-glass flex items-center justify-center relative">
+              <KPLogo className="w-24 h-24 text-white/20" />
+            </div>
+          )}
       <div className="prose prose-invert max-w-none text-white/80 leading-relaxed prose-p:my-4 prose-headings:mt-8 prose-headings:mb-4 prose-headings:font-medium prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-a:text-white prose-a:underline prose-img:rounded-2xl prose-ul:my-4 prose-li:my-1">
         {item.content || item.body || item.description ? (
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.content || item.body || item.description}</ReactMarkdown>
@@ -422,6 +426,8 @@ function BlogDetailView({ data }: { data: any[] }) {
         )}
       </div>
     </div>
+      )}
+    </>
   );
 }
 
@@ -447,59 +453,73 @@ function ProjectDetailView({ data }: { data: any[] }) {
     }
   }, [id, data]);
 
-  useEffect(() => {
-    if (item) {
-      updateMetaTags(
-        `${item.title || item.name || 'Project'} | Kushyanth Pothineni`,
-        item.summary || item.description || 'Explore this project by Kushyanth Pothineni.',
-        `/projects/${id}`
-      );
-    }
-  }, [item, id]);
+  const projectTitle = item?.title || item?.name || 'Project';
+  const projectDescription = item?.summary || item?.description || 'Explore this project by Kushyanth Pothineni.';
+  const imgUrl = item?.heroImage || item?.image || item?.coverImage || item?.imgUrl || item?.thumbnail || item?.imageUrl || item?.pic;
+  const projectTechStack = Array.isArray(item?.techStack)
+    ? item?.techStack
+    : item?.tech ? item.tech.split(',').map((t: string) => t.trim()).filter(Boolean) : [];
 
-  if (loading) return <LoadingIndicator />;
-  if (!item) return (
-    <div className="w-full md:w-[80%] mx-auto pb-10">
-      <Link to="/projects" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
-        ← Back to Projects
-      </Link>
-      <p className="text-white/50">Project not found.</p>
-    </div>
-  );
+  const mainContent = item?.content || item?.body || '';
+  const summary = item?.summary || item?.description || '';
+  const projectLink = item?.link || item?.liveUrl || item?.url || item?.github;
 
-  // v2 Firestore canonical field for projects is `heroImage`
-  const imgUrl = item.heroImage || item.image || item.coverImage || item.imgUrl || item.thumbnail || item.imageUrl || item.pic;
+  const problem = item?.problem || '';
+  const solution = item?.solution || '';
+  const challenge = item?.challenge || '';
 
-  // Resolve primary description/content block
-  const mainContent = item.content || item.body || '';
-  const summary = item.summary || item.description || '';
+  const contentImages: string[] = Array.isArray(item?.contentImages) ? item.contentImages : [];
 
-  // Resolve link
-  const projectLink = item.link || item.liveUrl || item.url || item.github;
-
-  // Tech stack array or comma-string
-  const techStack: string[] = Array.isArray(item.techStack)
-    ? item.techStack
-    : item.tech ? item.tech.split(',').map((t: string) => t.trim()).filter(Boolean) : [];
-
-  // Case-study fields
-  const problem = item.problem || '';
-  const solution = item.solution || '';
-  const challenge = item.challenge || '';
-
-  // Additional content screenshots
-  const contentImages: string[] = Array.isArray(item.contentImages) ? item.contentImages : [];
-
-  // Combine heroImage + contentImages into a single ordered array for the carousel
   const carouselImages: string[] = [
     ...(imgUrl ? [imgUrl] : []),
-    ...contentImages.filter(src => src && src !== imgUrl),
+    ...contentImages.filter((src: string) => src && src !== imgUrl),
   ];
 
   return (
+    <>
+      {item && (
+        <>
+          <SEO
+            title={`${projectTitle} | Kushyanth Pothineni`}
+            description={projectDescription}
+            path={`/projects/${id}`}
+            ogImage={imgUrl || undefined}
+            ogType="article"
+            publishedTime={item.createdAt || item.date}
+            modifiedTime={item.updatedAt}
+            keywords={projectTechStack.join(', ')}
+          />
+          <ProjectSchema
+            name={projectTitle}
+            description={projectDescription}
+            url={`/projects/${id}`}
+            imageUrl={imgUrl}
+            techStack={projectTechStack}
+            dateCreated={item.createdAt || item.date}
+          />
+        </>
+      )}
+      {!item && <SEO title="Project Not Found | Kushyanth Pothineni" description="The requested project could not be found." path={`/projects/${id}`} noindex />}
+
+      <BreadcrumbSchema items={[
+        { name: 'Home', path: '/' },
+        { name: 'Projects', path: '/projects' },
+        { name: projectTitle, path: `/projects/${id}` },
+      ]} />
+
+      {loading && <LoadingIndicator />}
+      {!loading && !item && (
+        <div className="w-full md:w-[80%] mx-auto pb-10">
+          <Link to="/projects" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
+            ← Back to Projects
+          </Link>
+          <p className="text-white/50">Project not found.</p>
+        </div>
+      )}
+      {!loading && item && (
     <div className="w-full md:w-[80%] mx-auto pb-10">
       <Link to="/projects" className="inline-flex items-center text-white/50 hover:text-white mb-8 transition font-medium">
-         ← Back to Projects
+        ← Back to Projects
       </Link>
 
       <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-4">{item.title || item.name || 'Untitled Project'}</h1>
@@ -525,19 +545,19 @@ function ProjectDetailView({ data }: { data: any[] }) {
       {(problem || solution || challenge) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           {problem && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="rounded-2xl p-6 liquid-glass-card">
               <h3 className="text-xs font-semibold tracking-wider text-white/40 uppercase mb-3">Problem</h3>
               <p className="text-white/75 leading-relaxed">{problem}</p>
             </div>
           )}
           {solution && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="rounded-2xl p-6 liquid-glass-card">
               <h3 className="text-xs font-semibold tracking-wider text-white/40 uppercase mb-3">Solution</h3>
               <p className="text-white/75 leading-relaxed">{solution}</p>
             </div>
           )}
           {challenge && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:col-span-2">
+            <div className="rounded-2xl p-6 md:col-span-2 liquid-glass-card">
               <h3 className="text-xs font-semibold tracking-wider text-white/40 uppercase mb-3">Challenge</h3>
               <p className="text-white/75 leading-relaxed">{challenge}</p>
             </div>
@@ -553,12 +573,12 @@ function ProjectDetailView({ data }: { data: any[] }) {
       )}
 
       {/* Tech stack */}
-      {techStack.length > 0 && (
+      {projectTechStack.length > 0 && (
         <div className="mb-10">
           <h3 className="text-xs font-semibold tracking-wider text-white/40 uppercase mb-4">Tech Stack</h3>
           <div className="flex flex-wrap gap-2">
-            {techStack.map(tech => (
-              <span key={tech} className="bg-white/10 border border-white/10 px-3.5 py-2 rounded-xl text-sm text-white font-medium">{tech}</span>
+            {projectTechStack.map(tech => (
+              <span key={tech} className="px-3.5 py-2 rounded-xl text-sm text-white font-medium liquid-glass">{tech}</span>
             ))}
           </div>
         </div>
@@ -572,12 +592,14 @@ function ProjectDetailView({ data }: { data: any[] }) {
           </a>
         )}
         {item.github && item.github !== projectLink && (
-          <a href={item.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-white/10 border border-white/10 text-white font-semibold rounded-xl px-6 py-3 transition hover:bg-white/20">
+          <a href={item.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 text-white font-semibold rounded-xl px-6 py-3 transition liquid-glass">
             GitHub <ArrowUpRight className="w-4 h-4" />
           </a>
         )}
       </div>
     </div>
+      )}
+    </>
   );
 }
 
@@ -585,9 +607,8 @@ function LiquidAccordion({ title, children }: { title: string, children: React.R
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-3xl overflow-hidden mb-4 relative transition-all duration-500">
-      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></div>
-      <button 
+    <div className="rounded-3xl overflow-hidden mb-4 relative transition-all duration-500 liquid-glass-card">
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none relative z-10 hover:bg-white/5 transition-colors"
       >
@@ -617,10 +638,20 @@ function LiquidAccordion({ title, children }: { title: string, children: React.R
 function BlogsView({ blogsData }: { blogsData: any[] }) {
   const [visibleCount, setVisibleCount] = useState(10);
   const handleLoadMore = () => setVisibleCount(prev => prev + 10);
-  
+
   return (
+    <>
+      <SEO
+        title="Latest Writings | Kushyanth Pothineni"
+        description="Read technical articles, guides, and insights on software development, cloud systems, and coding written by Kushyanth Pothineni."
+        path="/blogs"
+      />
+      <BreadcrumbSchema items={[
+        { name: 'Home', path: '/' },
+        { name: 'Blogs', path: '/blogs' },
+      ]} />
     <div className="w-full">
-      <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">Latest Writings</h2>
+      <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">Latest Writings</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {blogsData.length > 0 ? blogsData.slice(0, visibleCount).map(blog => (
           <ContentCard key={blog.id} item={blog} type="blog" />
@@ -630,22 +661,33 @@ function BlogsView({ blogsData }: { blogsData: any[] }) {
       </div>
       {blogsData.length > visibleCount && (
         <div className="mt-10 flex justify-center">
-          <button onClick={handleLoadMore} className="bg-white/10 hover:bg-white/20 text-white font-medium px-6 py-3 rounded-xl transition border border-white/10">
+          <button onClick={handleLoadMore} className="text-white font-medium px-6 py-3 rounded-xl transition liquid-glass">
             More blogs
           </button>
         </div>
       )}
     </div>
+    </>
   );
 }
 
 function ProjectsView({ projectsData }: { projectsData: any[] }) {
   const [visibleCount, setVisibleCount] = useState(10);
   const handleLoadMore = () => setVisibleCount(prev => prev + 10);
-  
+
   return (
+    <>
+      <SEO
+        title="Featured Work | Kushyanth Pothineni"
+        description="Explore featured engineering projects, mobile apps, and case studies built by Kushyanth Pothineni."
+        path="/projects"
+      />
+      <BreadcrumbSchema items={[
+        { name: 'Home', path: '/' },
+        { name: 'Projects', path: '/projects' },
+      ]} />
     <div className="w-full">
-      <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">Featured Work</h2>
+      <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">Featured Work</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {projectsData.length > 0 ? projectsData.slice(0, visibleCount).map(project => (
           <ContentCard key={project.id} item={project} type="project" />
@@ -655,17 +697,29 @@ function ProjectsView({ projectsData }: { projectsData: any[] }) {
       </div>
       {projectsData.length > visibleCount && (
         <div className="mt-10 flex justify-center">
-          <button onClick={handleLoadMore} className="bg-white/10 hover:bg-white/20 text-white font-medium px-6 py-3 rounded-xl transition border border-white/10">
+          <button onClick={handleLoadMore} className="text-white font-medium px-6 py-3 rounded-xl transition liquid-glass">
             More projects
           </button>
         </div>
       )}
     </div>
+    </>
   );
 }
 
 function HomeView({ blogsData, projectsData }: { blogsData: any[], projectsData: any[] }) {
+  const ctaRef = useMouseGlow<HTMLElement>();
+
   return (
+    <>
+      <SEO
+        title="Kushyanth Pothineni | Software Development Engineer"
+        description="Portfolio of Kushyanth Pothineni - Software Development Engineer specializing in web development, mobile applications, and creative design solutions."
+        path="/"
+      />
+      <BreadcrumbSchema items={[
+        { name: 'Home', path: '/' },
+      ]} />
     <div className="flex flex-col gap-24 md:gap-32 w-full pb-10">
       {/* Hero section */}
       <section className="min-h-[calc(100vh-280px)] md:min-h-[calc(100vh-320px)] flex flex-col justify-end">
@@ -673,13 +727,13 @@ function HomeView({ blogsData, projectsData }: { blogsData: any[], projectsData:
       </section>
 
       {/* About snippet */}
-      <section 
-        className="flex flex-col md:flex-row gap-6 md:gap-8 justify-between items-start md:items-center bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-6 sm:p-8 md:p-12 rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden"
+      <section
+        ref={ctaRef}
+        className="flex flex-col md:flex-row gap-6 md:gap-8 justify-between items-start md:items-center p-6 sm:p-8 md:p-12 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden liquid-glass-card"
       >
-        <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></div>
         <div className="flex-1 max-w-2xl relative z-10 w-full flex flex-col items-start">
           <div className="md:hidden w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-white/20 to-transparent rounded-full flex items-center justify-center shrink-0 border border-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.5)] mb-6">
-             <Terminal className="w-7 h-7 sm:w-8 sm:h-8 text-white/90 drop-shadow-lg" />
+            <Terminal className="w-7 h-7 sm:w-8 sm:h-8 text-white/90 drop-shadow-lg" />
           </div>
           <h2 className="text-3xl md:text-3xl lg:text-4xl font-bold tracking-tight text-white mb-3 md:mb-4">Engineering with purpose</h2>
           <p className="text-base md:text-lg text-white/70 leading-relaxed mb-6 md:mb-8 font-medium">
@@ -690,7 +744,7 @@ function HomeView({ blogsData, projectsData }: { blogsData: any[], projectsData:
           </Link>
         </div>
         <div className="hidden md:flex w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full items-center justify-center shrink-0 border border-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.5)] relative z-10">
-           <Terminal className="w-16 h-16 text-white/90 drop-shadow-lg" />
+          <Terminal className="w-16 h-16 text-white/90 drop-shadow-lg" />
         </div>
       </section>
 
@@ -698,7 +752,7 @@ function HomeView({ blogsData, projectsData }: { blogsData: any[], projectsData:
       <section>
         <div className="flex justify-between items-end mb-8 border-b border-white/10 pb-4">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white">Featured Work</h2>
-          <Link to="/projects" className="text-white/60 hover:text-white transition flex items-center gap-1 font-medium bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full">
+          <Link to="/projects" className="text-white/60 hover:text-white transition flex items-center gap-1 font-medium px-4 py-2 rounded-full liquid-glass">
             See All <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -715,7 +769,7 @@ function HomeView({ blogsData, projectsData }: { blogsData: any[], projectsData:
       <section>
         <div className="flex justify-between items-end mb-8 border-b border-white/10 pb-4">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white">Latest Writings</h2>
-          <Link to="/blogs" className="text-white/60 hover:text-white transition flex items-center gap-1 font-medium bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full">
+          <Link to="/blogs" className="text-white/60 hover:text-white transition flex items-center gap-1 font-medium px-4 py-2 rounded-full liquid-glass">
             See All <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -729,12 +783,13 @@ function HomeView({ blogsData, projectsData }: { blogsData: any[], projectsData:
       </section>
 
     </div>
+    </>
   );
 }
 
 function PageTransition({ children, className = "w-full" }: { children: React.ReactNode, className?: string }) {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
@@ -750,14 +805,14 @@ function IntroScreen({ onComplete }: { onComplete: () => void }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete();
-    }, 2000); 
+    }, 2000);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
   return (
-    <motion.div 
+    <motion.div
       className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--bg-base)]"
-      exit={{ opacity: 0 }} 
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.8, ease: "easeInOut" }}
     >
       <motion.div layoutId="logo-container" className="w-32 h-32 md:w-48 md:h-48 text-white flex items-center justify-center">
@@ -844,44 +899,9 @@ export default function App() {
     setIsMobileMenuOpen(false);
   }, [location]);
 
-  // Dynamically update SEO tags for static paths on route change
-  useEffect(() => {
-    const path = location.pathname;
-    if (path === '/') {
-      updateMetaTags(
-        'Kushyanth Pothineni | Software Development Engineer',
-        'Portfolio of Kushyanth Pothineni - Software Development Engineer specializing in web development, mobile applications, and creative design solutions.',
-        '/'
-      );
-    } else if (path === '/about') {
-      updateMetaTags(
-        'About Me | Kushyanth Pothineni',
-        'Learn more about Kushyanth Pothineni, a Software Development Engineer passionate about building scalable backends, intuitive interfaces, and DevOps.',
-        '/about'
-      );
-    } else if (path === '/blogs') {
-      updateMetaTags(
-        'Latest Writings | Kushyanth Pothineni',
-        'Read technical articles, guides, and insights on software development, cloud systems, and coding written by Kushyanth Pothineni.',
-        '/blogs'
-      );
-    } else if (path === '/projects') {
-      updateMetaTags(
-        'Featured Work | Kushyanth Pothineni',
-        'Explore featured engineering projects, mobile apps, and case studies built by Kushyanth Pothineni.',
-        '/projects'
-      );
-    } else if (path === '/contact') {
-      updateMetaTags(
-        'Get in Touch | Kushyanth Pothineni',
-        'Contact Kushyanth Pothineni for web development, consulting, cloud migrations, or contract projects.',
-        '/contact'
-      );
-    }
-  }, [location.pathname]);
-
   return (
     <LayoutGroup>
+      <SiteStructuredData />
       <div className="min-h-screen font-sans overflow-x-hidden p-6 md:p-8 flex flex-col selection:bg-white/30 selection:text-white relative">
         <AnimatePresence>
           {!introComplete && (
@@ -890,7 +910,7 @@ export default function App() {
             }} />
           )}
         </AnimatePresence>
-        
+
         <ScrollToTop />
         {/* Navbar */}
         <div className="fixed top-6 left-6 right-6 md:left-8 md:right-8 z-50 pointer-events-none">
@@ -908,306 +928,293 @@ export default function App() {
               </Link>
             </div>
 
-          {/* Links Pill */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: introComplete ? 1 : 0 }}
-            transition={{ duration: 0.8 }}
-            className="hidden md:flex items-center gap-8 px-8 bg-white/10 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)] rounded-full py-3 relative overflow-hidden"
-          >
-            {/* Subtle inner top highlight */}
-            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-            
-            {navItems.map((item, i) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link to={item.path} key={item.name} className="flex items-center gap-2 cursor-pointer z-10 group shrink-0">
-                  <motion.span 
-                    initial={{ opacity: 0, width: 0, x: -10 }}
-                    animate={{ opacity: 1, width: "auto", x: 0 }}
-                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.8 + i * 0.1 }}
-                    className={`text-sm overflow-hidden whitespace-nowrap transition ${isActive ? 'text-white font-bold' : 'text-white/70 font-medium group-hover:text-white'}`}
-                    style={{ originX: 0 }}
-                  >
-                    {item.name}
-                  </motion.span>
-                </Link>
-              )
-            })}
-          </motion.div>
-
-          {/* Action Buttons */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: introComplete ? 1 : 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex items-center gap-3 md:gap-4 z-50"
-          >
-            <button onClick={toggleTheme} className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)] text-white flex items-center justify-center hover:bg-white/20 transition shrink-0 relative overflow-hidden">
-              {/* Subtle inner top highlight */}
-              <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-              <Palette className="w-5 h-5 z-10" />
-            </button>
-
-            {isAdminPath && (
-              <button onClick={() => signOut(auth)} className="hidden md:flex w-11 h-11 rounded-full bg-red-500/10 backdrop-blur-[32px] border-[0.5px] border-red-500/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)] text-red-400 items-center justify-center hover:bg-red-500/20 transition shrink-0 relative overflow-hidden">
-                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                <LogOut className="w-5 h-5 z-10" />
-              </button>
-            )}
-
-            {/* Mobile Menu Toggle */}
-            <motion.div 
+            {/* Links Pill */}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: introComplete ? 1 : 0 }}
               transition={{ duration: 0.8 }}
-              className="relative md:hidden w-11 h-11 shrink-0 z-50"
+              className="hidden md:flex items-center gap-8 px-8 py-3 rounded-full liquid-glass relative overflow-hidden"
             >
-              <motion.div
-                initial={false}
-                animate={{
-                  width: isMobileMenuOpen ? 220 : 44,
-                  height: isMobileMenuOpen ? "auto" : 44,
-                  borderRadius: isMobileMenuOpen ? 28 : 20,
-                }}
-                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                className="absolute top-0 right-0 bg-white/10 backdrop-blur-[24px] flex flex-col"
-                style={{
-                  boxShadow: "0 8px 32px 0 rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.4)",
-                  border: "0.5px solid rgba(255,255,255,0.3)",
-                  overflow: "hidden"
-                }}
-              >
-                <div className="flex justify-end items-center h-11 w-full shrink-0 relative">
-                  {!isMobileMenuOpen && <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none"></div>}
-                  <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="w-11 h-11 flex items-center justify-center text-white relative z-10 shrink-0">
-                    <AnimatePresence mode="popLayout" initial={false}>
-                      {isMobileMenuOpen ? (
-                        <motion.div
-                          key="close"
-                          initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-                          animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                          exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-                          transition={{ duration: 0.2 }}
-                          className="absolute flex items-center justify-center"
-                        >
-                          <X className="w-5 h-5" />
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="menu"
-                          initial={{ opacity: 0, rotate: 90, scale: 0.5 }}
-                          animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                          exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
-                          transition={{ duration: 0.2 }}
-                          className="absolute flex items-center justify-center"
-                        >
-                          <Menu className="w-5 h-5" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </button>
-                </div>
-                
+              {navItems.map((item, i) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link to={item.path} key={item.name} className="flex items-center gap-2 cursor-pointer z-10 group shrink-0">
+                    <motion.span
+                      initial={{ opacity: 0, width: 0, x: -10 }}
+                      animate={{ opacity: 1, width: "auto", x: 0 }}
+                      transition={{ duration: 0.4, ease: "easeOut", delay: 0.8 + i * 0.1 }}
+                      className={`text-sm overflow-hidden whitespace-nowrap transition ${isActive ? 'text-white font-bold' : 'text-white/70 font-medium group-hover:text-white'}`}
+                      style={{ originX: 0 }}
+                    >
+                      {item.name}
+                    </motion.span>
+                  </Link>
+                )
+              })}
+            </motion.div>
+
+            {/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: introComplete ? 1 : 0 }}
+              transition={{ duration: 0.8 }}
+              className="flex items-center gap-3 md:gap-4 z-50"
+            >
+              <button onClick={toggleTheme} className="w-11 h-11 rounded-full liquid-glass text-white flex items-center justify-center hover:brightness-110 transition shrink-0 relative overflow-hidden">
+                <Palette className="w-5 h-5 z-10" />
+              </button>
+
+              {isAdminPath && (
+                <button onClick={() => signOut(auth)} className="hidden md:flex w-11 h-11 rounded-full liquid-glass text-red-400 items-center justify-center hover:brightness-110 transition shrink-0 relative overflow-hidden">
+                  <LogOut className="w-5 h-5 z-10" />
+                </button>
+              )}
+
+              {/* Mobile Menu Toggle */}
+              <div className="relative md:hidden shrink-0">
+                {/* Backdrop overlay */}
                 <AnimatePresence>
                   {isMobileMenuOpen && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                      transition={{ duration: 0.3, delay: 0.05 }}
-                      className="flex flex-col gap-1 px-3 pb-3 w-[220px] shrink-0"
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden pointer-events-auto"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* Menu Toggle Button */}
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="w-11 h-11 rounded-full liquid-glass text-white flex items-center justify-center shrink-0 cursor-pointer relative z-50 hover:brightness-110 transition"
+                  aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                >
+                  {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+
+                {/* Menu Dropdown Card */}
+                <AnimatePresence>
+                  {isMobileMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-14 right-0 w-[210px] flex flex-col liquid-glass rounded-2xl shadow-2xl z-50 overflow-hidden p-2.5"
                     >
-                      {navItems.map((item, i) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                          <Link onClick={() => setIsMobileMenuOpen(false)} to={item.path} key={item.name} className="relative overflow-hidden group rounded-2xl shrink-0">
-                            <div className={`absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300 ${isActive ? 'opacity-100' : ''}`}></div>
-                            <div className={`px-4 py-3 flex items-center gap-3 relative z-10 text-[16px] whitespace-nowrap transition ${isActive ? 'text-white font-bold' : 'text-white/80 font-medium group-hover:text-white'}`}>
-                              {item.name}
+                      {/* Liquid glass border highlight */}
+                      <div className="absolute inset-0 pointer-events-none z-10" style={{ padding: '1px', background: 'linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0.5) 60%, rgba(255,255,255,0) 100%)', WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude', borderRadius: 'inherit' }} />
+                      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-10" />
+
+                      <div className="flex flex-col gap-1 w-full relative z-20">
+                        {navItems.map((item) => {
+                          const isActive = location.pathname === item.path;
+                          return (
+                            <Link
+                              key={item.name}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              to={item.path}
+                              className="relative overflow-hidden group rounded-xl block"
+                            >
+                              <div className={`absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-200 ${isActive ? 'opacity-100 bg-white/15' : ''}`} />
+                              <div className={`px-4 py-2.5 flex items-center gap-3 relative z-10 text-[15px] whitespace-nowrap transition ${isActive ? 'text-white font-bold' : 'text-white/80 font-medium group-hover:text-white'}`}>
+                                {item.name}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                        {isAdminPath && (
+                          <button
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              signOut(auth);
+                            }}
+                            className="relative overflow-hidden group rounded-xl w-full text-left mt-1"
+                          >
+                            <div className="absolute inset-0 bg-red-500/10 opacity-0 group-hover:opacity-100 transition duration-200" />
+                            <div className="px-4 py-2.5 flex items-center gap-3 relative z-10 text-[15px] whitespace-nowrap transition text-red-400 font-medium">
+                              Logout <LogOut className="w-4 h-4 ml-auto" />
                             </div>
-                          </Link>
-                        )
-                      })}
-                      {isAdminPath && (
-                        <button onClick={() => { setIsMobileMenuOpen(false); signOut(auth); }} className="relative overflow-hidden group rounded-2xl shrink-0 w-full text-left mt-2">
-                          <div className={`absolute inset-0 bg-red-500/10 opacity-0 group-hover:opacity-100 transition duration-300`}></div>
-                          <div className={`px-4 py-3 flex items-center gap-3 relative z-10 text-[16px] whitespace-nowrap transition text-red-400 font-medium`}>
-                            Logout <LogOut className="w-4 h-4 ml-auto" />
-                          </div>
-                        </button>
-                      )}
+                          </button>
+                        )}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </nav>
-      </div>
-
-      {/* Main Content Layout */}
-      <motion.main 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: introComplete ? 1 : 0 }}
-        transition={{ duration: 0.8 }}
-        className={`flex-1 w-full mx-auto z-10 relative flex flex-col pb-6 ${location.pathname.startsWith('/admin') ? 'pt-16 md:pt-20' : 'pt-32 md:pt-40'}`}
-      >
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<PageTransition><HomeView blogsData={blogsData} projectsData={projectsData} /></PageTransition>} />
-            <Route path="/about" element={
-              <PageTransition className="w-full pb-10">
-                <div className="mb-12 md:mb-20">
-                <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-white leading-[1.1] md:leading-[86px] max-w-[857px]">Engineering <br className="hidden md:block" /> with purpose.</h2>
-                <p className="text-xl md:text-2xl text-white/60 max-w-2xl leading-relaxed font-medium">
-                  I'm a Software Development Engineer passionate about building scalable backends, intuitive interfaces, and automating workflows.
-                </p>
               </div>
+            </motion.div>
+          </nav>
+        </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-auto">
-                {/* Large Profile / Bio Block replaced by JourneyCard */}
-                <JourneyCard />
-
-                {/* Tech Stack / Keywords */}
-                <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden group flex flex-col">
-                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                  <h3 className="text-2xl font-semibold tracking-tight text-white mb-8">Core Toolkit</h3>
-                  <div className="flex flex-wrap gap-2.5 mt-auto">
-                    {["Java", "Python", "TypeScript", "Spring Boot", "React", "Node.js", "Firebase", "SQL", "Docker", "Kubernetes", "AWS"].map(tech => (
-                      <span key={tech} className="bg-white/10 hover:bg-white/20 transition cursor-default border border-white/10 px-3.5 py-2 rounded-xl text-sm text-white font-medium">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* What I Do - Bento Grid style */}
-                <div className="bg-white/5 hover:bg-white/10 transition duration-500 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[2.5rem] p-8 relative overflow-hidden group flex flex-col">
-                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                  <div className="mb-6 w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-                    <Cloud className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-semibold tracking-tight text-white mb-3">Cloud & DevOps</h3>
-                  <p className="text-white/60 leading-relaxed font-medium">Deploying and managing resilient cloud-native architectures with AWS, GCP, and Kubernetes integrations.</p>
-                </div>
-
-                <div className="bg-white/5 hover:bg-white/10 transition duration-500 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[2.5rem] p-8 relative overflow-hidden group flex flex-col">
-                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                  <div className="mb-6 w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-                    <Database className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-semibold tracking-tight text-white mb-3">Backend & Data</h3>
-                  <p className="text-white/60 leading-relaxed font-medium">Designing scalable systems and RESTful APIs. Expertise in scalable DataGrip, Snowflake, Redis, and MySQL.</p>
-                </div>
-
-                <div className="bg-white/5 hover:bg-white/10 transition duration-500 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[2.5rem] p-8 relative overflow-hidden group flex flex-col">
-                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                  <div className="mb-6 w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-                    <Terminal className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-semibold tracking-tight text-white mb-3">AI & Automation</h3>
-                  <p className="text-white/60 leading-relaxed font-medium">Leveraging powerful tools like n8n and Claude to build intelligent automation pipelines and dev workflows.</p>
-                </div>
-
-                {/* Full Width Footer area for Open Source */}
-                <div className="md:col-span-3 bg-white/5 hover:bg-white/10 transition duration-500 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden group flex flex-col md:flex-row gap-8 md:gap-12 items-start md:items-center">
-                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                  <div className="flex-1">
-                    <h3 className="text-3xl font-semibold tracking-tight text-white mb-4">Open Source Community</h3>
-                    <p className="text-lg text-white/70 leading-relaxed">
-                      An active contributor to core open-source repositories. I focus on resolving community-reported issues, refactoring legacy code for backend optimization, and enhancing technical documentation to streamline onboarding for new developers.
+        {/* Main Content Layout */}
+        <motion.main
+          initial={{ opacity: 0 }}
+          animate={{ opacity: introComplete ? 1 : 0 }}
+          transition={{ duration: 0.8 }}
+          className={`flex-1 w-full mx-auto z-10 relative flex flex-col pb-6 ${location.pathname.startsWith('/admin') ? 'pt-16 md:pt-20' : 'pt-32 md:pt-40'}`}
+        >
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<PageTransition><HomeView blogsData={blogsData} projectsData={projectsData} /></PageTransition>} />
+              <Route path="/about" element={
+                <PageTransition className="w-full pb-10">
+                  <SEO
+                    title="About Me | Kushyanth Pothineni"
+                    description="Learn more about Kushyanth Pothineni, a Software Development Engineer passionate about building scalable backends, intuitive interfaces, and DevOps."
+                    path="/about"
+                  />
+                  <BreadcrumbSchema items={[
+                    { name: 'Home', path: '/' },
+                    { name: 'About', path: '/about' },
+                  ]} />
+                  <div className="mb-12 md:mb-20">
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-white leading-[1.1] md:leading-[86px] max-w-[857px]">Engineering <br className="hidden md:block" /> with purpose.</h1>
+                    <p className="text-xl md:text-2xl text-white/60 max-w-2xl leading-relaxed font-medium">
+                      I'm a Software Development Engineer passionate about building scalable backends, intuitive interfaces, and automating workflows.
                     </p>
                   </div>
-                  <div className="shrink-0 flex gap-4 align-middle">
-                    <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
-                      <Code2 className="w-8 h-8 text-white" />
-                    </div>
-                    <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
-                      <GitPullRequest className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                </div>
 
-                {/* Social Links Section */}
-                <div className="md:col-span-3 bg-white/5 hover:bg-white/10 transition duration-500 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
-                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                  <div>
-                    <h3 className="text-3xl font-semibold tracking-tight text-white mb-2 md:mb-4">Connect with me</h3>
-                    <p className="text-lg text-white/70">Find me on these online spaces and let's build something together.</p>
-                  </div>
-                  <div className="flex flex-wrap gap-4 shrink-0">
-                    <a href="https://www.instagram.com/kushyanthpothineni.21/" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center group border border-white/10">
-                      <Instagram className="w-6 h-6 text-white/80 group-hover:text-white transition-colors" />
-                    </a>
-                    <a href="http://x.com/KushyanthPothi1" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center group border border-white/10">
-                      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current text-white/80 group-hover:text-white transition-colors" aria-hidden="true">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                      </svg>
-                    </a>
-                    <a href="https://www.linkedin.com/in/kushyanthpothineni/" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center group border border-white/10">
-                      <Linkedin className="w-6 h-6 text-white/80 group-hover:text-white transition-colors" />
-                    </a>
-                    <a href="https://github.com/kushyanthpothi" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center group border border-white/10">
-                      <Github className="w-6 h-6 text-white/80 group-hover:text-white transition-colors" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </PageTransition>
-          } />
-          <Route path="/blogs" element={
-            <PageTransition className="w-full">
-              <BlogsView blogsData={blogsData} />
-            </PageTransition>
-          } />
-          <Route path="/blogs/:id" element={<PageTransition><BlogDetailView data={blogsData} /></PageTransition>} />
-          <Route path="/projects" element={
-            <PageTransition className="w-full">
-              <ProjectsView projectsData={projectsData} />
-            </PageTransition>
-          } />
-          <Route path="/projects/:id" element={<PageTransition><ProjectDetailView data={projectsData} /></PageTransition>} />
-          <Route path="/admin/*" element={<PageTransition className="w-full flex-1 flex flex-col"><AdminPanel /></PageTransition>} />
-          <Route path="/contact" element={
-            <PageTransition className="w-full max-w-xl">
-              <ContactView />
-            </PageTransition>
-          } />
-          <Route path="*" element={
-            <PageTransition className="w-full flex-1 flex flex-col items-start justify-end">
-              <div className="flex flex-wrap items-center gap-6 md:gap-8">
-                <h2 className="text-6xl md:text-8xl font-bold tracking-tighter text-white">404</h2>
-                <div className="hidden sm:block w-[1px] h-12 bg-white/20"></div>
-                <h3 className="text-2xl md:text-3xl font-medium tracking-tight text-white/80">Page not found.</h3>
-                <Link to="/" className="inline-flex items-center justify-center gap-2 bg-white text-black font-semibold rounded-xl px-6 py-3 transition hover:opacity-90 sm:ml-4">
-                  Back to Home <ArrowUpRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </PageTransition>
-          } />
-        </Routes>
-        </AnimatePresence>
-      </motion.main>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-auto">
+                    {/* Large Profile / Bio Block replaced by JourneyCard */}
+                    <JourneyCard />
 
-      {/* Footer & Horizontal Line */}
-      <motion.footer 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: introComplete ? 1 : 0 }}
-        transition={{ duration: 0.8 }}
-        className="w-full mx-auto border-t-[0.5px] border-white/20 pt-6 pb-2 z-10 shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4"
-      >
-        <div className="text-white/60 text-[13px] font-medium tracking-wide text-center sm:text-left">
-          © {new Date().getFullYear()} Kushyanth Pothineni. All rights reserved.
-        </div>
-        <div className="flex items-center gap-5 text-[13px] text-white/60 font-medium">
-          <a href="https://www.linkedin.com/in/kushyanth/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">LinkedIn</a>
-          <a href="https://github.com/kushyanthpothi" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">GitHub</a>
-          <a href="https://x.com/KushyanthPothi1" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">X (Twitter)</a>
-        </div>
-      </motion.footer>
-      {!location.pathname.startsWith('/admin') && <LikeButton introComplete={introComplete} />}
-    </div>
+                    {/* Tech Stack / Keywords */}
+                    <div className="rounded-[2.5rem] p-8 md:p-10 flex flex-col liquid-glass-card">
+                      <h3 className="text-2xl font-semibold tracking-tight text-white mb-8">Core Toolkit</h3>
+                      <div className="flex flex-wrap gap-2.5 mt-auto">
+                        {["Java", "Python", "TypeScript", "Spring Boot", "React", "Node.js", "Firebase", "SQL", "Docker", "Kubernetes", "AWS"].map(tech => (
+                          <span key={tech} className="bg-white/10 hover:bg-white/20 transition cursor-default border border-white/10 px-3.5 py-2 rounded-xl text-sm text-white font-medium">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* What I Do - Bento Grid style */}
+                    <div className="rounded-[2.5rem] p-8 flex flex-col liquid-glass-card">
+                      <div className="mb-6 w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                        <Cloud className="w-7 h-7 text-white" />
+                      </div>
+                      <h3 className="text-2xl font-semibold tracking-tight text-white mb-3">Cloud & DevOps</h3>
+                      <p className="text-white/60 leading-relaxed font-medium">Deploying and managing resilient cloud-native architectures with AWS, GCP, and Kubernetes integrations.</p>
+                    </div>
+
+                    <div className="rounded-[2.5rem] p-8 flex flex-col liquid-glass-card">
+                      <div className="mb-6 w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                        <Database className="w-7 h-7 text-white" />
+                      </div>
+                      <h3 className="text-2xl font-semibold tracking-tight text-white mb-3">Backend & Data</h3>
+                      <p className="text-white/60 leading-relaxed font-medium">Designing scalable systems and RESTful APIs. Expertise in scalable DataGrip, Snowflake, Redis, and MySQL.</p>
+                    </div>
+
+                    <div className="rounded-[2.5rem] p-8 flex flex-col liquid-glass-card">
+                      <div className="mb-6 w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                        <Terminal className="w-7 h-7 text-white" />
+                      </div>
+                      <h3 className="text-2xl font-semibold tracking-tight text-white mb-3">AI & Automation</h3>
+                      <p className="text-white/60 leading-relaxed font-medium">Leveraging powerful tools like n8n and Claude to build intelligent automation pipelines and dev workflows.</p>
+                    </div>
+
+                    {/* Full Width Footer area for Open Source */}
+                    <div className="md:col-span-3 rounded-[2.5rem] p-8 md:p-12 flex flex-col md:flex-row gap-8 md:gap-12 items-start md:items-center liquid-glass-card">
+                      <div className="flex-1">
+                        <h3 className="text-3xl font-semibold tracking-tight text-white mb-4">Open Source Community</h3>
+                        <p className="text-lg text-white/70 leading-relaxed">
+                          An active contributor to core open-source repositories. I focus on resolving community-reported issues, refactoring legacy code for backend optimization, and enhancing technical documentation to streamline onboarding for new developers.
+                        </p>
+                      </div>
+                      <div className="shrink-0 flex gap-4 align-middle">
+                        <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
+                          <Code2 className="w-8 h-8 text-white" />
+                        </div>
+                        <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
+                          <GitPullRequest className="w-8 h-8 text-white" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Social Links Section */}
+                    <div className="md:col-span-3 rounded-[2.5rem] p-8 md:p-12 flex flex-col md:flex-row gap-8 items-start md:items-center justify-between liquid-glass-card">
+                      <div>
+                        <h3 className="text-3xl font-semibold tracking-tight text-white mb-2 md:mb-4">Connect with me</h3>
+                        <p className="text-lg text-white/70">Find me on these online spaces and let's build something together.</p>
+                      </div>
+                      <div className="flex flex-wrap gap-4 shrink-0">
+                        <a href="https://www.instagram.com/kushyanthpothineni.21/" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center group border border-white/10">
+                          <Instagram className="w-6 h-6 text-white/80 group-hover:text-white transition-colors" />
+                        </a>
+                        <a href="http://x.com/KushyanthPothi1" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center group border border-white/10">
+                          <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current text-white/80 group-hover:text-white transition-colors" aria-hidden="true">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                          </svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/kushyanthpothineni/" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center group border border-white/10">
+                          <Linkedin className="w-6 h-6 text-white/80 group-hover:text-white transition-colors" />
+                        </a>
+                        <a href="https://github.com/kushyanthpothi" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center group border border-white/10">
+                          <Github className="w-6 h-6 text-white/80 group-hover:text-white transition-colors" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </PageTransition>
+              } />
+              <Route path="/blogs" element={
+                <PageTransition className="w-full">
+                  <BlogsView blogsData={blogsData} />
+                </PageTransition>
+              } />
+              <Route path="/blogs/:id" element={<PageTransition><BlogDetailView data={blogsData} /></PageTransition>} />
+              <Route path="/projects" element={
+                <PageTransition className="w-full">
+                  <ProjectsView projectsData={projectsData} />
+                </PageTransition>
+              } />
+              <Route path="/projects/:id" element={<PageTransition><ProjectDetailView data={projectsData} /></PageTransition>} />
+              <Route path="/admin/*" element={<PageTransition className="w-full flex-1 flex flex-col"><AdminPanel /></PageTransition>} />
+              <Route path="/contact" element={
+                <PageTransition className="w-full max-w-xl">
+                  <ContactView />
+                </PageTransition>
+              } />
+              <Route path="*" element={
+                <PageTransition className="w-full flex-1 flex flex-col items-start justify-end">
+                  <SEO title="404 - Page Not Found | Kushyanth Pothineni" description="The page you are looking for does not exist." path={location.pathname} noindex />
+                  <div className="flex flex-wrap items-center gap-6 md:gap-8">
+                    <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white">404</h1>
+                    <div className="hidden sm:block w-[1px] h-12 bg-white/20"></div>
+                    <p className="text-2xl md:text-3xl font-medium tracking-tight text-white/80">Page not found.</p>
+                    <Link to="/" className="inline-flex items-center justify-center gap-2 bg-white text-black font-semibold rounded-xl px-6 py-3 transition hover:opacity-90 sm:ml-4">
+                      Back to Home <ArrowUpRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </PageTransition>
+              } />
+            </Routes>
+          </AnimatePresence>
+        </motion.main>
+
+        {/* Footer & Horizontal Line */}
+        <motion.footer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: introComplete ? 1 : 0 }}
+          transition={{ duration: 0.8 }}
+          className="w-full mx-auto border-t-[0.5px] border-white/20 pt-6 pb-2 z-10 shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4"
+        >
+          <div className="text-white/60 text-[13px] font-medium tracking-wide text-center sm:text-left">
+            © {new Date().getFullYear()} Kushyanth Pothineni. All rights reserved.
+          </div>
+          <div className="flex items-center gap-5 text-[13px] text-white/60 font-medium">
+            <a href="https://www.linkedin.com/in/kushyanth/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">LinkedIn</a>
+            <a href="https://github.com/kushyanthpothi" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">GitHub</a>
+            <a href="https://x.com/KushyanthPothi1" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">X (Twitter)</a>
+          </div>
+        </motion.footer>
+        {!location.pathname.startsWith('/admin') && <LikeButton introComplete={introComplete} />}
+      </div>
     </LayoutGroup>
   );
 }

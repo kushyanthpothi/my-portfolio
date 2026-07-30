@@ -55,7 +55,7 @@ export function AdminPanel() {
           className="w-full max-w-[440px] relative"
         >
           {/* Glass Card */}
-          <div className="w-full bg-white/5 backdrop-blur-[40px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden group">
+          <div className="w-full liquid-glass-card rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden group">
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
             
             <div className="flex justify-center mb-8">
@@ -203,22 +203,22 @@ function Dashboard() {
       <h2 className="text-4xl font-bold tracking-tight text-white mb-8">Dashboard Overview</h2>
       
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-3xl p-6 relative overflow-hidden group">
+        <div className="liquid-glass-card rounded-3xl p-6 relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           <p className="text-white/60 text-sm font-medium mb-1">Total Blogs</p>
           <p className="text-4xl font-bold text-white tabular-nums tracking-tight">{totalBlogs}</p>
         </div>
-        <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-3xl p-6 relative overflow-hidden group">
+        <div className="liquid-glass-card rounded-3xl p-6 relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           <p className="text-white/60 text-sm font-medium mb-1">Total Projects</p>
           <p className="text-4xl font-bold text-white tabular-nums tracking-tight">{totalProjects}</p>
         </div>
-        <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-3xl p-6 relative overflow-hidden group">
+        <div className="liquid-glass-card rounded-3xl p-6 relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           <p className="text-white/60 text-sm font-medium mb-1">Total Views</p>
           <p className="text-4xl font-bold text-white tabular-nums tracking-tight">{totalViews}</p>
         </div>
-        <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-3xl p-6 relative overflow-hidden group">
+        <div className="liquid-glass-card rounded-3xl p-6 relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-pink-500/50 to-transparent"></div>
           <p className="text-white/60 text-sm font-medium mb-1">Website Likes</p>
           <p className="text-4xl font-bold text-pink-400 tabular-nums tracking-tight flex items-center gap-2">
@@ -228,7 +228,7 @@ function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-[2rem] p-8 relative overflow-hidden group">
+        <div className="liquid-glass-card rounded-[2rem] p-8 relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           <h3 className="text-xl font-medium text-white mb-6">Website Visitors (Last 7 Days)</h3>
           <div className="h-64 relative z-10 w-full">
@@ -244,7 +244,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-[2rem] p-8 relative overflow-hidden group">
+        <div className="liquid-glass-card rounded-[2rem] p-8 relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           <h3 className="text-xl font-medium text-white mb-6">Top Locations</h3>
           <div className="h-64 relative z-10 w-full">
@@ -262,7 +262,7 @@ function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-[2rem] p-8 relative overflow-hidden group">
+        <div className="liquid-glass-card rounded-[2rem] p-8 relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           <h3 className="text-xl font-medium text-white mb-6">Most Read Blogs</h3>
           <div className="space-y-4 relative z-10">
@@ -274,7 +274,7 @@ function Dashboard() {
             )) : <span className="text-white/50 text-sm">No data yet.</span>}
           </div>
         </div>
-        <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-[2rem] p-8 relative overflow-hidden group">
+        <div className="liquid-glass-card rounded-[2rem] p-8 relative overflow-hidden group">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           <h3 className="text-xl font-medium text-white mb-6">Most Viewed Projects</h3>
           <div className="space-y-4 relative z-10">
@@ -370,7 +370,7 @@ function AdminBlogs() {
         )}
 
         {previewMode ? (
-          <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 rounded-[2rem] p-4 md:p-8 min-h-[600px] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)]">
+          <div className="liquid-glass-card rounded-[2rem] p-4 md:p-8 min-h-[600px]">
             <div className="w-full lg:w-[80%] mx-auto pb-10">
               <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">{editingBlog.title || editingBlog.name || 'Untitled Blog'}</h1>
               {(editingBlog.image || editingBlog.imgUrl || editingBlog.coverImage) && !imgError && (
@@ -391,7 +391,7 @@ function AdminBlogs() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSave} className="space-y-6 bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 p-8 rounded-[2rem] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)]">
+          <form onSubmit={handleSave} className="space-y-6 liquid-glass-card p-8 rounded-[2rem]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ModernInput label="TITLE" value={editingBlog.title || editingBlog.name || ''} onChange={val => setEditingBlog({...editingBlog, title: val, name: val})} required />
               <ModernInput label="SLUG" value={editingBlog.id || ''} onChange={val => setEditingBlog({...editingBlog, id: val})} required />
@@ -434,7 +434,7 @@ function AdminBlogs() {
           {blogs.map(blog => (
             <ContentCard key={blog.id} item={blog} type="blog" isAdmin onEdit={setEditingBlog} onDelete={handleDelete} />
           ))}
-          {blogs.length === 0 && <div className="col-span-full text-center text-white/50 py-16 bg-white/5 backdrop-blur-xl rounded-[2rem] border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)]">No blogs found. Create one!</div>}
+          {blogs.length === 0 && <div className="col-span-full text-center text-white/50 py-16 liquid-glass-card rounded-[2rem]">No blogs found. Create one!</div>}
         </div>
       )}
     </div>
@@ -520,7 +520,7 @@ function AdminProjects() {
         )}
 
         {previewMode ? (
-          <div className="bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 rounded-[2rem] p-4 md:p-8 min-h-[600px] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)]">
+          <div className="liquid-glass-card rounded-[2rem] p-4 md:p-8 min-h-[600px]">
             <div className="w-full lg:w-[80%] mx-auto pb-10">
               <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-8">{editingProject.title || editingProject.name || 'Untitled Project'}</h1>
               {(editingProject.heroImage || editingProject.image || editingProject.imgUrl) && !imgError && (
@@ -546,7 +546,7 @@ function AdminProjects() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSave} className="space-y-8 bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 p-8 rounded-[2rem] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)]">
+          <form onSubmit={handleSave} className="space-y-8 liquid-glass-card p-8 rounded-[2rem]">
             
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -621,7 +621,7 @@ function AdminProjects() {
           {projects.map(project => (
             <ContentCard key={project.id} item={project} type="project" isAdmin onEdit={setEditingProject} onDelete={handleDelete} />
           ))}
-          {projects.length === 0 && <div className="col-span-full text-center text-white/50 py-16 bg-white/5 backdrop-blur-xl rounded-[2rem] border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)]">No projects found. Create one!</div>}
+          {projects.length === 0 && <div className="col-span-full text-center text-white/50 py-16 liquid-glass-card rounded-[2rem]">No projects found. Create one!</div>}
         </div>
       )}
     </div>
@@ -665,7 +665,7 @@ function AdminResume() {
   return (
     <div>
       <h2 className="text-4xl font-bold tracking-tight text-white mb-8">Resume Settings</h2>
-      <div className="bg-white/5 backdrop-blur-[32px] p-8 rounded-[2rem] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] relative overflow-hidden max-w-xl group">
+      <div className="liquid-glass-card p-8 rounded-[2rem] relative overflow-hidden max-w-xl group">
         <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
         <div className="relative z-10">
           <p className="text-white/70 mb-6 font-medium leading-relaxed">Update your resume URL (like Google Drive, Dropbox, or a public bucket link) so visitors can view or download it.</p>

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ArrowUpRight, Edit2, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { KPLogo } from './KPLogo';
+import { useMouseGlow } from './useMouseGlow';
 
 interface ContentCardProps {
   item: any;
@@ -32,7 +33,7 @@ export function ContentCard({ item, type, isAdmin, onEdit, onDelete }: ContentCa
     <>
       <div className="w-full h-64 sm:h-[280px] bg-white/5 relative overflow-hidden flex items-center justify-center">
         {imgUrl && !imgError ? (
-          <img src={imgUrl} alt={title} onError={() => setImgError(true)} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+          <img src={imgUrl} alt={title} onError={() => setImgError(true)} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
         ) : (
           <KPLogo className="w-16 h-16 text-white/20 group-hover:scale-110 transition duration-500" />
         )}
@@ -59,13 +60,13 @@ export function ContentCard({ item, type, isAdmin, onEdit, onDelete }: ContentCa
           <div className="mt-auto flex gap-3 pt-6 border-t border-white/10">
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit?.(item); }} 
-              className="flex-1 py-3 bg-white/10 rounded-xl hover:bg-white/20 text-white transition font-medium text-sm flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-xl text-white transition font-medium text-sm flex items-center justify-center gap-2 liquid-glass"
             >
               <Edit2 className="w-4 h-4" /> Edit
             </button>
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete?.(item.id); }} 
-              className="flex-1 py-3 bg-red-500/10 rounded-xl hover:bg-red-500/20 text-red-400 transition font-medium text-sm flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-xl text-red-400 transition font-medium text-sm flex items-center justify-center gap-2 liquid-glass"
             >
               <Trash2 className="w-4 h-4" /> Delete
             </button>
@@ -75,7 +76,7 @@ export function ContentCard({ item, type, isAdmin, onEdit, onDelete }: ContentCa
     </>
   );
 
-  const cardClasses = "bg-white/5 backdrop-blur-md border border-white/10 rounded-[20px] overflow-hidden hover:bg-white/10 transition flex flex-col group relative h-full";
+  const cardClasses = "rounded-[20px] overflow-hidden transition flex flex-col group relative h-full liquid-glass-card";
 
   if (isAdmin) {
     return (

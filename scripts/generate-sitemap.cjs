@@ -19,8 +19,16 @@ async function generateSitemap() {
     if (data.documents) {
       blogs = data.documents.map(doc => {
         const slug = doc.name.split('/').pop();
+        const fields = doc.fields || {};
         const updateTime = doc.updateTime ? new Date(doc.updateTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-        return { url: `/blogs/${slug}`, lastmod: updateTime, changefreq: 'weekly', priority: '0.7' };
+        const imageUrl = fields.coverImage?.stringValue || fields.heroImage?.stringValue || '';
+        return {
+          url: `/blogs/${slug}`,
+          lastmod: updateTime,
+          changefreq: 'weekly',
+          priority: '0.7',
+          images: imageUrl ? [imageUrl] : []
+        };
       });
     }
   } catch (err) {
@@ -34,31 +42,50 @@ async function generateSitemap() {
     if (data.documents) {
       projects = data.documents.map(doc => {
         const slug = doc.name.split('/').pop();
+        const fields = doc.fields || {};
         const updateTime = doc.updateTime ? new Date(doc.updateTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-        return { url: `/projects/${slug}`, lastmod: updateTime, changefreq: 'monthly', priority: '0.7' };
+        const imageUrl = fields.heroImage?.stringValue || fields.coverImage?.stringValue || '';
+        return {
+          url: `/projects/${slug}`,
+          lastmod: updateTime,
+          changefreq: 'monthly',
+          priority: '0.7',
+          images: imageUrl ? [imageUrl] : []
+        };
       });
     }
   } catch (err) {
     console.error('Error fetching projects for sitemap:', err);
   }
 
+  const today = new Date().toISOString().split('T')[0];
+
   const allPages = [
     ...staticPages.map(p => ({
       ...p,
-      lastmod: new Date().toISOString().split('T')[0]
+      lastmod: today,
+      images: []
     })),
     ...blogs,
     ...projects
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allPages.map(page => `  <url>
-    <loc>${BASE_URL}${page.url}</loc>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="https://www.google.com/schemas/sitemap-image/1.1">
+${allPages.map(page => {
+  const loc = `    <loc>${BASE_URL}${page.url}</loc>
     <lastmod>${page.lastmod}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`).join('\n')}
+    <priority>${page.priority}</priority>`;
+  const images = page.images.length > 0
+    ? '\n' + page.images.map(img => `    <image:image>
+      <image:loc>${img}</image:loc>
+    </image:image>`).join('\n')
+    : '';
+  return `  <url>${loc}${images}
+  </url>`;
+}).join('\n')}
 </urlset>`;
 
   const outDir = path.join(__dirname, '..', 'public');
@@ -66,7 +93,7 @@ ${allPages.map(page => `  <url>
     fs.mkdirSync(outDir, { recursive: true });
   }
   fs.writeFileSync(path.join(outDir, 'sitemap.xml'), xml);
-  console.log(`Successfully generated sitemap.xml with ${allPages.length} links.`);
+  console.log(`Successfully generated sitemap.xml with ${allPages.length} links (${blogs.length} blogs, ${projects.length} projects).`);
 }
 
 generateSitemap();

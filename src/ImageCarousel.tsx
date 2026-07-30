@@ -63,7 +63,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
 
   if (total === 0) {
     return (
-      <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden mb-10 bg-white/5 border border-white/10 flex items-center justify-center">
+      <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden mb-10 liquid-glass flex items-center justify-center">
         <KPLogo className="w-24 h-24 text-white/20" />
       </div>
     );
@@ -80,7 +80,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
     <>
       {/* ── Carousel ────────────────────────────────────────────────────── */}
       <div className="w-full mb-10 select-none">
-        <div className="relative w-full aspect-[21/9] rounded-3xl overflow-hidden bg-white/5 border border-white/10 group">
+        <div className="relative w-full aspect-[21/9] rounded-3xl overflow-hidden liquid-glass group">
 
           {/* Slides */}
           <AnimatePresence custom={direction} initial={false}>
@@ -88,6 +88,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
               key={current}
               src={images[current]}
               alt={`${title} — image ${current + 1}`}
+              loading="lazy"
               custom={direction}
               variants={variants}
               initial="enter"
@@ -181,7 +182,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
                   i === current ? 'border-white opacity-100' : 'border-white/10 opacity-50 hover:opacity-80'
                 }`}
               >
-                <img src={src} alt={`thumb ${i + 1}`} className="w-full h-full object-cover" />
+                <img src={src} alt={`thumb ${i + 1}`} loading="lazy" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -203,7 +204,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
               {/* Close */}
               <button
                 onClick={() => setLightboxOpen(false)}
-                className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 border border-white/10 text-white flex items-center justify-center hover:bg-white/20 transition z-10"
+                className="absolute top-5 right-5 w-10 h-10 rounded-full liquid-glass text-white flex items-center justify-center hover:brightness-110 transition z-10"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -212,7 +213,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
               {total > 1 && (
                 <button
                   onClick={e => { e.stopPropagation(); prev(); }}
-                  className="absolute left-5 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 border border-white/10 text-white flex items-center justify-center hover:bg-white/20 transition z-10"
+                  className="absolute left-5 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full liquid-glass text-white flex items-center justify-center hover:brightness-110 transition z-10"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -224,6 +225,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
                   key={`lb-${current}`}
                   src={images[current]}
                   alt={`${title} — image ${current + 1}`}
+                  loading="lazy"
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
@@ -238,7 +240,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
               {total > 1 && (
                 <button
                   onClick={e => { e.stopPropagation(); next(); }}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 border border-white/10 text-white flex items-center justify-center hover:bg-white/20 transition z-10"
+                  className="absolute right-5 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full liquid-glass text-white flex items-center justify-center hover:brightness-110 transition z-10"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -265,7 +267,7 @@ export function ImageCarousel({ images, title, autoPlayInterval = 4000 }: ImageC
                   <span className="text-white/50 text-sm tabular-nums">{current + 1} / {total}</span>
                   <button
                     onClick={e => { e.stopPropagation(); setIsPlaying(p => !p); }}
-                    className="w-9 h-9 rounded-full bg-white/10 border border-white/10 text-white flex items-center justify-center hover:bg-white/20 transition"
+                    className="w-9 h-9 rounded-full liquid-glass text-white flex items-center justify-center hover:brightness-110 transition"
                   >
                     {isPlaying
                       ? <Pause className="w-4 h-4 fill-white" />

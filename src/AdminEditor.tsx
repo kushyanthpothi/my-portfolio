@@ -27,7 +27,7 @@ export function MarkdownEditor({ value, onChange, label = "CONTENT", required = 
   };
 
   return (
-    <div className="flex flex-col border-[0.5px] border-white/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-[32px] shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)]">
+    <div className="flex flex-col border-[0.5px] border-white/20 rounded-xl overflow-hidden liquid-glass">
       <div className="flex items-center justify-between px-4 py-2 border-b-[0.5px] border-white/20 bg-white/5">
         <label className="text-xs font-semibold tracking-wider text-white/50 uppercase">{label} {required && <span className="text-red-500">*</span>}</label>
         
@@ -81,7 +81,7 @@ export function ModernInput({ label, value, onChange, required = false, type = "
         value={value} 
         onChange={e => onChange(e.target.value)} 
         placeholder={placeholder}
-        className="w-full bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 rounded-xl px-4 py-3.5 text-white outline-none focus:border-white/40 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)] transition placeholder:text-white/20" 
+        className="w-full rounded-xl px-4 py-3.5 text-white outline-none focus:border-white/40 transition placeholder:text-white/20 liquid-glass-input" 
         required={required} 
       />
     </div>
@@ -97,7 +97,7 @@ export function ModernTextarea({ label, value, onChange, required = false, rows 
         value={value} 
         onChange={e => onChange(e.target.value)} 
         placeholder={placeholder}
-        className="w-full bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 rounded-xl px-4 py-3.5 text-white outline-none focus:border-white/40 resize-none shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)] transition placeholder:text-white/20" 
+        className="w-full rounded-xl px-4 py-3.5 text-white outline-none focus:border-white/40 resize-none transition placeholder:text-white/20 liquid-glass-input" 
         required={required} 
       ></textarea>
     </div>
@@ -124,7 +124,7 @@ export function TagInput({ label, tags, onChange, placeholder = "Type and press 
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-xs font-semibold tracking-wider text-white/50 uppercase ml-1">{label}</label>
-      <div className="w-full bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 rounded-xl p-2 flex flex-wrap gap-2 items-center shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)] transition focus-within:border-white/40">
+      <div className="w-full rounded-xl p-2 flex flex-wrap gap-2 items-center transition focus-within:border-white/40 liquid-glass">
         {tags.map((tag, index) => (
           <div key={index} className="flex items-center gap-1.5 bg-white/10 text-white border border-white/20 px-2.5 py-1 rounded-lg text-sm">
             <span>{tag}</span>

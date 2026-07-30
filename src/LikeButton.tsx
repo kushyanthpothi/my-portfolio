@@ -110,10 +110,10 @@ export function LikeButton({ introComplete }: { introComplete?: boolean }) {
               paddingRight: showToast ? 24 : 0
             }}
             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className={`relative overflow-hidden flex items-center justify-center h-14 rounded-full backdrop-blur-2xl border-[0.5px] shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] transition-colors duration-500 ${
+            className={`relative overflow-hidden flex items-center justify-center h-14 rounded-full transition-all duration-500 ${
               liked 
-                ? 'bg-white/10 border-red-500/30' 
-                : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/40 hover:scale-105'
+                ? 'liquid-glass border-red-500/30' 
+                : 'liquid-glass hover:brightness-110 hover:scale-105'
             }`}
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent rounded-full pointer-events-none"></div>

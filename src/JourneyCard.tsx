@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { ArrowRight, Pause, Play, ChevronUp, X } from 'lucide-react';
+import { useMouseGlow } from './useMouseGlow';
 
 export function JourneyCard() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -60,9 +61,8 @@ export function JourneyCard() {
         layoutId="journey-card"
         transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
         onClick={() => !isExpanded && setIsExpanded(true)}
-        className={`md:col-span-2 bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden group cursor-pointer hover:bg-white/10 transition-colors ${isExpanded ? "opacity-0" : "opacity-100"}`}
+        className={`md:col-span-2 rounded-[2.5rem] p-8 md:p-12 overflow-hidden group cursor-pointer liquid-glass-card ${isExpanded ? "opacity-0" : "opacity-100"}`}
       >
-        <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
         
         <div className="flex justify-between items-start h-full gap-4 md:gap-0">
           <div className="flex-1 pr-4 md:pr-8">
@@ -92,9 +92,8 @@ export function JourneyCard() {
               <motion.div
                 layoutId="journey-card"
                 transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
-                className="w-full max-w-7xl h-[90vh] max-h-[900px] bg-white/5 backdrop-blur-[32px] border-[0.5px] border-white/20 shadow-[0_32px_64px_0_rgba(0,0,0,0.5)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] rounded-[2.5rem] p-6 md:p-12 lg:p-16 relative overflow-hidden z-10 flex flex-col"
+                className="w-full max-w-7xl h-[90vh] max-h-[900px] rounded-[2.5rem] p-6 md:p-12 lg:p-16 overflow-hidden z-10 flex flex-col liquid-glass-card"
               >
-                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
                 
                 <div className="flex justify-between items-start mb-6 shrink-0 relative z-20">
                   <h3 className="text-3xl md:text-5xl font-semibold tracking-tight text-white">The Journey</h3>
