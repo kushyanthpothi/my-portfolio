@@ -5,9 +5,9 @@ on:
     - cron: '30 15 * * *'
   workflow_dispatch:
 
-# Least-privilege: this job only reads the repository; it never pushes code.
+# Least-privilege: only reads the repo, writes back the regenerated sitemap.
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   run-auto-blog:
@@ -33,3 +33,22 @@ jobs:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: node scripts/run-auto-blog.js
+
+      - name: Build Site + Regenerate Sitemap
+        run: npm run build
+
+      - name: Commit refreshed sitemap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/sitemap.xml public/sitemap-static.xml public/sitemap-blogs.xml public/sitemap-projects.xml
+          git diff --cached --quiet || git commit -m "chore: refresh sitemap after daily blog post [skip ci]"
+          git push
+
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > /tmp/firebase-sa.json
+          GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json \
+            npx --yes firebase-tools deploy --only hosting --project kushyanth-portfolio

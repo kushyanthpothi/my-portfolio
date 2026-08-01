@@ -13,6 +13,10 @@
   --glow-2: rgba(0, 25, 150, 0.6);
   --glow-3: rgba(0, 0, 0, 0);
   --glow-4: rgba(0, 0, 0, 0);
+  --aurora-1: rgba(56, 130, 246, 0.5);
+  --aurora-2: rgba(168, 85, 247, 0.42);
+  --aurora-3: rgba(34, 211, 238, 0.38);
+  --aurora-4: rgba(29, 78, 216, 0.5);
 }
 
 @property --accent {
@@ -45,12 +49,36 @@
   inherits: true;
   initial-value: rgba(0, 0, 0, 0);
 }
+@property --aurora-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(56, 130, 246, 0.5);
+}
+@property --aurora-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(168, 85, 247, 0.42);
+}
+@property --aurora-3 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(34, 211, 238, 0.38);
+}
+@property --aurora-4 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(29, 78, 216, 0.5);
+}
 
 [data-theme="purple"] {
   --accent: #a855f7;
   --bg-base: #0c0216;
   --glow-1: rgba(140, 15, 200, 0.7);
   --glow-2: rgba(90, 0, 150, 0.6);
+  --aurora-1: rgba(192, 38, 211, 0.5);
+  --aurora-2: rgba(126, 34, 206, 0.45);
+  --aurora-3: rgba(147, 51, 234, 0.4);
+  --aurora-4: rgba(236, 72, 153, 0.35);
 }
 
 [data-theme="emerald"] {
@@ -58,6 +86,10 @@
   --bg-base: #02120a;
   --glow-1: rgba(1, 180, 100, 0.7);
   --glow-2: rgba(0, 120, 60, 0.6);
+  --aurora-1: rgba(16, 185, 129, 0.45);
+  --aurora-2: rgba(20, 184, 166, 0.4);
+  --aurora-3: rgba(52, 211, 153, 0.35);
+  --aurora-4: rgba(13, 148, 136, 0.45);
 }
 
 [data-theme="crimson"] {
@@ -65,6 +97,10 @@
   --bg-base: #160205;
   --glow-1: rgba(200, 15, 40, 0.7);
   --glow-2: rgba(150, 0, 20, 0.6);
+  --aurora-1: rgba(239, 68, 68, 0.5);
+  --aurora-2: rgba(249, 115, 22, 0.4);
+  --aurora-3: rgba(244, 63, 94, 0.4);
+  --aurora-4: rgba(190, 24, 93, 0.45);
 }
 
 [data-theme="silver"] {
@@ -72,6 +108,10 @@
   --bg-base: #0a0a0c;
   --glow-1: rgba(180, 190, 210, 0.5);
   --glow-2: rgba(100, 110, 130, 0.4);
+  --aurora-1: rgba(203, 213, 225, 0.35);
+  --aurora-2: rgba(148, 163, 184, 0.35);
+  --aurora-3: rgba(226, 232, 240, 0.28);
+  --aurora-4: rgba(100, 116, 139, 0.35);
 }
 
 [data-theme="gold"] {
@@ -79,6 +119,10 @@
   --bg-base: #181504;
   --glow-1: rgba(220, 180, 50, 0.6);
   --glow-2: rgba(160, 120, 20, 0.5);
+  --aurora-1: rgba(245, 158, 11, 0.45);
+  --aurora-2: rgba(234, 179, 8, 0.4);
+  --aurora-3: rgba(250, 204, 21, 0.35);
+  --aurora-4: rgba(217, 119, 6, 0.42);
 }
 
 [data-theme="hologram"] {
@@ -88,6 +132,10 @@
   --glow-2: rgba(240, 50, 230, 0.8);
   --glow-3: rgba(66, 212, 244, 0.8);
   --glow-4: rgba(145, 30, 255, 0.8);
+  --aurora-1: rgba(34, 211, 238, 0.5);
+  --aurora-2: rgba(232, 121, 249, 0.45);
+  --aurora-3: rgba(59, 130, 246, 0.4);
+  --aurora-4: rgba(250, 204, 21, 0.4);
 }
 
 [data-theme="sunset"] {
@@ -97,10 +145,14 @@
   --glow-2: rgba(255, 210, 0, 0.9);
   --glow-3: rgba(255, 100, 0, 0.8);
   --glow-4: rgba(255, 0, 150, 0.8);
+  --aurora-1: rgba(255, 90, 31, 0.5);
+  --aurora-2: rgba(236, 72, 153, 0.45);
+  --aurora-3: rgba(168, 85, 247, 0.4);
+  --aurora-4: rgba(250, 204, 21, 0.4);
 }
 
 *, *::before, *::after, :root, body {
-  transition: --accent 0.4s cubic-bezier(0.4, 0, 0.2, 1), --bg-base 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-1 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-2 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-3 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-4 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: --accent 0.4s cubic-bezier(0.4, 0, 0.2, 1), --bg-base 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-1 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-2 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-3 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-4 0.4s cubic-bezier(0.4, 0, 0.2, 1), --aurora-1 0.4s cubic-bezier(0.4, 0, 0.2, 1), --aurora-2 0.4s cubic-bezier(0.4, 0, 0.2, 1), --aurora-3 0.4s cubic-bezier(0.4, 0, 0.2, 1), --aurora-4 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes shimmer {
@@ -118,27 +170,6 @@
 
 body {
   background-color: var(--bg-base);
-  background-size: auto, auto, auto, auto, 80px 100%;
-  background-image: 
-    radial-gradient(circle at 90% 90%, var(--glow-1) 0%, transparent 65%),
-    radial-gradient(circle at 10% 10%, var(--glow-2) 0%, transparent 60%),
-    radial-gradient(circle at 90% 10%, var(--glow-3) 0%, transparent 60%),
-    radial-gradient(circle at 10% 90%, var(--glow-4) 0%, transparent 65%),
-    /* Dense reeded glass effect (Liquid glass fluting) */
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.07) 0px,
-      rgba(255, 255, 255, 0.015) 6px,
-      rgba(0, 0, 0, 0.05) 12px,
-      rgba(255, 255, 255, 0.02) 20px,
-      rgba(0, 0, 0, 0.08) 32px,
-      rgba(255, 255, 255, 0.01) 44px,
-      rgba(0, 0, 0, 0.12) 58px,
-      rgba(255, 255, 255, 0.04) 68px,
-      rgba(0, 0, 0, 0.06) 76px,
-      rgba(255, 255, 255, 0.07) 80px
-    );
-  background-attachment: fixed;
   color: white;
   -webkit-font-smoothing: antialiased;
 }
@@ -151,11 +182,6 @@ body {
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
-}
-
-@keyframes liquid-shimmer {
-  0% { transform: translateX(-100%) skewX(-15deg); }
-  100% { transform: translateX(200%) skewX(-15deg); }
 }
 
 /* ── Base liquid glass surface ── */
@@ -246,6 +272,125 @@ body {
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.05);
 }
+
+/* ══════════════════════════════════════════════════════════
+   Mesh Gradient Background
+   Pitch-black WebGL shader canvas with three slow-orbiting
+   blurred radial glows (Fiery Orange #FF5500, Deep Red #CC1100,
+   Teal #0088AA) and a 3% film-noise overlay. The pure-CSS
+   fallback below kicks in only when WebGL is unavailable.
+   ══════════════════════════════════════════════════════════ */
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #000;
+  contain: strict;
+}
+
+.mesh-bg__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+/* 3% film noise overlay */
+.mesh-bg__noise {
+  position: absolute;
+  inset: -50%;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  animation: mesh-grain 0.9s steps(10) infinite;
+  will-change: transform;
+}
+
+/* ── Pure-CSS fallback: three drifting radial glows ── */
+.mesh-bg--fallback {
+  background: #000;
+}
+
+.mesh-bg__glow {
+  position: absolute;
+  inset: 0;
+}
+
+.mesh-bg__glow--orange { animation: mesh-orbit-a 44s ease-in-out infinite; }
+.mesh-bg__glow--red    { animation: mesh-orbit-b 52s ease-in-out infinite; }
+.mesh-bg__glow--teal   { animation: mesh-orbit-c 38s ease-in-out infinite; }
+
+.mesh-bg__spin {
+  position: absolute;
+  inset: 0;
+}
+
+.mesh-bg__glow--orange .mesh-bg__spin { animation: mesh-orbit-b 60s ease-in-out infinite reverse; }
+.mesh-bg__glow--red .mesh-bg__spin    { animation: mesh-orbit-a 48s ease-in-out infinite reverse; }
+.mesh-bg__glow--teal .mesh-bg__spin   { animation: mesh-orbit-c 54s ease-in-out infinite reverse; }
+
+.mesh-bg__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 62vmax;
+  height: 62vmax;
+  margin: -31vmax 0 0 -31vmax;
+  border-radius: 50%;
+  filter: blur(36px);
+}
+
+.mesh-bg__glow--orange .mesh-bg__core { background: radial-gradient(closest-side, rgba(255, 85, 0, 0.42), transparent 70%); }
+.mesh-bg__glow--red .mesh-bg__core    { background: radial-gradient(closest-side, rgba(204, 17, 0, 0.40), transparent 70%); }
+.mesh-bg__glow--teal .mesh-bg__core   { background: radial-gradient(closest-side, rgba(0, 136, 170, 0.42), transparent 70%); }
+
+@keyframes mesh-grain {
+  0%   { transform: translate3d(0, 0, 0); }
+  20%  { transform: translate3d(-3%, 2%, 0); }
+  40%  { transform: translate3d(2%, -3%, 0); }
+  60%  { transform: translate3d(-2%, -2%, 0); }
+  80%  { transform: translate3d(3%, 2%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes mesh-orbit-a {
+  0%, 100% { transform: translate3d(-22vw, -14vh, 0); }
+  25% { transform: translate3d(16vw, -22vh, 0); }
+  50% { transform: translate3d(24vw, 10vh, 0); }
+  75% { transform: translate3d(-14vw, 20vh, 0); }
+}
+
+@keyframes mesh-orbit-b {
+  0%, 100% { transform: translate3d(20vw, 18vh, 0); }
+  25% { transform: translate3d(-18vw, 14vh, 0); }
+  50% { transform: translate3d(-24vw, -16vh, 0); }
+  75% { transform: translate3d(16vw, -20vh, 0); }
+}
+
+@keyframes mesh-orbit-c {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  33% { transform: translate3d(-20vw, 12vh, 0); }
+  66% { transform: translate3d(12vw, -18vh, 0); }
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  .mesh-bg__noise {
+    animation: none;
+  }
+  .mesh-bg__glow,
+  .mesh-bg__glow *,
+  .mesh-bg__glow *::before,
+  .mesh-bg__glow *::after {
+    animation: none !important;
+  }
+}
+
 
 
 

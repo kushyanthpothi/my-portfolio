@@ -29,6 +29,8 @@ import { ContentCard } from './ContentCard';
 import { useMouseGlow } from './useMouseGlow';
 import { SEO } from './components/SEO';
 import { BreadcrumbSchema, ArticleSchema, ProjectSchema, SiteStructuredData } from './components/StructuredData';
+import { ReededGlassBackground } from './components/ReededGlassBackground';
+import { ThemeSidebar } from './components/ThemeSidebar';
 
 interface GlassOption {
   value: string;
@@ -848,6 +850,7 @@ export default function App() {
 
   const [themeIndex, setThemeIndex] = useState(getInitialThemeIndex);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
 
@@ -871,13 +874,6 @@ export default function App() {
     fetchBlogs().then(setBlogsData).catch(err => console.error('Failed to load blogs:', err));
     fetchProjects().then(setProjectsData).catch(err => console.error('Failed to load projects:', err));
   }, []);
-
-  const toggleTheme = () => {
-    const nextIndex = (themeIndex + 1) % themes.length;
-    setThemeIndex(nextIndex);
-    localStorage.setItem('themeIndex', String(nextIndex));
-    document.documentElement.setAttribute('data-theme', themes[nextIndex]);
-  };
 
   const isAdminPath = location.pathname.startsWith('/admin') && user !== null;
   const navItems = isAdminPath ? [
@@ -903,6 +899,7 @@ export default function App() {
     <LayoutGroup>
       <SiteStructuredData />
       <div className="min-h-screen font-sans overflow-x-hidden p-6 md:p-8 flex flex-col selection:bg-white/30 selection:text-white relative">
+        <ReededGlassBackground />
         <AnimatePresence>
           {!introComplete && (
             <IntroScreen onComplete={() => {
@@ -960,7 +957,7 @@ export default function App() {
               transition={{ duration: 0.8 }}
               className="flex items-center gap-3 md:gap-4 z-50"
             >
-              <button onClick={toggleTheme} className="w-11 h-11 rounded-full liquid-glass text-white flex items-center justify-center hover:brightness-110 transition shrink-0 relative overflow-hidden">
+              <button onClick={() => setIsSidebarOpen(true)} className="w-11 h-11 rounded-full liquid-glass text-white flex items-center justify-center hover:brightness-110 transition shrink-0 relative overflow-hidden">
                 <Palette className="w-5 h-5 z-10" />
               </button>
 
@@ -1214,6 +1211,17 @@ export default function App() {
           </div>
         </motion.footer>
         {!location.pathname.startsWith('/admin') && <LikeButton introComplete={introComplete} />}
+
+        <ThemeSidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          themeIndex={themeIndex}
+          onThemeChange={(idx) => {
+            setThemeIndex(idx);
+            localStorage.setItem('themeIndex', String(idx));
+            document.documentElement.setAttribute('data-theme', themes[idx]);
+          }}
+        />
       </div>
     </LayoutGroup>
   );
