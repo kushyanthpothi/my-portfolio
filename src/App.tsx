@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import emailjs from '@emailjs/browser';
 
 // Initialize EmailJS key
@@ -157,7 +157,7 @@ function ContactView() {
     <>
       <SEO
         title="Get in Touch | Kushyanth Pothineni"
-        description="Contact Kushyanth Pothineni for web development, consulting, cloud migrations, or contract projects."
+        description="Contact Kushyanth Pothineni for software development, backend architecture, cloud-native solutions, or consulting opportunities. Let's build something great together."
         path="/contact"
       />
       <BreadcrumbSchema items={[
@@ -361,7 +361,7 @@ function BlogDetailView({ data }: { data: any[] }) {
   }, [id, data]);
 
   const blogTitle = item?.title || item?.name || 'Blog';
-  const blogDescription = item?.description || item?.summary || item?.excerpt || 'Read this article by Kushyanth Pothineni.';
+  const blogDescription = item?.description || item?.summary || item?.excerpt || 'A technical article by Kushyanth Pothineni on software engineering, system design, and development best practices.';
   const imgUrl = item?.coverImage || item?.heroImage || item?.image || item?.imgUrl || item?.thumbnail || item?.imageUrl || item?.pic;
 
   return (
@@ -456,7 +456,7 @@ function ProjectDetailView({ data }: { data: any[] }) {
   }, [id, data]);
 
   const projectTitle = item?.title || item?.name || 'Project';
-  const projectDescription = item?.summary || item?.description || 'Explore this project by Kushyanth Pothineni.';
+  const projectDescription = item?.summary || item?.description || 'A software engineering project by Kushyanth Pothineni — showcasing technical architecture, problem-solving approach, and implementation details.';
   const imgUrl = item?.heroImage || item?.image || item?.coverImage || item?.imgUrl || item?.thumbnail || item?.imageUrl || item?.pic;
   const projectTechStack = Array.isArray(item?.techStack)
     ? item?.techStack
@@ -607,32 +607,28 @@ function ProjectDetailView({ data }: { data: any[] }) {
 
 function LiquidAccordion({ title, children }: { title: string, children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="rounded-3xl overflow-hidden mb-4 relative transition-all duration-500 liquid-glass-card">
+    <div className="rounded-3xl overflow-hidden mb-4 relative liquid-glass-card">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none relative z-10 hover:bg-white/5 transition-colors"
       >
         <span className="text-xl font-medium tracking-tight text-white/90">{title}</span>
-        <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}>
+        <div className={`transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${isOpen ? 'rotate-180' : ''}`}>
           <ChevronDown className="w-5 h-5 text-white/60" />
-        </motion.div>
+        </div>
       </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="px-6 pb-6 pt-2 text-white/70 leading-relaxed text-lg border-t border-white/10">
-              {children}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div
+        ref={contentRef}
+        className="overflow-hidden transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{ maxHeight: isOpen ? `${contentRef.current?.scrollHeight || 500}px` : '0px' }}
+      >
+        <div className="px-6 pb-6 pt-2 text-white/70 leading-relaxed text-lg border-t border-white/10">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
@@ -645,7 +641,7 @@ function BlogsView({ blogsData }: { blogsData: any[] }) {
     <>
       <SEO
         title="Latest Writings | Kushyanth Pothineni"
-        description="Read technical articles, guides, and insights on software development, cloud systems, and coding written by Kushyanth Pothineni."
+        description="Technical articles and deep dives on software engineering, system design, cloud infrastructure, and modern development practices by Kushyanth Pothineni."
         path="/blogs"
       />
       <BreadcrumbSchema items={[
@@ -681,7 +677,7 @@ function ProjectsView({ projectsData }: { projectsData: any[] }) {
     <>
       <SEO
         title="Featured Work | Kushyanth Pothineni"
-        description="Explore featured engineering projects, mobile apps, and case studies built by Kushyanth Pothineni."
+        description="Engineering projects and case studies showcasing scalable backends, cloud-native architectures, and full-stack applications by Kushyanth Pothineni."
         path="/projects"
       />
       <BreadcrumbSchema items={[
@@ -716,7 +712,7 @@ function HomeView({ blogsData, projectsData }: { blogsData: any[], projectsData:
     <>
       <SEO
         title="Kushyanth Pothineni | Software Development Engineer"
-        description="Portfolio of Kushyanth Pothineni - Software Development Engineer specializing in web development, mobile applications, and creative design solutions."
+        description="Software Development Engineer specializing in Java, Spring Boot, React, and cloud-native systems. Building scalable backends and intuitive interfaces at Ninjacart."
         path="/"
       />
       <BreadcrumbSchema items={[
@@ -792,10 +788,10 @@ function HomeView({ blogsData, projectsData }: { blogsData: any[], projectsData:
 function PageTransition({ children, className = "w-full" }: { children: React.ReactNode, className?: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -15 }}
-      transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
       className={className}
     >
       {children}
@@ -1053,14 +1049,14 @@ export default function App() {
           transition={{ duration: 0.8 }}
           className={`flex-1 w-full mx-auto z-10 relative flex flex-col pb-6 ${location.pathname.startsWith('/admin') ? 'pt-16 md:pt-20' : 'pt-32 md:pt-40'}`}
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<PageTransition><HomeView blogsData={blogsData} projectsData={projectsData} /></PageTransition>} />
               <Route path="/about" element={
                 <PageTransition className="w-full pb-10">
                   <SEO
                     title="About Me | Kushyanth Pothineni"
-                    description="Learn more about Kushyanth Pothineni, a Software Development Engineer passionate about building scalable backends, intuitive interfaces, and DevOps."
+                    description="My journey in software engineering — from open-source contributions and college projects to building scalable systems at Ninjacart. Learn about my skills, experience, and engineering philosophy."
                     path="/about"
                   />
                   <BreadcrumbSchema items={[

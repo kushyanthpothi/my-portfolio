@@ -207,24 +207,48 @@ export function ReededGlassBackground() {
     let raf = 0;
     const start = performance.now();
 
-    const render = () => {
+    // Cache theme colors — only re-read when data-theme attribute changes
+    let cachedColors = readThemeColors();
+    let lastTheme = document.documentElement.getAttribute('data-theme') || '';
+
+    const checkThemeChange = () => {
+      const current = document.documentElement.getAttribute('data-theme') || '';
+      if (current !== lastTheme) {
+        lastTheme = current;
+        cachedColors = readThemeColors();
+      }
+    };
+
+    const render = (time: number) => {
       resize();
-      const c = readThemeColors();
+      checkThemeChange();
       gl!.uniform2f(uRes, canvas.width, canvas.height);
-      gl!.uniform1f(uTime, reduceMotion ? 0 : (performance.now() - start) / 1000);
-      gl!.uniform4f(uGlow1, c.glow1[0], c.glow1[1], c.glow1[2], c.glow1[3]);
-      gl!.uniform4f(uGlow2, c.glow2[0], c.glow2[1], c.glow2[2], c.glow2[3]);
-      gl!.uniform4f(uA1, c.aurora1[0], c.aurora1[1], c.aurora1[2], c.aurora1[3]);
-      gl!.uniform4f(uA2, c.aurora2[0], c.aurora2[1], c.aurora2[2], c.aurora2[3]);
-      gl!.uniform4f(uA3, c.aurora3[0], c.aurora3[1], c.aurora3[2], c.aurora3[3]);
-      gl!.uniform4f(uA4, c.aurora4[0], c.aurora4[1], c.aurora4[2], c.aurora4[3]);
+      gl!.uniform1f(uTime, reduceMotion ? 0 : (time - start) / 1000);
+      gl!.uniform4f(uGlow1, cachedColors.glow1[0], cachedColors.glow1[1], cachedColors.glow1[2], cachedColors.glow1[3]);
+      gl!.uniform4f(uGlow2, cachedColors.glow2[0], cachedColors.glow2[1], cachedColors.glow2[2], cachedColors.glow2[3]);
+      gl!.uniform4f(uA1, cachedColors.aurora1[0], cachedColors.aurora1[1], cachedColors.aurora1[2], cachedColors.aurora1[3]);
+      gl!.uniform4f(uA2, cachedColors.aurora2[0], cachedColors.aurora2[1], cachedColors.aurora2[2], cachedColors.aurora2[3]);
+      gl!.uniform4f(uA3, cachedColors.aurora3[0], cachedColors.aurora3[1], cachedColors.aurora3[2], cachedColors.aurora3[3]);
+      gl!.uniform4f(uA4, cachedColors.aurora4[0], cachedColors.aurora4[1], cachedColors.aurora4[2], cachedColors.aurora4[3]);
       gl!.drawArrays(gl!.TRIANGLES, 0, 3);
     };
 
-    const loop = () => { if (!running) return; render(); raf = requestAnimationFrame(loop); };
-    const onResize = () => { reduceMotion ? render() : resize(); };
+    let lastFrameTime = 0;
+    // Throttle to ~30fps on mobile, 60fps on desktop for background shader
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const frameInterval = isMobile ? 33 : 16;
 
-    render();
+    const loop = (time: number) => {
+      if (!running) return;
+      if (time - lastFrameTime >= frameInterval) {
+        lastFrameTime = time;
+        render(time);
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    const onResize = () => { reduceMotion ? render(performance.now()) : resize(); };
+
+    render(performance.now());
     if (!reduceMotion) raf = requestAnimationFrame(loop);
     window.addEventListener('resize', onResize);
 

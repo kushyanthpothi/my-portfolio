@@ -1,13 +1,126 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { ArrowRight, Pause, Play, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { ArrowRight, Pause, Play, ChevronUp, X } from 'lucide-react';
-import { useMouseGlow } from './useMouseGlow';
+
+interface ExpandOrigin {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const EASE_IN = 'cubic-bezier(0.4, 0, 1, 1)';
+const DURATION_OPEN = 550;
+const DURATION_CLOSE = 400;
 
 export function JourneyCard() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const [portalState, setPortalState] = useState<'closed' | 'opening' | 'open' | 'closing'>('closed');
+  const [expandOrigin, setExpandOrigin] = useState<ExpandOrigin | null>(null);
+  const collapsedRef = useRef<HTMLDivElement>(null);
+  const expandedCardRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const openExpanded = useCallback(() => {
+    if (isExpanded || !collapsedRef.current) return;
+    const rect = collapsedRef.current.getBoundingClientRect();
+    setExpandOrigin({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+    setIsExpanded(true);
+    setPortalState('opening');
+  }, [isExpanded]);
+
+  // Animate open: from collapsed position → full size
+  useEffect(() => {
+    if (portalState !== 'opening' || !expandOrigin || !expandedCardRef.current) return;
+
+    const el = expandedCardRef.current;
+    const targetW = el.offsetWidth;
+    const targetH = el.offsetHeight;
+    const targetX = (window.innerWidth - targetW) / 2;
+    const targetY = (window.innerHeight - targetH) / 2;
+
+    const scaleX = expandOrigin.width / targetW;
+    const scaleY = expandOrigin.height / targetH;
+    const translateX = expandOrigin.x + expandOrigin.width / 2 - (targetX + targetW / 2);
+    const translateY = expandOrigin.y + expandOrigin.height / 2 - (targetY + targetH / 2);
+
+    // Set initial state instantly
+    el.style.transition = 'none';
+    el.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`;
+    el.style.opacity = '0';
+
+    // Force layout so the browser registers the initial state
+    el.offsetHeight;
+
+    // Animate to final state
+    el.style.transition = `transform ${DURATION_OPEN}ms ${EASE_OUT}, opacity ${DURATION_OPEN * 0.7}ms ${EASE_OUT}`;
+    el.style.transform = 'translate(0, 0) scale(1, 1)';
+    el.style.opacity = '1';
+
+    const onEnd = () => {
+      el.removeEventListener('transitionend', onEnd);
+      el.style.transition = '';
+      el.style.willChange = '';
+      setPortalState('open');
+    };
+    el.addEventListener('transitionend', onEnd, { once: true });
+
+    // Fallback if transitionend doesn't fire
+    const fallback = setTimeout(() => {
+      el.style.transition = '';
+      el.style.willChange = '';
+      setPortalState('open');
+    }, DURATION_OPEN + 50);
+
+    return () => clearTimeout(fallback);
+  }, [portalState, expandOrigin]);
+
+  // Close animation — shrink back to collapsed position
+  const closeExpanded = useCallback((e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!expandedCardRef.current || !expandOrigin) {
+      setIsExpanded(false);
+      setIsAutoScrolling(true);
+      setExpandOrigin(null);
+      setPortalState('closed');
+      return;
+    }
+
+    setPortalState('closing');
+    setIsAutoScrolling(true);
+
+    const el = expandedCardRef.current;
+    const targetW = el.offsetWidth;
+    const targetH = el.offsetHeight;
+    const targetX = (window.innerWidth - targetW) / 2;
+    const targetY = (window.innerHeight - targetH) / 2;
+
+    const scaleX = expandOrigin.width / targetW;
+    const scaleY = expandOrigin.height / targetH;
+    const translateX = expandOrigin.x + expandOrigin.width / 2 - (targetX + targetW / 2);
+    const translateY = expandOrigin.y + expandOrigin.height / 2 - (targetY + targetH / 2);
+
+    el.style.transition = `transform ${DURATION_CLOSE}ms ${EASE_IN}, opacity ${DURATION_CLOSE * 0.8}ms ease-in`;
+    el.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`;
+    el.style.opacity = '0';
+
+    const cleanup = () => {
+      setIsExpanded(false);
+      setExpandOrigin(null);
+      setPortalState('closed');
+    };
+
+    el.addEventListener('transitionend', function onEnd(ev) {
+      if (ev.propertyName !== 'transform') return;
+      el.removeEventListener('transitionend', onEnd);
+      cleanup();
+    }, { once: true });
+
+    // Fallback cleanup
+    setTimeout(cleanup, DURATION_CLOSE + 50);
+  }, [expandOrigin]);
 
   // Auto-scroll logic
   useEffect(() => {
@@ -38,32 +151,32 @@ export function JourneyCard() {
     };
   }, [isExpanded, isAutoScrolling]);
 
-  const handleUserScroll = () => {
-    if (isAutoScrolling) {
-      setIsAutoScrolling(false);
-    }
-  };
+  const handleUserScroll = useCallback(() => {
+    if (isAutoScrolling) setIsAutoScrolling(false);
+  }, [isAutoScrolling]);
 
-  const toggleScroll = (e: React.MouseEvent) => {
+  const toggleScroll = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsAutoScrolling(!isAutoScrolling);
-  };
+    setIsAutoScrolling(prev => !prev);
+  }, []);
 
-  const closeExpanded = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setIsExpanded(false);
-    setIsAutoScrolling(true);
-  };
+  const isOpen = portalState !== 'closed';
+  const isAnimating = portalState === 'opening' || portalState === 'closing';
 
   return (
-    <LayoutGroup>
-      <motion.div 
-        layoutId="journey-card"
-        transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
-        onClick={() => !isExpanded && setIsExpanded(true)}
-        className={`md:col-span-2 rounded-[2.5rem] p-8 md:p-12 overflow-hidden group cursor-pointer liquid-glass-card ${isExpanded ? "opacity-0" : "opacity-100"}`}
+    <>
+      {/* Collapsed card */}
+      <div
+        ref={collapsedRef}
+        onClick={openExpanded}
+        className="md:col-span-2 rounded-[2.5rem] p-8 md:p-12 overflow-hidden group cursor-pointer liquid-glass-card"
+        style={{
+          opacity: isOpen ? 0 : 1,
+          pointerEvents: isOpen ? 'none' : 'auto',
+          transition: `opacity ${isOpen ? DURATION_CLOSE : DURATION_OPEN}ms ${isOpen ? EASE_IN : EASE_OUT}`,
+          willChange: isExpanded ? 'opacity' : undefined,
+        }}
       >
-        
         <div className="flex justify-between items-start h-full gap-4 md:gap-0">
           <div className="flex-1 pr-4 md:pr-8">
             <h3 className="text-3xl font-semibold tracking-tight text-white mb-4 md:mb-6">The Journey</h3>
@@ -76,121 +189,120 @@ export function JourneyCard() {
             <ArrowRight className="w-5 h-5 md:w-6 md:h-6 text-white/70" />
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {isExpanded && (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 pointer-events-auto">
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                onClick={closeExpanded}
-              />
-              <motion.div
-                layoutId="journey-card"
-                transition={{ type: "spring", bounce: 0.5, duration: 0.7 }}
-                className="w-full max-w-7xl h-[90vh] max-h-[900px] rounded-[2.5rem] p-6 md:p-12 lg:p-16 overflow-hidden z-10 flex flex-col liquid-glass-card"
-              >
-                
-                <div className="flex justify-between items-start mb-6 shrink-0 relative z-20">
-                  <h3 className="text-3xl md:text-5xl font-semibold tracking-tight text-white">The Journey</h3>
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <button 
-                      onClick={toggleScroll}
-                      className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                      title={isAutoScrolling ? "Pause scrolling" : "Play scrolling"}
-                    >
-                      {isAutoScrolling ? <Pause className="w-4 h-4 md:w-5 md:h-5 text-white/70" /> : <Play className="w-4 h-4 md:w-5 md:h-5 text-white/70 ml-1" />}
-                    </button>
-                    <button 
-                      onClick={closeExpanded}
-                      className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                      title="Close"
-                    >
-                      <X className="w-5 h-5 md:w-6 md:h-6 text-white/70" />
-                    </button>
-                  </div>
-                </div>
+      {/* Expanded portal */}
+      {isOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            style={{
+              opacity: portalState === 'opening' ? 0 : portalState === 'closing' ? 0 : 1,
+              transition: `opacity ${portalState === 'opening' ? DURATION_OPEN * 0.6 : DURATION_CLOSE}ms ${portalState === 'opening' ? EASE_OUT : EASE_IN}`,
+            }}
+            onClick={closeExpanded}
+          />
 
-                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1 overflow-hidden relative mt-2 md:mt-8">
-                  <div className="lg:hidden shrink-0 flex flex-col items-center justify-center pt-2 md:pt-4 z-20">
-                    <div className="w-28 h-28 mx-auto rounded-full overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] group pointer-events-auto relative">
-                      <img 
-                        src="https://i.ibb.co/G39RwbX6/Profile-Photo-small.jpg" 
-                        alt="Kushyanth Pothineni" 
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-105"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Left: Auto-scrolling text */}
-                  <div className="flex-1 relative flex flex-col pt-0 lg:pt-4 min-h-0">
-                    <div 
-                      ref={scrollRef}
-                      onWheel={handleUserScroll}
-                      onTouchMove={handleUserScroll}
-                      className="flex-1 overflow-y-auto hide-scrollbar touch-pan-y"
-                      style={{ 
-                        maskImage: 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)',
-                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)'
-                      }}
-                    >
-                      {/* Spacer to push text down initially to fade up in the center */}
-                      <div className="h-[2vh] lg:h-[30vh]"></div>
-                      
-                      <div className="space-y-6 md:space-y-10 text-white/80 text-base md:text-2xl font-medium leading-[1.8] max-w-3xl pr-2 md:pr-6 pb-20 lg:pb-40 pt-4 pointer-events-auto">
-                        <p className="text-center lg:text-left">
-                          My path in software engineering began at KKR & KSR Institute of Technology and Sciences (KITS), where I studied Computer Science and Engineering. During my time there, I discovered a profound passion for building solutions that create real impact.
-                        </p>
-                        <p className="text-center lg:text-left">
-                          I actively immersed myself in the open source community, contributing to various projects and collaborating with developers worldwide to refine my skills and understand real-world engineering practices.
-                        </p>
-                        <p className="text-center lg:text-left">
-                          One of my defining early projects was a comprehensive event management platform designed specifically for college students. I noticed a gap in how students discovered academic and extracurricular events across different campuses.
-                        </p>
-                        <p className="text-center lg:text-left">
-                          To bridge this, I built a centralized hub that aggregated events from various colleges. This encouraged cross-campus participation, helping students boost their extracurricular activities, build crucial skills, and expand their professional networks for their future careers.
-                        </p>
-                        <p className="text-center lg:text-left">
-                          That momentum carried me straight into professional software development. Today, I am working as a Software Development Engineer at Ninjacart, an agri-tech company where we buy directly from farmers and sell to businesses, shops, and e-commerce platforms.
-                        </p>
-                        <p className="text-center lg:text-left">
-                          Every project I undertake is driven by the same foundational desire:
-                        </p>
-                        <p className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/40 pb-16 pt-12 text-center lg:text-left">
-                          to engineer with purpose.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: Profile Photo */}
-                  <div className="hidden lg:flex w-full lg:w-[350px] shrink-0 flex-col items-center justify-center">
-                    <div className="w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden relative shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-white/10 group">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 mix-blend-overlay z-10 transition-opacity duration-700 opacity-100 group-hover:opacity-0 pointer-events-none"></div>
-                      <img 
-                        src="https://i.ibb.co/G39RwbX6/Profile-Photo-small.jpg" 
-                        alt="Kushyanth Pothineni" 
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="mt-8 text-center">
-                      <h4 className="text-xl font-semibold tracking-tight text-white">Kushyanth Pothineni</h4>
-                      <p className="text-white/50 mt-1 uppercase text-sm tracking-widest font-medium">Software Engineer</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+          {/* Card */}
+          <div
+            ref={expandedCardRef}
+            className="w-full max-w-7xl h-[90vh] max-h-[900px] rounded-[2.5rem] p-6 md:p-12 lg:p-16 overflow-hidden z-10 flex flex-col liquid-glass-card"
+            style={{ willChange: 'transform, opacity' }}
+          >
+            <div className="flex justify-between items-start mb-6 shrink-0 relative z-20">
+              <h3 className="text-3xl md:text-5xl font-semibold tracking-tight text-white">The Journey</h3>
+              <div className="flex items-center gap-2 md:gap-3">
+                <button
+                  onClick={toggleScroll}
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                  title={isAutoScrolling ? "Pause scrolling" : "Play scrolling"}
+                >
+                  {isAutoScrolling ? <Pause className="w-4 h-4 md:w-5 md:h-5 text-white/70" /> : <Play className="w-4 h-4 md:w-5 md:h-5 text-white/70 ml-1" />}
+                </button>
+                <button
+                  onClick={closeExpanded}
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                  title="Close"
+                >
+                  <X className="w-5 h-5 md:w-6 md:h-6 text-white/70" />
+                </button>
+              </div>
             </div>
-          )}
-        </AnimatePresence>,
+
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 flex-1 overflow-hidden relative mt-2 md:mt-8">
+              <div className="lg:hidden shrink-0 flex flex-col items-center justify-center pt-2 md:pt-4 z-20">
+                <div className="w-28 h-28 mx-auto rounded-full overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] group pointer-events-auto relative">
+                  <img
+                    src="https://i.ibb.co/G39RwbX6/Profile-Photo-small.jpg"
+                    alt="Kushyanth Pothineni"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-105"
+                  />
+                </div>
+              </div>
+
+              {/* Left: Auto-scrolling text */}
+              <div className="flex-1 relative flex flex-col pt-0 lg:pt-4 min-h-0">
+                <div
+                  ref={scrollRef}
+                  onWheel={handleUserScroll}
+                  onTouchMove={handleUserScroll}
+                  className="flex-1 overflow-y-auto hide-scrollbar touch-pan-y"
+                  style={{
+                    maskImage: 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)'
+                  }}
+                >
+                  <div className="h-[2vh] lg:h-[30vh]"></div>
+
+                  <div className="space-y-6 md:space-y-10 text-white/80 text-base md:text-2xl font-medium leading-[1.8] max-w-3xl pr-2 md:pr-6 pb-20 lg:pb-40 pt-4 pointer-events-auto">
+                    <p className="text-center lg:text-left">
+                      My path in software engineering began at KKR & KSR Institute of Technology and Sciences (KITS), where I studied Computer Science and Engineering. During my time there, I discovered a profound passion for building solutions that create real impact.
+                    </p>
+                    <p className="text-center lg:text-left">
+                      I actively immersed myself in the open source community, contributing to various projects and collaborating with developers worldwide to refine my skills and understand real-world engineering practices.
+                    </p>
+                    <p className="text-center lg:text-left">
+                      One of my defining early projects was a comprehensive event management platform designed specifically for college students. I noticed a gap in how students discovered academic and extracurricular events across different campuses.
+                    </p>
+                    <p className="text-center lg:text-left">
+                      To bridge this, I built a centralized hub that aggregated events from various colleges. This encouraged cross-campus participation, helping students boost their extracurricular activities, build crucial skills, and expand their professional networks for their future careers.
+                    </p>
+                    <p className="text-center lg:text-left">
+                      That momentum carried me straight into professional software development. Today, I am working as a Software Development Engineer at Ninjacart, an agri-tech company where we buy directly from farmers and sell to businesses, shops, and e-commerce platforms.
+                    </p>
+                    <p className="text-center lg:text-left">
+                      Every project I undertake is driven by the same foundational desire:
+                    </p>
+                    <p className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/40 pb-16 pt-12 text-center lg:text-left">
+                      to engineer with purpose.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Profile Photo */}
+              <div className="hidden lg:flex w-full lg:w-[350px] shrink-0 flex-col items-center justify-center">
+                <div className="w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden relative shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-white/10 group">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 mix-blend-overlay z-10 transition-opacity duration-700 opacity-100 group-hover:opacity-0 pointer-events-none"></div>
+                  <img
+                    src="https://i.ibb.co/G39RwbX6/Profile-Photo-small.jpg"
+                    alt="Kushyanth Pothineni"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-105"
+                  />
+                </div>
+                <div className="mt-8 text-center">
+                  <h4 className="text-xl font-semibold tracking-tight text-white">Kushyanth Pothineni</h4>
+                  <p className="text-white/50 mt-1 uppercase text-sm tracking-widest font-medium">Software Engineer</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>,
         document.body
       )}
-    </LayoutGroup>
+    </>
   );
 }

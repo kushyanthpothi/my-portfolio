@@ -151,8 +151,8 @@
   --aurora-4: rgba(250, 204, 21, 0.4);
 }
 
-*, *::before, *::after, :root, body {
-  transition: --accent 0.4s cubic-bezier(0.4, 0, 0.2, 1), --bg-base 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-1 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-2 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-3 0.4s cubic-bezier(0.4, 0, 0.2, 1), --glow-4 0.4s cubic-bezier(0.4, 0, 0.2, 1), --aurora-1 0.4s cubic-bezier(0.4, 0, 0.2, 1), --aurora-2 0.4s cubic-bezier(0.4, 0, 0.2, 1), --aurora-3 0.4s cubic-bezier(0.4, 0, 0.2, 1), --aurora-4 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+:root, body, .liquid-glass, .liquid-glass-card, .liquid-glass-input, .theme-accent-text, .theme-accent-border {
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
 }
 
 @keyframes shimmer {
@@ -193,6 +193,8 @@ body {
     inset 0 1px 1.5px rgba(255, 255, 255, 0.15);
   border: 0.5px solid rgba(255, 255, 255, 0.15);
   transition: all 0.2s ease;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .liquid-glass:hover {
@@ -213,6 +215,8 @@ body {
     0 8px 32px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 2px rgba(255, 255, 255, 0.15);
   transition: background 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .liquid-glass-card:hover {
@@ -271,6 +275,16 @@ body {
 .liquid-glass-input:focus {
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+/* Reduce backdrop-filter intensity on mobile for performance */
+@media (max-width: 768px) {
+  .liquid-glass {
+    backdrop-filter: blur(20px) saturate(130%);
+  }
+  .liquid-glass-card {
+    backdrop-filter: blur(20px) saturate(130%);
+  }
 }
 
 /* ══════════════════════════════════════════════════════════

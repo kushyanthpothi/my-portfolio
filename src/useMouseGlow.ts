@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef, useCallback, type RefObject } from 'react';
 
 export function useMouseGlow<T extends HTMLElement = HTMLElement>(): RefObject<T | null> {
   const ref = useRef<T | null>(null);
@@ -7,12 +7,23 @@ export function useMouseGlow<T extends HTMLElement = HTMLElement>(): RefObject<T
     const el = ref.current;
     if (!el) return;
 
+    let rafId = 0;
+    let pendingX = 0.5;
+    let pendingY = 0.5;
+    let scheduled = false;
+
     const setPosition = (clientX: number, clientY: number) => {
       const rect = el.getBoundingClientRect();
-      const x = ((clientX - rect.left) / rect.width).toFixed(3);
-      const y = ((clientY - rect.top) / rect.height).toFixed(3);
-      el.style.setProperty('--mouse-x', x);
-      el.style.setProperty('--mouse-y', y);
+      pendingX = (clientX - rect.left) / rect.width;
+      pendingY = (clientY - rect.top) / rect.height;
+      if (!scheduled) {
+        scheduled = true;
+        rafId = requestAnimationFrame(() => {
+          el.style.setProperty('--mouse-x', pendingX.toFixed(3));
+          el.style.setProperty('--mouse-y', pendingY.toFixed(3));
+          scheduled = false;
+        });
+      }
     };
 
     const resetPosition = () => {
@@ -28,11 +39,12 @@ export function useMouseGlow<T extends HTMLElement = HTMLElement>(): RefObject<T
     const handleMouseLeave = () => resetPosition();
     const handleTouchEnd = () => resetPosition();
 
-    el.addEventListener('mousemove', handleMouseMove);
+    el.addEventListener('mousemove', handleMouseMove, { passive: true });
     el.addEventListener('mouseleave', handleMouseLeave);
     el.addEventListener('touchmove', handleTouchMove, { passive: true });
     el.addEventListener('touchend', handleTouchEnd);
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       el.removeEventListener('mousemove', handleMouseMove);
       el.removeEventListener('mouseleave', handleMouseLeave);
       el.removeEventListener('touchmove', handleTouchMove);
