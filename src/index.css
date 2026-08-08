@@ -17,6 +17,11 @@
   --aurora-2: rgba(168, 85, 247, 0.42);
   --aurora-3: rgba(34, 211, 238, 0.38);
   --aurora-4: rgba(29, 78, 216, 0.5);
+  --grad-1: #0d47a1;
+  --grad-2: #ff6d00;
+  --grad-3: #00bfa5;
+  --grad-4: #ffab00;
+  --grad-5: #6200ea;
 }
 
 @property --accent {
@@ -70,86 +75,86 @@
   initial-value: rgba(29, 78, 216, 0.5);
 }
 
-[data-theme="purple"] {
-  --accent: #a855f7;
-  --bg-base: #0c0216;
-  --glow-1: rgba(140, 15, 200, 0.7);
-  --glow-2: rgba(90, 0, 150, 0.6);
-  --aurora-1: rgba(192, 38, 211, 0.5);
-  --aurora-2: rgba(126, 34, 206, 0.45);
-  --aurora-3: rgba(147, 51, 234, 0.4);
-  --aurora-4: rgba(236, 72, 153, 0.35);
+[data-theme="default"] {
+  --accent: #3b82f6;
+  --bg-base: #020412;
+  --glow-1: rgba(1, 15, 200, 0.7);
+  --glow-2: rgba(0, 25, 150, 0.6);
+  --aurora-1: rgba(56, 130, 246, 0.5);
+  --aurora-2: rgba(168, 85, 247, 0.42);
+  --aurora-3: rgba(34, 211, 238, 0.38);
+  --aurora-4: rgba(29, 78, 216, 0.5);
+  --grad-1: #010fc8;
+  --grad-2: #3882f6;
+  --grad-3: #a855f7;
+  --grad-4: #22d3ee;
+  --grad-5: #1d4ed8;
 }
 
-[data-theme="emerald"] {
-  --accent: #10b981;
-  --bg-base: #02120a;
-  --glow-1: rgba(1, 180, 100, 0.7);
-  --glow-2: rgba(0, 120, 60, 0.6);
-  --aurora-1: rgba(16, 185, 129, 0.45);
-  --aurora-2: rgba(20, 184, 166, 0.4);
-  --aurora-3: rgba(52, 211, 153, 0.35);
-  --aurora-4: rgba(13, 148, 136, 0.45);
+[data-theme="radiance"] {
+  --accent: #ff6d00;
+  --bg-base: #0a0400;
+  --glow-1: rgba(255, 109, 0, 0.7);
+  --glow-2: rgba(255, 23, 68, 0.6);
+  --aurora-1: rgba(255, 109, 0, 0.5);
+  --aurora-2: rgba(255, 23, 68, 0.45);
+  --aurora-3: rgba(255, 171, 0, 0.4);
+  --aurora-4: rgba(255, 61, 0, 0.45);
+  --grad-1: #ff6d00;
+  --grad-2: #ff1744;
+  --grad-3: #ffab00;
+  --grad-4: #ff3d00;
+  --grad-5: #ffd600;
 }
 
-[data-theme="crimson"] {
-  --accent: #ef4444;
-  --bg-base: #160205;
-  --glow-1: rgba(200, 15, 40, 0.7);
-  --glow-2: rgba(150, 0, 20, 0.6);
-  --aurora-1: rgba(239, 68, 68, 0.5);
-  --aurora-2: rgba(249, 115, 22, 0.4);
-  --aurora-3: rgba(244, 63, 94, 0.4);
-  --aurora-4: rgba(190, 24, 93, 0.45);
+[data-theme="electric"] {
+  --accent: #2979ff;
+  --bg-base: #000a14;
+  --glow-1: rgba(41, 121, 255, 0.7);
+  --glow-2: rgba(0, 229, 255, 0.6);
+  --aurora-1: rgba(41, 121, 255, 0.5);
+  --aurora-2: rgba(0, 229, 255, 0.45);
+  --aurora-3: rgba(101, 31, 255, 0.4);
+  --aurora-4: rgba(224, 64, 251, 0.45);
+  --grad-1: #2979ff;
+  --grad-2: #00e5ff;
+  --grad-3: #651fff;
+  --grad-4: #e040fb;
+  --grad-5: #00b0ff;
 }
 
-[data-theme="silver"] {
-  --accent: #94a3b8;
-  --bg-base: #0a0a0c;
-  --glow-1: rgba(180, 190, 210, 0.5);
-  --glow-2: rgba(100, 110, 130, 0.4);
-  --aurora-1: rgba(203, 213, 225, 0.35);
-  --aurora-2: rgba(148, 163, 184, 0.35);
-  --aurora-3: rgba(226, 232, 240, 0.28);
-  --aurora-4: rgba(100, 116, 139, 0.35);
+[data-theme="prism"] {
+  --accent: #ff1744;
+  --bg-base: #0a0008;
+  --glow-1: rgba(255, 23, 68, 0.7);
+  --glow-2: rgba(101, 31, 255, 0.6);
+  --aurora-1: rgba(255, 23, 68, 0.5);
+  --aurora-2: rgba(101, 31, 255, 0.45);
+  --aurora-3: rgba(0, 229, 255, 0.4);
+  --aurora-4: rgba(255, 234, 0, 0.45);
+  --grad-1: #ff1744;
+  --grad-2: #651fff;
+  --grad-3: #00e5ff;
+  --grad-4: #ffea00;
+  --grad-5: #00c853;
 }
 
-[data-theme="gold"] {
-  --accent: #eab308;
-  --bg-base: #181504;
-  --glow-1: rgba(220, 180, 50, 0.6);
-  --glow-2: rgba(160, 120, 20, 0.5);
-  --aurora-1: rgba(245, 158, 11, 0.45);
-  --aurora-2: rgba(234, 179, 8, 0.4);
-  --aurora-3: rgba(250, 204, 21, 0.35);
-  --aurora-4: rgba(217, 119, 6, 0.42);
+[data-theme="dazzle"] {
+  --accent: #ffd600;
+  --bg-base: #0a0800;
+  --glow-1: rgba(255, 214, 0, 0.7);
+  --glow-2: rgba(255, 109, 0, 0.6);
+  --aurora-1: rgba(255, 214, 0, 0.5);
+  --aurora-2: rgba(255, 109, 0, 0.45);
+  --aurora-3: rgba(255, 23, 68, 0.4);
+  --aurora-4: rgba(224, 64, 251, 0.45);
+  --grad-1: #ffd600;
+  --grad-2: #ff6d00;
+  --grad-3: #ff1744;
+  --grad-4: #e040fb;
+  --grad-5: #ffab00;
 }
 
-[data-theme="hologram"] {
-  --accent: #22d3ee;
-  --bg-base: #f58231;
-  --glow-1: rgba(66, 99, 216, 0.8);
-  --glow-2: rgba(240, 50, 230, 0.8);
-  --glow-3: rgba(66, 212, 244, 0.8);
-  --glow-4: rgba(145, 30, 255, 0.8);
-  --aurora-1: rgba(34, 211, 238, 0.5);
-  --aurora-2: rgba(232, 121, 249, 0.45);
-  --aurora-3: rgba(59, 130, 246, 0.4);
-  --aurora-4: rgba(250, 204, 21, 0.4);
-}
-
-[data-theme="sunset"] {
-  --accent: #fcd34d;
-  --bg-base: #ff4560;
-  --glow-1: rgba(150, 0, 255, 0.8);
-  --glow-2: rgba(255, 210, 0, 0.9);
-  --glow-3: rgba(255, 100, 0, 0.8);
-  --glow-4: rgba(255, 0, 150, 0.8);
-  --aurora-1: rgba(255, 90, 31, 0.5);
-  --aurora-2: rgba(236, 72, 153, 0.45);
-  --aurora-3: rgba(168, 85, 247, 0.4);
-  --aurora-4: rgba(250, 204, 21, 0.4);
-}
 
 :root, body, .liquid-glass, .liquid-glass-card, .liquid-glass-input, .theme-accent-text, .theme-accent-border {
   transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
@@ -174,6 +179,34 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Hide scrollbar globally — show only while scrolling like macOS */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+html::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+html::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Hide scrollbar until hover (overlay style) */
+html:not(:hover) {
+  scrollbar-color: transparent transparent;
+}
+html:not(:hover)::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
 @layer utilities {
   .hide-scrollbar {
     -ms-overflow-style: none;
@@ -193,8 +226,6 @@ body {
     inset 0 1px 1.5px rgba(255, 255, 255, 0.15);
   border: 0.5px solid rgba(255, 255, 255, 0.15);
   transition: all 0.2s ease;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
 .liquid-glass:hover {
@@ -215,8 +246,6 @@ body {
     0 8px 32px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 2px rgba(255, 255, 255, 0.15);
   transition: background 0.3s ease, box-shadow 0.3s ease;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
 .liquid-glass-card:hover {
@@ -287,122 +316,163 @@ body {
   }
 }
 
+/* Firefox performance optimizations */
+@-moz-document url-prefix() {
+  .liquid-glass {
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+  .liquid-glass-card {
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+  .liquid-glass-input {
+    backdrop-filter: blur(8px) saturate(120%);
+  }
+  .gradient-bg__orb {
+    filter: blur(50px);
+  }
+}
+
 /* ══════════════════════════════════════════════════════════
-   Mesh Gradient Background
-   Pitch-black WebGL shader canvas with three slow-orbiting
-   blurred radial glows (Fiery Orange #FF5500, Deep Red #CC1100,
-   Teal #0088AA) and a 3% film-noise overlay. The pure-CSS
-   fallback below kicks in only when WebGL is unavailable.
+   Gradient Background
+   Pure CSS animated gradient with multiple color orbs
+   that blend smoothly on all devices.
    ══════════════════════════════════════════════════════════ */
 
-.mesh-bg {
+.gradient-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: #000;
-  contain: strict;
 }
 
-.mesh-bg__canvas {
+.gradient-bg__orb {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
-}
-
-/* 3% film noise overlay */
-.mesh-bg__noise {
-  position: absolute;
-  inset: -50%;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.03;
-  animation: mesh-grain 0.9s steps(10) infinite;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.85;
   will-change: transform;
 }
 
-/* ── Pure-CSS fallback: three drifting radial glows ── */
-.mesh-bg--fallback {
-  background: #000;
+.gradient-bg__orb--1 {
+  width: 90vmax;
+  height: 90vmax;
+  top: -30%;
+  left: -25%;
+  animation: grad-drift-1 20s ease-in-out infinite;
 }
 
-.mesh-bg__glow {
-  position: absolute;
-  inset: 0;
+.gradient-bg__orb--2 {
+  width: 85vmax;
+  height: 85vmax;
+  top: -10%;
+  right: -30%;
+  animation: grad-drift-2 24s ease-in-out infinite;
 }
 
-.mesh-bg__glow--orange { animation: mesh-orbit-a 44s ease-in-out infinite; }
-.mesh-bg__glow--red    { animation: mesh-orbit-b 52s ease-in-out infinite; }
-.mesh-bg__glow--teal   { animation: mesh-orbit-c 38s ease-in-out infinite; }
-
-.mesh-bg__spin {
-  position: absolute;
-  inset: 0;
+.gradient-bg__orb--3 {
+  width: 80vmax;
+  height: 80vmax;
+  bottom: -30%;
+  left: -10%;
+  animation: grad-drift-3 22s ease-in-out infinite;
 }
 
-.mesh-bg__glow--orange .mesh-bg__spin { animation: mesh-orbit-b 60s ease-in-out infinite reverse; }
-.mesh-bg__glow--red .mesh-bg__spin    { animation: mesh-orbit-a 48s ease-in-out infinite reverse; }
-.mesh-bg__glow--teal .mesh-bg__spin   { animation: mesh-orbit-c 54s ease-in-out infinite reverse; }
+.gradient-bg__orb--4 {
+  width: 75vmax;
+  height: 75vmax;
+  bottom: -20%;
+  right: -25%;
+  animation: grad-drift-4 26s ease-in-out infinite;
+}
 
-.mesh-bg__core {
-  position: absolute;
+.gradient-bg__orb--5 {
+  width: 70vmax;
+  height: 70vmax;
   top: 50%;
   left: 50%;
-  width: 62vmax;
-  height: 62vmax;
-  margin: -31vmax 0 0 -31vmax;
-  border-radius: 50%;
-  filter: blur(36px);
+  margin-left: -35vmax;
+  margin-top: -35vmax;
+  animation: grad-drift-5 18s ease-in-out infinite;
 }
 
-.mesh-bg__glow--orange .mesh-bg__core { background: radial-gradient(closest-side, rgba(255, 85, 0, 0.42), transparent 70%); }
-.mesh-bg__glow--red .mesh-bg__core    { background: radial-gradient(closest-side, rgba(204, 17, 0, 0.40), transparent 70%); }
-.mesh-bg__glow--teal .mesh-bg__core   { background: radial-gradient(closest-side, rgba(0, 136, 170, 0.42), transparent 70%); }
-
-@keyframes mesh-grain {
-  0%   { transform: translate3d(0, 0, 0); }
-  20%  { transform: translate3d(-3%, 2%, 0); }
-  40%  { transform: translate3d(2%, -3%, 0); }
-  60%  { transform: translate3d(-2%, -2%, 0); }
-  80%  { transform: translate3d(3%, 2%, 0); }
-  100% { transform: translate3d(0, 0, 0); }
+.gradient-bg__image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-@keyframes mesh-orbit-a {
-  0%, 100% { transform: translate3d(-22vw, -14vh, 0); }
-  25% { transform: translate3d(16vw, -22vh, 0); }
-  50% { transform: translate3d(24vw, 10vh, 0); }
-  75% { transform: translate3d(-14vw, 20vh, 0); }
+@keyframes grad-drift-1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(40vw, 30vh, 0) scale(1.15); }
+  50% { transform: translate3d(70vw, 50vh, 0) scale(0.9); }
+  75% { transform: translate3d(30vw, 60vh, 0) scale(1.1); }
 }
 
-@keyframes mesh-orbit-b {
-  0%, 100% { transform: translate3d(20vw, 18vh, 0); }
-  25% { transform: translate3d(-18vw, 14vh, 0); }
-  50% { transform: translate3d(-24vw, -16vh, 0); }
-  75% { transform: translate3d(16vw, -20vh, 0); }
+@keyframes grad-drift-2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(-50vw, 40vh, 0) scale(1.1); }
+  50% { transform: translate3d(-80vw, 60vh, 0) scale(0.95); }
+  75% { transform: translate3d(-40vw, 30vh, 0) scale(1.05); }
 }
 
-@keyframes mesh-orbit-c {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  33% { transform: translate3d(-20vw, 12vh, 0); }
-  66% { transform: translate3d(12vw, -18vh, 0); }
+@keyframes grad-drift-3 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(60vw, -40vh, 0) scale(1.1); }
+  50% { transform: translate3d(30vw, -70vh, 0) scale(0.9); }
+  75% { transform: translate3d(50vw, -30vh, 0) scale(1.15); }
+}
+
+@keyframes grad-drift-4 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(-60vw, -50vh, 0) scale(1.15); }
+  50% { transform: translate3d(40vw, -30vh, 0) scale(0.9); }
+  75% { transform: translate3d(-30vw, -60vh, 0) scale(1.1); }
+}
+
+@keyframes grad-drift-5 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(35vw, -45vh, 0) scale(1.2); }
+  50% { transform: translate3d(-45vw, 35vh, 0) scale(0.85); }
+  75% { transform: translate3d(50vw, 40vh, 0) scale(1.1); }
 }
 
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {
-  .mesh-bg__noise {
-    animation: none;
-  }
-  .mesh-bg__glow,
-  .mesh-bg__glow *,
-  .mesh-bg__glow *::before,
-  .mesh-bg__glow *::after {
+  .gradient-bg__orb {
     animation: none !important;
   }
+}
+
+/* Reduce blur on mobile for performance */
+@media (max-width: 768px) {
+  .gradient-bg__orb {
+    filter: blur(60px);
+  }
+}
+
+/* Firefox: further reduce blur for smoother animations */
+@-moz-document url-prefix() {
+  .gradient-bg__orb {
+    filter: blur(50px);
+  }
+}
+
+/* Firefox: fix blinking navbar dropdown */
+@-moz-document url-prefix() {
+  .liquid-glass {
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+}
+
+/* For animated elements: use solid bg instead of backdrop-filter to prevent Firefox blink */
+.glass-animated {
+  background: rgba(10, 14, 26, 0.85) !important;
+  backdrop-filter: none !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
 

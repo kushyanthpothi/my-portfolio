@@ -29,7 +29,7 @@ import { ContentCard } from './ContentCard';
 import { useMouseGlow } from './useMouseGlow';
 import { SEO } from './components/SEO';
 import { BreadcrumbSchema, ArticleSchema, ProjectSchema, SiteStructuredData } from './components/StructuredData';
-import { ReededGlassBackground } from './components/ReededGlassBackground';
+import { GradientBackground } from './components/GradientBackground';
 import { ThemeSidebar } from './components/ThemeSidebar';
 
 interface GlassOption {
@@ -268,7 +268,7 @@ function ScrollToTop() {
   return null;
 }
 
-const themes = ["default", "purple", "emerald", "crimson", "silver", "gold", "hologram", "sunset"];
+const themes = ["default", "radiance", "electric", "prism", "dazzle"];
 
 const phrases = ["Kushyanth Pothineni", "I am a software developer engineer."];
 
@@ -895,7 +895,7 @@ export default function App() {
     <LayoutGroup>
       <SiteStructuredData />
       <div className="min-h-screen font-sans overflow-x-hidden p-6 md:p-8 flex flex-col selection:bg-white/30 selection:text-white relative">
-        <ReededGlassBackground />
+        <GradientBackground />
         <AnimatePresence>
           {!introComplete && (
             <IntroScreen onComplete={() => {
@@ -973,7 +973,7 @@ export default function App() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden pointer-events-auto"
+                      className="fixed inset-0 bg-black/50 z-40 md:hidden pointer-events-auto"
                       onClick={() => setIsMobileMenuOpen(false)}
                     />
                   )}
@@ -996,7 +996,7 @@ export default function App() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-14 right-0 w-[210px] flex flex-col liquid-glass rounded-2xl shadow-2xl z-50 overflow-hidden p-2.5"
+                      className="absolute top-14 right-0 w-[210px] flex flex-col glass-animated rounded-2xl shadow-2xl z-50 overflow-hidden p-2.5"
                     >
                       {/* Liquid glass border highlight */}
                       <div className="absolute inset-0 pointer-events-none z-10" style={{ padding: '1px', background: 'linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0.5) 60%, rgba(255,255,255,0) 100%)', WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude', borderRadius: 'inherit' }} />

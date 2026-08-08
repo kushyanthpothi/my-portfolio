@@ -30,6 +30,30 @@ const FRAGMENT_SOURCE = `
     );
   }
 
+  float dither4x4(vec2 position) {
+    int x = int(mod(position.x, 4.0));
+    int y = int(mod(position.y, 4.0));
+    int index = x + y * 4;
+    float matrix = 0.0;
+    if (index == 0) matrix = 0.0 / 16.0;
+    else if (index == 1) matrix = 8.0 / 16.0;
+    else if (index == 2) matrix = 2.0 / 16.0;
+    else if (index == 3) matrix = 10.0 / 16.0;
+    else if (index == 4) matrix = 12.0 / 16.0;
+    else if (index == 5) matrix = 4.0 / 16.0;
+    else if (index == 6) matrix = 14.0 / 16.0;
+    else if (index == 7) matrix = 6.0 / 16.0;
+    else if (index == 8) matrix = 3.0 / 16.0;
+    else if (index == 9) matrix = 11.0 / 16.0;
+    else if (index == 10) matrix = 1.0 / 16.0;
+    else if (index == 11) matrix = 9.0 / 16.0;
+    else if (index == 12) matrix = 15.0 / 16.0;
+    else if (index == 13) matrix = 7.0 / 16.0;
+    else if (index == 14) matrix = 5.0 / 16.0;
+    else matrix = 13.0 / 16.0;
+    return (matrix - 0.5) / 255.0;
+  }
+
   void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
     vec2 p = (uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
@@ -65,6 +89,9 @@ const FRAGMENT_SOURCE = `
     col += vec3((hash12(gl_FragCoord.xy + fract(t) * 73.0) - 0.5) * 0.015);
 
     col = pow(clamp(col, 0.0, 1.0), vec3(0.4545));
+
+    // Apply 4x4 Bayer dithering to break up banding on mobile
+    col += dither4x4(gl_FragCoord.xy);
 
     gl_FragColor = vec4(col, 1.0);
   }
@@ -147,18 +174,23 @@ export function MeshGradientBackground() {
     const resolutionLoc = gl.getUniformLocation(program, 'u_resolution');
     const timeLoc = gl.getUniformLocation(program, 'u_time');
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+
+    let currentW = 0;
+    let currentH = 0;
 
     const resize = () => {
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
       const targetW = Math.max(1, Math.round(w * dpr));
       const targetH = Math.max(1, Math.round(h * dpr));
-      if (canvas.width !== targetW || canvas.height !== targetH) {
+      if (currentW !== targetW || currentH !== targetH) {
+        currentW = targetW;
+        currentH = targetH;
         canvas.width = targetW;
         canvas.height = targetH;
       }
-      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.viewport(0, 0, currentW, currentH);
     };
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -168,8 +200,7 @@ export function MeshGradientBackground() {
     const start = performance.now();
 
     const render = () => {
-      resize();
-      gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
+      gl.uniform2f(resolutionLoc, currentW, currentH);
       gl.uniform1f(timeLoc, reduceMotion ? 0 : (performance.now() - start) / 1000);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
@@ -181,13 +212,13 @@ export function MeshGradientBackground() {
     };
 
     const onResize = () => {
-      if (reduceMotion) {
+      resize();
+      if (!reduceMotion) {
         render();
-      } else {
-        resize();
       }
     };
 
+    resize();
     render();
     if (!reduceMotion) {
       raf = requestAnimationFrame(loop);

@@ -181,8 +181,8 @@ export function JourneyCard() {
           <div className="flex-1 pr-4 md:pr-8">
             <h3 className="text-3xl font-semibold tracking-tight text-white mb-4 md:mb-6">The Journey</h3>
             <div className="space-y-3 md:space-y-6 text-white/70 text-base md:text-lg leading-relaxed">
-              <p>With a strong foundation in Java, Python, and Spring Boot, I bring ideas to life through thoughtful architecture, efficient code, and scalable cloud-native solutions.</p>
-              <p className="hidden sm:block">Currently, I am working as a Software Development Engineer at Ninjacart, an agri-tech company connecting farmers directly with businesses, shops, and e-commerce platforms.</p>
+              <p>Hey there! I'm Kushyanth, a Software Development Engineer who genuinely enjoys building things, breaking things, figuring out why they broke, and then somehow making them better.</p>
+              <p className="hidden sm:block">Currently, I am working as a Software Development Engineer at Ninjacart, where I get to build and work on software that solves real-world problems at scale.</p>
             </div>
           </div>
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center group-hover:bg-[#111] transition-colors shrink-0">
@@ -258,25 +258,34 @@ export function JourneyCard() {
 
                   <div className="space-y-6 md:space-y-10 text-white/80 text-base md:text-2xl font-medium leading-[1.8] max-w-3xl pr-2 md:pr-6 pb-20 lg:pb-40 pt-4 pointer-events-auto">
                     <p className="text-center lg:text-left">
-                      My path in software engineering began at KKR & KSR Institute of Technology and Sciences (KITS), where I studied Computer Science and Engineering. During my time there, I discovered a profound passion for building solutions that create real impact.
+                      Hey there! I'm Kushyanth.
                     </p>
                     <p className="text-center lg:text-left">
-                      I actively immersed myself in the open source community, contributing to various projects and collaborating with developers worldwide to refine my skills and understand real-world engineering practices.
+                      Glad you're here!
                     </p>
                     <p className="text-center lg:text-left">
-                      One of my defining early projects was a comprehensive event management platform designed specifically for college students. I noticed a gap in how students discovered academic and extracurricular events across different campuses.
+                      I'm a Software Development Engineer who genuinely enjoys building things, breaking things, figuring out why they broke, and then somehow making them better.
                     </p>
                     <p className="text-center lg:text-left">
-                      To bridge this, I built a centralized hub that aggregated events from various colleges. This encouraged cross-campus participation, helping students boost their extracurricular activities, build crucial skills, and expand their professional networks for their future careers.
+                      My journey into software started at KKR & KSR Institute of Technology and Sciences, where I studied Computer Science and Engineering. College was where I got hooked on programming and started turning random ideas into actual projects.
                     </p>
                     <p className="text-center lg:text-left">
-                      That momentum carried me straight into professional software development. Today, I am working as a Software Development Engineer at Ninjacart, an agri-tech company where we buy directly from farmers and sell to businesses, shops, and e-commerce platforms.
+                      I've always enjoyed learning by building. From creating my first college projects to exploring open source, experimenting with new technologies, and eventually working on production systems, every step has taught me something new.
                     </p>
                     <p className="text-center lg:text-left">
-                      Every project I undertake is driven by the same foundational desire:
+                      One of the projects I'm particularly fond of from my early days was an event platform for college students. I noticed how difficult it was to find events and opportunities happening across different colleges, so I decided to build something that brought them all together. It was one of those projects that started as an idea and slowly turned into something much bigger than I expected.
                     </p>
-                    <p className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/40 pb-16 pt-12 text-center lg:text-left">
-                      to engineer with purpose.
+                    <p className="text-center lg:text-left">
+                      Today, I work as a Software Development Engineer at Ninjacart, where I get to build and work on software that solves real-world problems at scale.
+                    </p>
+                    <p className="text-center lg:text-left">
+                      I'm curious by nature, I love exploring how things work, and I'm usually building or experimenting with something new.
+                    </p>
+                    <p className="text-center lg:text-left">
+                      So, that's me in a nutshell.
+                    </p>
+                    <p className="text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/40 pb-16 pt-12 text-center lg:text-left">
+                      Scroll around, check out what I've built, and get to know me a little better.
                     </p>
                   </div>
                 </div>
