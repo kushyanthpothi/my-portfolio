@@ -177,6 +177,7 @@ body {
   background-color: var(--bg-base);
   color: white;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 /* Hide scrollbar globally — show only while scrolling like macOS */
@@ -344,6 +345,8 @@ html:not(:hover)::-webkit-scrollbar-thumb {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  width: 100vw;
+  height: 100vh;
 }
 
 .gradient-bg__orb {
