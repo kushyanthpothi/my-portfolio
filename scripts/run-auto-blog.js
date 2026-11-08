@@ -481,7 +481,7 @@ const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const NVIDIA_MODEL = 'mistralai/mistral-large-4-1t-a52b';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_DEFAULT_MODEL = 'qwen/qwen3.6-27b';
+const GROQ_DEFAULT_MODEL = 'qwen/qwen3.8-27b';
 
 const MAX_RETRIES = 4;
 const BASE_RETRY_DELAY_MS = 5000;
