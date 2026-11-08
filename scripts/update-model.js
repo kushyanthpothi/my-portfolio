@@ -28,9 +28,9 @@ async function updateModel() {
     console.log('Updating AI Automation settings to use Groq...');
     try {
         await setDoc(doc(db, 'settings', 'ai_automation'), {
-            model: 'llama-3.3-70b-versatile',
+            model: 'qwen/qwen3.8-27b',
         }, { merge: true });
-        console.log("SUCCESS: Model updated to 'llama-3.3-70b-versatile' (Groq).");
+        console.log("SUCCESS: Model updated to 'qwen/qwen3.8-27b' (Groq).");
     } catch (error) {
         console.error('ERROR: Failed to update settings.', error.message);
         process.exit(1);
