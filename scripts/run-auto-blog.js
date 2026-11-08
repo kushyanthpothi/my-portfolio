@@ -478,7 +478,7 @@ function parseJSON(text) {
 
 
 const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-const NVIDIA_MODEL = 'moonshotai/kimi-k3';
+const NVIDIA_MODEL = 'moonshotai/kimi-k3.1-pro';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_DEFAULT_MODEL = 'qwen/qwen3.6-27b';
