@@ -489,6 +489,7 @@ const INTER_CALL_DELAY_MS = 8000;
 const TOPICS_PER_RUN = 3;
 
 const GROQ_MODELS = new Set([
+    'qwen/qwen3.8-27b',
     'llama-3.3-70b-versatile',
     'llama-3.1-70b-versatile',
     'llama-3.1-8b-instant',
